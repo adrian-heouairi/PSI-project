@@ -204,7 +204,7 @@ for {
  }
 }
 func printNumberedList(list []string) {
-    for i:= 0 ; i < len(list); i++{
+    for i:= 0 ; i < len(list) - 1; i++{
         fmt.Println(strconv.Itoa(i + 1) + " - " + list[i])
     }
 }
