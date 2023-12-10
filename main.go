@@ -10,6 +10,9 @@ import (
 	"net"
 	"net/http"
 	"strings"
+    "time"
+    "sync"
+    "strconv"
 )
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
@@ -76,9 +79,12 @@ func httpGet(url string) (*http.Response, []byte) {
     return resp, bodyAsByteSlice
 }
 
-func getPeers() {
+func getPeers() []string{
     _, bodyAsByteSlice := httpGet(SERVER_ADDRESS + PEERS_PATH)
-	fmt.Println(string(bodyAsByteSlice))
+    listOfPeersAsString := string(bodyAsByteSlice)
+    listOfPeers := strings.Split(listOfPeersAsString,"\n")
+    printNumberedList(listOfPeers)
+    return listOfPeers
 }
 
 func getAdressesOfPeer(peerName string) []string {
@@ -119,14 +125,7 @@ func createHello() udpMsg {
     return helloMsg
 }
 
-func main() {
-	/*getPeers()
-	getAdressOfPeer("jch.irif.fr")
-	getAdressOfPeer("jch.irsif.fr")
-	getRootOfPeer("jch.irsif.fr")
-	getRootOfPeer("Slartibartfast")
-*/
-
+func keepConnectionAlive() {
     serverUdpAddresses := getAdressesOfPeer(SERVER_PEER_NAME)
 
     // Server address
@@ -145,6 +144,8 @@ func main() {
 	buffer := make([]byte, 1048576)
     
     helloMsg := createHello()
+for {
+
 
     _, err = conn.Write(udpMsgToByteSlice(helloMsg))
     if err != nil {
@@ -192,11 +193,65 @@ func main() {
     }
 
     hasher := sha256.New()
-    //h.Write([]byte(""))
     rootReplyMsg := udpMsg{rootMsg.Id, ROOT_REPLY, 32, hasher.Sum(nil)}
 
     _, err = conn.Write(udpMsgToByteSlice(rootReplyMsg))
     if err != nil {
         LOGGING_FUNC(err)
+ }
+     time.Sleep(30 * time.Second) 
+     fmt.Println("After waiting 30 seconds")
+ }
+}
+func printNumberedList(list []string) {
+    for i:= 0 ; i < len(list); i++{
+        fmt.Println(strconv.Itoa(i + 1) + " - " + list[i])
     }
+}
+func UI() {
+    fmt.Println("PEER CLIENT")
+    fmt.Println("1 - Get peers list")
+    fmt.Println("2 - Get addresses of a peer")
+    fmt.Println("3 - Get root of a peer")
+    var i int
+
+    fmt.Print("Type a number[1..3]: ")
+    fmt.Scan(&i)
+    switch i {
+    case 1:
+        fmt.Println("Here is the list of peers :")
+        getPeers()
+    case 2:
+        listOfPeers := getPeers()
+        fmt.Println("Which pair are you interesseted by[1.." + strconv.Itoa(len(listOfPeers)) + "] :")
+        fmt.Scan(&i)
+        fmt.Println(listOfPeers[i-1] + " addresses are : ")
+        printNumberedList(getAdressesOfPeer(listOfPeers[i-1]))
+    }
+    fmt.Println("Your number is:", i)
+}
+
+func main() {
+UI()
+    /*
+    PAY ATTENTION THIS CODE COMES FROM CHATGPT AND NEED TO BE REFACTORED
+    */
+var wg sync.WaitGroup
+
+	// Start the goroutine and increment the WaitGroup counter
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		keepConnectionAlive()
+	}()
+
+	// Your other main function logic...
+
+	// Wait for the goroutine to finish before exiting
+	wg.Wait()
+	fmt.Println("Program exited")
+go keepConnectionAlive()
+/*
+END OF CHATGPT CODE
+*/
 }
