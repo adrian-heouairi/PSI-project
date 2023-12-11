@@ -9,10 +9,10 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
-    "time"
-    "sync"
-    "strconv"
+	"time"
 )
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
@@ -36,6 +36,7 @@ const (
     NO_DATUM byte = 133
     NAT_TRAVERSAL_REQUEST byte = 6
     NAT_TRAVERSAL byte = 7
+    CHUNK_SIZE int64 = 1024
 )
 
 type udpMsg struct {
@@ -44,6 +45,13 @@ type udpMsg struct {
 	Length uint16
 	Body   []byte
 }
+
+func check(e error) {
+    if e != nil {
+        panic(e)
+    }
+}
+
 func udpMsgToByteSlice(toCast udpMsg) []byte {
 	var idToByteSlice []byte = make([]byte, 4)
 	binary.LittleEndian.PutUint32(idToByteSlice, toCast.Id)
@@ -67,15 +75,10 @@ func byteSliceToUdpMsg(toCast []byte) udpMsg {
 
 func httpGet(url string) (*http.Response, []byte) {
     resp, err := http.Get(url)
-    if err != nil {
-		LOGGING_FUNC(err)
-	}
+    check(err)
 
     bodyAsByteSlice, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		LOGGING_FUNC(err)
-	}
-
+    check(err)
     return resp, bodyAsByteSlice
 }
 
@@ -130,15 +133,10 @@ func keepConnectionAlive() {
 
     // Server address
 	serverAddr, err := net.ResolveUDPAddr("udp", serverUdpAddresses[0])
-	if err != nil {
-		LOGGING_FUNC(err)
-	}
-
+    check(err)
 	// Establish a connection
 	conn, err := net.DialUDP("udp", nil, serverAddr)
-	if err != nil {
-		LOGGING_FUNC(err)
-	}
+    check(err)
 	defer conn.Close()
 
 	buffer := make([]byte, 1048576)
@@ -148,14 +146,10 @@ for {
 
 
     _, err = conn.Write(udpMsgToByteSlice(helloMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    check(err)
 
     _, _, err = conn.ReadFromUDP(buffer)
-    if err != nil {
-		LOGGING_FUNC(err)
-	}
+    check(err)
 
     helloReplyMsg := byteSliceToUdpMsg(buffer)
 
@@ -164,9 +158,7 @@ for {
     }
 
     _, _, err = conn.ReadFromUDP(buffer)
-    if err != nil {
-		LOGGING_FUNC(err)
-	}
+    check(err)
 
     publicKeyMsg := byteSliceToUdpMsg(buffer)
 
@@ -177,14 +169,10 @@ for {
     publicKeyReplyMsg := udpMsg{publicKeyMsg.Id, PUBLIC_KEY_REPLY, 0, make([]byte, 0)}
 
     _, err = conn.Write(udpMsgToByteSlice(publicKeyReplyMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    check(err)
 
     _, _, err = conn.ReadFromUDP(buffer)
-    if err != nil {
-		LOGGING_FUNC(err)
-	}
+    check(err)
 
     rootMsg := byteSliceToUdpMsg(buffer)
 
@@ -196,11 +184,9 @@ for {
     rootReplyMsg := udpMsg{rootMsg.Id, ROOT_REPLY, 32, hasher.Sum(nil)}
 
     _, err = conn.Write(udpMsgToByteSlice(rootReplyMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
- }
-     time.Sleep(30 * time.Second) 
-     fmt.Println("After waiting 30 seconds")
+    check(err)
+    time.Sleep(30 * time.Second) 
+    fmt.Println("After waiting 30 seconds")
  }
 }
 func printNumberedList(list []string) {
@@ -231,11 +217,41 @@ func UI() {
     fmt.Println("Your number is:", i)
 }
 
+// Returns the conent of the asked chunk
+// If file size is less than CHUNK_SIZE first chunk is returned
+// If chunk is grater than the number of chunks present in the file the last chunk is returned
+func chunkFile(path string, chunk int64) [] byte{
+    fi, err := os.Stat(path)
+    check(err)
+    size := fi.Size()    
+    f, err := os.Open(path)
+    check(err)
+    defer f.Close()
+    b1 := make([]byte, CHUNK_SIZE)
+    if size < CHUNK_SIZE {
+        b1 = make([]byte,size)
+    }
+    _,err = f.Seek(chunk * CHUNK_SIZE,0)
+    check(err)
+    if chunk > size / CHUNK_SIZE {
+        newChunk := size / CHUNK_SIZE - 1
+        if chunk % CHUNK_SIZE != 0 {
+           newChunk++
+        }
+        _,err = f.Seek(newChunk * CHUNK_SIZE, 0)
+        check(err)
+    }
+    _, err = f.Read(b1)
+    check(err)
+    return b1
+}
 func main() {
+    /*
 UI()
     /*
     PAY ATTENTION THIS CODE COMES FROM CHATGPT AND NEED TO BE REFACTORED
     */
+    /*
 var wg sync.WaitGroup
 
 	// Start the goroutine and increment the WaitGroup counter
@@ -254,4 +270,10 @@ go keepConnectionAlive()
 /*
 END OF CHATGPT CODE
 */
+fmt.Println("first chunk")
+fmt.Println(chunkFile("test.txt",0))
+fmt.Println("second chunk")
+fmt.Println(chunkFile("test.txt",1))
+fmt.Println("third chunk")
+fmt.Println(chunkFile("test.txt",4))
 }
