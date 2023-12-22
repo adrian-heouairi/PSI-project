@@ -45,7 +45,7 @@ type udpMsg struct {
 
 func udpMsgToByteSlice(toCast udpMsg) []byte {
 	var idToByteSlice []byte = make([]byte, 4)
-	binary.LittleEndian.PutUint32(idToByteSlice, toCast.Id)
+	binary.BigEndian.PutUint32(idToByteSlice, toCast.Id)
 	var typeToByteSlice []byte = make([]byte, 1)
 	typeToByteSlice[0] = toCast.Type
 	var lengthToByteSlice []byte = make([]byte, 2)
@@ -55,12 +55,13 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 	res = append(res, toCast.Body...)
 	return res
 }
+
 func byteSliceToUdpMsg(toCast []byte) udpMsg {
 	var m udpMsg
-	m.Id = binary.LittleEndian.Uint32(toCast[0:4])
+	m.Id = binary.BigEndian.Uint32(toCast[0:4])
 	m.Type = toCast[4]
-	m.Length = binary.LittleEndian.Uint16(toCast[5:7])
-	m.Body = toCast[7 : 7+m.Length]
+	m.Length = binary.BigEndian.Uint16(toCast[5:7])
+	m.Body = append([]byte{}, toCast[7 : 7+m.Length]...)
 	return m
 }
 
@@ -99,7 +100,7 @@ func getRootOfPeer(peerName string) []byte {
 
 	if resp.StatusCode == 204 {
 		LOGGING_FUNC(peerName + " has not declared a root yet!")
-		return make([]byte, 0)
+		return make([]byte, 0) // TODO Fix this and other instances of returning wrong value after logging (maybe exit?)
 	} else if resp.StatusCode == 404 {
 		LOGGING_FUNC(peerName + "is not known by server!")
 		return make([]byte, 0)
@@ -119,6 +120,28 @@ func createHello() udpMsg {
 	helloMsg.Body = res
 	helloMsg.Length = uint16(len(res))
 	return helloMsg
+}
+
+func createMsg(msgType byte, msgBody []byte) udpMsg {
+    var msg udpMsg
+    msg.Id = rand.Uint32()
+    msg.Type = msgType
+    msg.Body = msgBody
+    msg.Length = uint16(len(msgBody))
+
+    return msg
+}
+
+func udpMsgToString(msg udpMsg) string {
+    lengthToTake := len(msg.Body)
+    if lengthToTake > 32 {
+        lengthToTake = 32
+    }
+
+    return "Id: " + fmt.Sprint(msg.Id) + "\n" +
+        "Type: " + fmt.Sprint(msg.Type) + "\n" +
+        "Length: " + fmt.Sprint(msg.Length) + "\n" +
+        "Body: " + string(msg.Body[:lengthToTake])
 }
 
 func main() {
@@ -145,6 +168,27 @@ func main() {
 	defer conn.Close()
 
 	buffer := make([]byte, 1048576)
+
+    sendAndReceiveMsg := func (toSend udpMsg) udpMsg {
+        _, err = conn.Write(udpMsgToByteSlice(toSend))
+        if err != nil {
+            LOGGING_FUNC(err)
+        }
+
+        _, _, err = conn.ReadFromUDP(buffer)
+        if err != nil {
+            LOGGING_FUNC(err)
+        }
+
+        replyMsg := byteSliceToUdpMsg(buffer)
+
+        // TODO We should verify that the type of the response corresponds to the request
+        if toSend.Id != replyMsg.Id {
+            LOGGING_FUNC("Query and reply IDs don't match")
+        }
+
+        return replyMsg
+    }
 
 	helloMsg := createHello()
 
@@ -201,4 +245,17 @@ func main() {
 	if err != nil {
 		LOGGING_FUNC(err)
 	}
+
+
+
+
+    mr := sendAndReceiveMsg(createMsg(ROOT, hasher.Sum(nil)))
+    fmt.Println(udpMsgToString(mr))
+    rootJuliuszUDP := mr.Body
+
+    //rootJuliuszREST := getRootOfPeer("jch.irif.fr")
+
+    rootDatumReply := sendAndReceiveMsg(createMsg(GET_DATUM, rootJuliuszUDP))
+    // Parser racine (directory)
+    fmt.Println(udpMsgToString(rootDatumReply))
 }
