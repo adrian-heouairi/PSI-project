@@ -137,9 +137,57 @@ func udpMsgToString(msg udpMsg) string {
     if lengthToTake > 32 {
         lengthToTake = 32
     }
+/*
 
+	NOOP                  byte = 0
+	ERROR                 byte = 1
+	ERROR_REPLY           byte = 128
+	HELLO                 byte = 2
+	HELLO_REPLY           byte = 129
+	PUBLIC_KEY            byte = 3
+	PUBLIC_KEY_REPLY      byte = 130
+	ROOT                  byte = 4
+	ROOT_REPLY            byte = 131
+	GET_DATUM             byte = 5
+	DATUM                 byte = 132
+	NO_DATUM              byte = 133
+	NAT_TRAVERSAL_REQUEST byte = 6
+	NAT_TRAVERSAL         byte = 7
+*/
+var typeAsString string
+switch msg.Type {
+case 0:
+    typeAsString = "NOOP"
+case 1:
+    typeAsString = "ERROR"
+case 128:
+    typeAsString = "ERROR REPLY"
+case 2:
+    typeAsString = "HELLO"
+case 129:
+    typeAsString = "HELLO REPLY"
+case 3:
+    typeAsString = "PUBLIC KEY"
+case 130:
+    typeAsString = "PUBLIC KEY REPLY"
+case 4:
+    typeAsString = "ROOT"
+case 131:
+    typeAsString = "ROOT REPLY"
+case 5:
+    typeAsString = "GET DATUM"
+case 132:
+    typeAsString = "DATUM"
+case 6:
+    typeAsString = "NAT TRAVERSAL REQUEST"
+case 133:
+    typeAsString = "NO DATUM"
+case 7:
+    typeAsString = "NAT TRAVERSAL"
+    
+}
     return "Id: " + fmt.Sprint(msg.Id) + "\n" +
-        "Type: " + fmt.Sprint(msg.Type) + "\n" +
+        "Type: " + typeAsString + "\n" +
         "Length: " + fmt.Sprint(msg.Length) + "\n" +
         "Body: " + string(msg.Body[:lengthToTake])
 }
