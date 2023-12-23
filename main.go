@@ -37,6 +37,7 @@ const (
     CHUNK                 byte = 0
     TREE                  byte = 1
     DIRECTORY             byte = 2
+    DATUM_TYPE_INDEX      byte = 32
 )
 
 type udpMsg struct {
@@ -183,7 +184,7 @@ func udpMsgToString(msg udpMsg) string {
 // Otherwise empty map is returned
 func getDataHashes(msg udpMsg) map[string][]byte {
     res := make(map[string][]byte)
-    if msg.Body[32] == DIRECTORY {
+    if msg.Body[DATUM_TYPE_INDEX] == DIRECTORY {
         fmt.Println("Cool its a directory");
         nbEntry := (msg.Length - 32) / 64
         for i := 0; i < int(nbEntry); i++{
@@ -193,6 +194,23 @@ func getDataHashes(msg udpMsg) map[string][]byte {
     }
     return res
 }
+
+func check_data_integrity(hash []byte, content []byte) bool {
+    computed_hash := sha256.New()
+    computed_hash.Write(content)
+    hash_sum := computed_hash.Sum(nil)
+    if len(hash_sum) != len(hash){
+
+        return false
+    }
+    for i := 0; i < len(hash); i++ {
+        if hash_sum[i] != hash[i] {
+            return false
+        }
+    }
+    return true
+}
+
 func main() {
     /*getPeers()
     getAdressOfPeer("jch.irif.fr")
@@ -305,21 +323,10 @@ func main() {
     //rootJuliuszREST := getRootOfPeer("jch.irif.fr")
 
     rootDatumReply := sendAndReceiveMsg(createMsg(GET_DATUM, rootJuliuszUDP))
-    // Parser racine (directory)
-    fmt.Println(udpMsgToString(rootDatumReply))
-    if rootDatumReply.Body[32] == DIRECTORY {
-        fmt.Println("Cool its a directory");
-        
-    }
-    fmt.Println("premier elt de la racine de Juliusz : " + string(rootDatumReply.Body[33:65]))
-    hashOfFirstElt := rootDatumReply.Body[65:97]
-    mr = sendAndReceiveMsg(createMsg(GET_DATUM,hashOfFirstElt))
-    if mr.Type == DATUM{
-        fmt.Println("its a datum msg of lenght : " + fmt.Sprint(mr.Length))
-    }
-    if mr.Body[32] == CHUNK {
-        fmt.Println("its a chunk")
-        fmt.Println("content : " + string(mr.Body[33:mr.Length]))
+    if !check_data_integrity(
+        rootDatumReply.Body[32:rootDatumReply.Length - 32],
+        rootDatumReply.Body[rootDatumReply.Length-32:rootDatumReply.Length]) {
+        LOGGING_FUNC("DATUM IS CORRUPTED")
     }
     elt := getDataHashes(rootDatumReply)
     fmt.Println(elt)
