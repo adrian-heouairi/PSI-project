@@ -43,17 +43,26 @@ const ( // Datum message types
 	DIRECTORY byte = 2
 )
 
-const DATUM_TYPE_INDEX byte = 32
-
 const HASH_SIZE byte = 32
 
-const (
+const ( // Message and datum constants
 	ID_SIZE     byte = 4
 	TYPE_SIZE   byte = 1
 	LENGTH_SIZE byte = 2
 
 	DATUM_TYPE_SIZE byte = 1
 	CHUNK_MAX_SIZE  int  = 1024
+	// These indices are relative to Body start
+	DATUM_TYPE_INDEX byte = 32
+	DATUM_CONTENTS_INDEX byte = DATUM_TYPE_INDEX + DATUM_TYPE_SIZE
+
+	FILENAME_MAX_SIZE byte = 32
+	DIRECTORY_ENTRY_SIZE byte = FILENAME_MAX_SIZE + HASH_SIZE
+
+	MAX_DIRECTORY_CHILDREN byte = 16
+
+	MIN_TREE_CHILDREN byte = 2
+	MAX_TREE_CHILDREN byte = 32
 
 	// Biggest message is datum chunk or bigfile with 32 children or full directory
 	BODY_MAX_SIZE int = int(HASH_SIZE) + int(DATUM_TYPE_SIZE) + CHUNK_MAX_SIZE
@@ -94,6 +103,9 @@ func byteToMsgTypeAsStr(msgType byte) string {
 		typeAsString = "NoDatum"
 	case NAT_TRAVERSAL:
 		typeAsString = "NatTraversal"
+	default:
+		typeAsString = "Unknown"
+		LOGGING_FUNC("Unknown message type")
 	}
 
 	return typeAsString
@@ -109,6 +121,9 @@ func byteToDatumTypeAsStr(datumType byte) string {
 		typeOfDatumAsString = "Tree/Big file"
 	case DIRECTORY:
 		typeOfDatumAsString = "Directory"
+	default:
+		typeOfDatumAsString = "Unknown"
+		LOGGING_FUNC("Unknown datum type")
 	}
 
 	return typeOfDatumAsString

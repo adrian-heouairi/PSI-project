@@ -2,8 +2,8 @@ package main
 
 import (
 	"crypto/sha256"
-	"fmt"
-	"log"
+	//"fmt"
+	//"log"
 	"net"
 	"os"
 )
@@ -34,69 +34,29 @@ func main() {
 	checkErr(err)
 	defer jchConn.Close()
 
-	buffer := make([]byte, UDP_BUFFER_SIZE)
-
-	sendAndReceiveMsg := func(toSend udpMsg) udpMsg {
-		_, err = jchConn.Write(udpMsgToByteSlice(toSend))
-		checkErr(err)
-
-		_, _, err = jchConn.ReadFromUDP(buffer)
-		checkErr(err)
-
-		replyMsg := byteSliceToUdpMsg(buffer)
-
-		// TODO We should verify that the type of the response corresponds to the request
-		if toSend.Id != replyMsg.Id {
-			LOGGING_FUNC("Query and reply IDs don't match")
-		}
-
-		return replyMsg
-	}
-
-	helloMsg := createHello()
-
-	_, err = jchConn.Write(udpMsgToByteSlice(helloMsg))
-	checkErr(err)
-
-	_, _, err = jchConn.ReadFromUDP(buffer)
-	checkErr(err)
-
-	helloReplyMsg := byteSliceToUdpMsg(buffer)
-
-	if helloMsg.Id != helloReplyMsg.Id || helloReplyMsg.Type != HELLO_REPLY {
-		LOGGING_FUNC("Invalid HelloReply message")
-	}
-
-	_, _, err = jchConn.ReadFromUDP(buffer)
-	checkErr(err)
-
-	publicKeyMsg := byteSliceToUdpMsg(buffer)
-
-	if publicKeyMsg.Type != PUBLIC_KEY {
-		LOGGING_FUNC("Invalid PublicKey message")
-	}
-
-	publicKeyReplyMsg := udpMsg{publicKeyMsg.Id, PUBLIC_KEY_REPLY, 0, make([]byte, 0)}
-
-	_, err = jchConn.Write(udpMsgToByteSlice(publicKeyReplyMsg))
-	checkErr(err)
-
-	_, _, err = jchConn.ReadFromUDP(buffer)
-	checkErr(err)
-
-	rootMsg := byteSliceToUdpMsg(buffer)
-
-	if rootMsg.Type != ROOT {
-		LOGGING_FUNC("Invalid Root message")
-	}
-
+	sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
+	publicKeyMsg := receiveMsg()
+	publicKeyReplyMsg := createMsgWithId(publicKeyMsg.Id, PUBLIC_KEY_REPLY, []byte{})
+	sendMsg(publicKeyReplyMsg)
+	rootMsg := receiveMsg()
 	hasher := sha256.New()
-	//h.Write([]byte(""))
-	rootReplyMsg := udpMsg{rootMsg.Id, ROOT_REPLY, 32, hasher.Sum(nil)}
+	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
+	sendMsg(rootReplyMsg)
 
-	_, err = jchConn.Write(udpMsgToByteSlice(rootReplyMsg))
-	checkErr(err)
-	download_and_save_file := func(file_name string, hash []byte, content []byte) {}
+	listAllFilesOfPeer("jch.irif.fr")
+
+
+
+
+
+
+
+
+
+
+	
+
+	/*download_and_save_file := func(file_name string, hash []byte, content []byte) {}
 	download_and_save_file = func(file_name string, hash []byte, content []byte) {
 		f, err := os.OpenFile(file_name, os.O_WRONLY|os.O_CREATE, 0644)
 		if err != nil {
@@ -145,11 +105,7 @@ func main() {
 		}
 	}
 
-	mr := sendAndReceiveMsg(createMsg(ROOT, hasher.Sum(nil)))
-	fmt.Println(udpMsgToString(mr))
-	rootJuliuszUDP := mr.Body
-
-	//rootJuliuszREST := getRootOfPeer("jch.irif.fr")
+	rootJchREST := getRootOfPeer("jch.irif.fr")
 
 	rootDatumReply := sendAndReceiveMsg(createMsg(GET_DATUM, rootJuliuszUDP))
 	// hash puis contenu
@@ -160,5 +116,5 @@ func main() {
 	}
 	hashes := getDataHashes(rootDatumReply)
 	fmt.Println(hashes)
-	download_and_save_file("images", rootDatumReply.Body[:32], []byte{})
+	download_and_save_file("images", rootDatumReply.Body[:32], []byte{})*/
 }
