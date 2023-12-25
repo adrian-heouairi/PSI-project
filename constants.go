@@ -1,6 +1,8 @@
 package main
 
-import ("log")
+import (
+	"log"
+)
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
 const PEERS_PATH = "/peers/"
@@ -19,39 +21,39 @@ func checkErr(err error) {
 }
 
 const ( // UDP message types
-    NOOP                  byte = 0
-    ERROR                 byte = 1
-    ERROR_REPLY           byte = 128
-    HELLO                 byte = 2
-    HELLO_REPLY           byte = 129
-    PUBLIC_KEY            byte = 3
-    PUBLIC_KEY_REPLY      byte = 130
-    ROOT                  byte = 4
-    ROOT_REPLY            byte = 131
-    GET_DATUM             byte = 5
-    DATUM                 byte = 132
-    NO_DATUM              byte = 133
-    NAT_TRAVERSAL_REQUEST byte = 6
-    NAT_TRAVERSAL         byte = 7
+	NOOP                  byte = 0
+	ERROR                 byte = 1
+	ERROR_REPLY           byte = 128
+	HELLO                 byte = 2
+	HELLO_REPLY           byte = 129
+	PUBLIC_KEY            byte = 3
+	PUBLIC_KEY_REPLY      byte = 130
+	ROOT                  byte = 4
+	ROOT_REPLY            byte = 131
+	GET_DATUM             byte = 5
+	DATUM                 byte = 132
+	NO_DATUM              byte = 133
+	NAT_TRAVERSAL_REQUEST byte = 6
+	NAT_TRAVERSAL         byte = 7
 )
 
 const ( // Datum message types
-	CHUNK                 byte = 0
-    TREE                  byte = 1
-    DIRECTORY             byte = 2
+	CHUNK     byte = 0
+	TREE      byte = 1
+	DIRECTORY byte = 2
 )
 
-const DATUM_TYPE_INDEX      byte = 32
+const DATUM_TYPE_INDEX byte = 32
 
-const HASH_SIZE             byte = 32
+const HASH_SIZE byte = 32
 
 const (
-	ID_SIZE byte = 4
-	TYPE_SIZE byte = 1
+	ID_SIZE     byte = 4
+	TYPE_SIZE   byte = 1
 	LENGTH_SIZE byte = 2
 
 	DATUM_TYPE_SIZE byte = 1
-	CHUNK_MAX_SIZE int = 1024
+	CHUNK_MAX_SIZE  int  = 1024
 
 	// Biggest message is datum chunk or bigfile with 32 children or full directory
 	BODY_MAX_SIZE int = int(HASH_SIZE) + int(DATUM_TYPE_SIZE) + CHUNK_MAX_SIZE
@@ -59,40 +61,40 @@ const (
 
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
-	
+
 func byteToMsgTypeAsStr(msgType byte) string {
 	var typeAsString string
 
 	switch msgType {
-		case NOOP:
-			typeAsString = "NoOp"
-		case ERROR:
-			typeAsString = "Error"
-		case ERROR_REPLY:
-			typeAsString = "ErrorReply"
-		case HELLO:
-			typeAsString = "Hello"
-		case HELLO_REPLY:
-			typeAsString = "HelloReply"
-		case PUBLIC_KEY:
-			typeAsString = "PublicKey"
-		case PUBLIC_KEY_REPLY:
-			typeAsString = "PublicKeyReply"
-		case ROOT:
-			typeAsString = "Root"
-		case ROOT_REPLY:
-			typeAsString = "RootReply"
-		case GET_DATUM:
-			typeAsString = "GetDatum"
-		case DATUM:
-			typeAsString = "Datum"
-		case NAT_TRAVERSAL_REQUEST:
-			typeAsString = "NatTraversalRequest"
-		case NO_DATUM:
-			typeAsString = "NoDatum"
-		case NAT_TRAVERSAL:
-			typeAsString = "NatTraversal"
-    }
+	case NOOP:
+		typeAsString = "NoOp"
+	case ERROR:
+		typeAsString = "Error"
+	case ERROR_REPLY:
+		typeAsString = "ErrorReply"
+	case HELLO:
+		typeAsString = "Hello"
+	case HELLO_REPLY:
+		typeAsString = "HelloReply"
+	case PUBLIC_KEY:
+		typeAsString = "PublicKey"
+	case PUBLIC_KEY_REPLY:
+		typeAsString = "PublicKeyReply"
+	case ROOT:
+		typeAsString = "Root"
+	case ROOT_REPLY:
+		typeAsString = "RootReply"
+	case GET_DATUM:
+		typeAsString = "GetDatum"
+	case DATUM:
+		typeAsString = "Datum"
+	case NAT_TRAVERSAL_REQUEST:
+		typeAsString = "NatTraversalRequest"
+	case NO_DATUM:
+		typeAsString = "NoDatum"
+	case NAT_TRAVERSAL:
+		typeAsString = "NatTraversal"
+	}
 
 	return typeAsString
 }
@@ -101,12 +103,12 @@ func byteToDatumTypeAsStr(datumType byte) string {
 	var typeOfDatumAsString string
 
 	switch datumType {
-		case CHUNK:
-			typeOfDatumAsString = "Chunk"
-		case TREE:
-			typeOfDatumAsString = "Tree/Big file"
-		case DIRECTORY:
-			typeOfDatumAsString = "Directory"
+	case CHUNK:
+		typeOfDatumAsString = "Chunk"
+	case TREE:
+		typeOfDatumAsString = "Tree/Big file"
+	case DIRECTORY:
+		typeOfDatumAsString = "Directory"
 	}
 
 	return typeOfDatumAsString
