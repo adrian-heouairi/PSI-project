@@ -174,20 +174,20 @@ func parseTree(body []byte) [][]byte {
 }
 
 // We assume that the udpMsg that is parsed will not be modified
-func parseDatum(body []byte) interface{} {
+func parseDatum(body []byte) (byte, interface{}) {
     datumType := body[DATUM_TYPE_INDEX]
     statedHash := body[:HASH_SIZE]
 
     switch(datumType) {
         case CHUNK:
-            return datumChunk{statedHash, datumType, body[DATUM_CONTENTS_INDEX:]}
+            return datumType, datumChunk{statedHash, datumType, body[DATUM_CONTENTS_INDEX:]}
         case TREE:
-            return datumTree{statedHash, datumType, parseTree(body)}
+            return datumType, datumTree{statedHash, datumType, parseTree(body)}
         case DIRECTORY:
-            return datumDirectory{statedHash, datumType, parseDirectory(body)}
+            return datumType, datumDirectory{statedHash, datumType, parseDirectory(body)}
         default:
             LOGGING_FUNC("Invalid datum type")
-            return nil
+            return 0, nil
     }
 }
 

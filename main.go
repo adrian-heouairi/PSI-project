@@ -45,17 +45,6 @@ func main() {
 
 	listAllFilesOfPeer("jch.irif.fr")
 
-
-
-
-
-
-
-
-
-
-	
-
 	/*download_and_save_file := func(file_name string, hash []byte, content []byte) {}
 	download_and_save_file = func(file_name string, hash []byte, content []byte) {
 		f, err := os.OpenFile(file_name, os.O_WRONLY|os.O_CREATE, 0644)
