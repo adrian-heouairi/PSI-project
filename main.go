@@ -14,14 +14,10 @@ func createDownloadDirAndCd() {
 	_, err := os.Stat(DOWNLOAD_DIR)
 	if os.IsNotExist(err) {
 		err = os.Mkdir(DOWNLOAD_DIR, 0755)
-		if err != nil {
-			LOGGING_FUNC(err)
-		}
+		checkErr(err)
 	}
 	err = os.Chdir(DOWNLOAD_DIR)
-	if err != nil {
-		LOGGING_FUNC(err)
-	}
+	checkErr(err)
 }
 
 func main() {
@@ -31,29 +27,21 @@ func main() {
 
     // Server address
     serverAddr, err := net.ResolveUDPAddr("udp", serverUdpAddresses[0])
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     // Establish a connection
     jchConn, err = net.DialUDP("udp", nil, serverAddr)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
     defer jchConn.Close()
 
     buffer := make([]byte, UDP_BUFFER_SIZE)
 
     sendAndReceiveMsg := func (toSend udpMsg) udpMsg {
         _, err = jchConn.Write(udpMsgToByteSlice(toSend))
-        if err != nil {
-            LOGGING_FUNC(err)
-        }
+        checkErr(err)
 
         _, _, err = jchConn.ReadFromUDP(buffer)
-        if err != nil {
-            LOGGING_FUNC(err)
-        }
+        checkErr(err)
 
         replyMsg := byteSliceToUdpMsg(buffer)
 
@@ -68,14 +56,10 @@ func main() {
     helloMsg := createHello()
 
     _, err = jchConn.Write(udpMsgToByteSlice(helloMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     _, _, err = jchConn.ReadFromUDP(buffer)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     helloReplyMsg := byteSliceToUdpMsg(buffer)
 
@@ -84,9 +68,7 @@ func main() {
     }
 
     _, _, err = jchConn.ReadFromUDP(buffer)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     publicKeyMsg := byteSliceToUdpMsg(buffer)
 
@@ -97,14 +79,10 @@ func main() {
     publicKeyReplyMsg := udpMsg{publicKeyMsg.Id, PUBLIC_KEY_REPLY, 0, make([]byte, 0)}
 
     _, err = jchConn.Write(udpMsgToByteSlice(publicKeyReplyMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     _, _, err = jchConn.ReadFromUDP(buffer)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     rootMsg := byteSliceToUdpMsg(buffer)
 
@@ -117,9 +95,7 @@ func main() {
     rootReplyMsg := udpMsg{rootMsg.Id, ROOT_REPLY, 32, hasher.Sum(nil)}
 
     _, err = jchConn.Write(udpMsgToByteSlice(rootReplyMsg))
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
     download_and_save_file := func (file_name string, hash []byte, content[] byte){}
     download_and_save_file = func (file_name string,hash []byte, content []byte) {
         f, err := os.OpenFile(file_name,os.O_WRONLY|os.O_CREATE,0644)

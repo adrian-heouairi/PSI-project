@@ -9,14 +9,10 @@ import (
 
 func httpGet(url string) (*http.Response, []byte) {
     resp, err := http.Get(url)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     bodyAsByteSlice, err := ioutil.ReadAll(resp.Body)
-    if err != nil {
-        LOGGING_FUNC(err)
-    }
+    checkErr(err)
 
     return resp, bodyAsByteSlice
 }

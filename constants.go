@@ -12,6 +12,12 @@ const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
 var LOGGING_FUNC = log.Println
 
+func checkErr(err error) {
+	if err != nil {
+		LOGGING_FUNC(err)
+	}
+}
+
 const ( // UDP message types
     NOOP                  byte = 0
     ERROR                 byte = 1
