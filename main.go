@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -38,6 +39,7 @@ const (
     TREE                  byte = 1
     DIRECTORY             byte = 2
     DATUM_TYPE_INDEX      byte = 32
+    HASH_SIZE             byte = 32
 )
 
 type udpMsg struct {
@@ -142,6 +144,7 @@ func udpMsgToString(msg udpMsg) string {
         lengthToTake = 32
     }
     var typeAsString string
+    var typeOfDatumAsString string
     switch msg.Type {
     case 0:
         typeAsString = "NOOP"
@@ -165,6 +168,14 @@ func udpMsgToString(msg udpMsg) string {
         typeAsString = "GET DATUM"
     case 132:
         typeAsString = "DATUM"
+        switch msg.Body[DATUM_TYPE_INDEX] {
+        case CHUNK:
+            typeOfDatumAsString = "CHUNK"
+        case TREE:
+            typeOfDatumAsString = "TREE"
+        case DIRECTORY:
+            typeOfDatumAsString = "DIRECTORY"
+        }
     case 6:
         typeAsString = "NAT TRAVERSAL REQUEST"
     case 133:
@@ -173,10 +184,21 @@ func udpMsgToString(msg udpMsg) string {
         typeAsString = "NAT TRAVERSAL"
 
     }
+    if msg.Type == DATUM {
+        typeAsString += " " + typeOfDatumAsString
+    }
     return "Id: " + fmt.Sprint(msg.Id) + "\n" +
     "Type: " + typeAsString + "\n" +
     "Length: " + fmt.Sprint(msg.Length) + "\n" +
     "Body: " + string(msg.Body[:lengthToTake])
+}
+
+func castNameFromBytesSliceToString(name []byte) string {
+    i := 0;
+    for name[i] != 0 {
+       i++ 
+    }
+    return string(name[:i])
 }
 
 // Returns a map containing the names and the hashes of the Datum message
@@ -185,12 +207,11 @@ func udpMsgToString(msg udpMsg) string {
 func getDataHashes(msg udpMsg) map[string][]byte {
     res := make(map[string][]byte)
     if msg.Body[DATUM_TYPE_INDEX] == DIRECTORY {
-        fmt.Println("Cool its a directory");
-        nbEntry := (msg.Length - 32) / 64
+        nbEntry := (msg.Length - 33) / 64
         for i := 0; i < int(nbEntry); i++{
-            res[string(msg.Body[33 + i * 32 : 33 + i * 32 + 32])] = msg.Body[65:97]  
+            res[castNameFromBytesSliceToString(msg.Body[33 + i * 64 : 33 + i * 64 + 32])] = msg.Body[65 + i * 64 : 65 + i * 64 + 32]
+
         }
-        fmt.Println(nbEntry) 
     }
     return res
 }
@@ -210,7 +231,6 @@ func check_data_integrity(hash []byte, content []byte) bool {
     }
     return true
 }
-
 func main() {
     /*getPeers()
     getAdressOfPeer("jch.irif.fr")
@@ -312,7 +332,53 @@ func main() {
     if err != nil {
         LOGGING_FUNC(err)
     }
+    download_and_save_file := func (file_name string, hash []byte, content[] byte){}
+    download_and_save_file = func (file_name string,hash []byte, content []byte) {
+        f, err := os.OpenFile(file_name,os.O_WRONLY|os.O_CREATE,0644)
+        if err != nil {
+            fmt.Println("Failed to create")
+            log.Fatal(err)
+        }
+        defer f.Close()
+        datumMsg := sendAndReceiveMsg(createMsg(GET_DATUM,hash))
+        fmt.Println(udpMsgToString(datumMsg))
+        if datumMsg.Type != DATUM {
+            LOGGING_FUNC("Not a datum msg")
+            //return
+        }
+        hashToCheck := datumMsg.Body[:32]
+        if(datumMsg.Body[DATUM_TYPE_INDEX] == CHUNK) { 
+            if check_data_integrity(hashToCheck,datumMsg.Body[32:datumMsg.Length]) {
+                content = append(content,datumMsg.Body[33:datumMsg.Length]...)
+           } else {
+                LOGGING_FUNC("CORRUPTED CHUNK")
+            }
+        } else if (datumMsg.Body[DATUM_TYPE_INDEX] == TREE) {
+            // bigFile/Tree : 1 + (32 *[2:32])
+            nbElt := (datumMsg.Length - 33) / uint16(HASH_SIZE)
+            for i := 0; i < int(nbElt); i++ {
+                download_and_save_file(file_name, datumMsg.Body[33 + i * 32:65 + i * 32],content) 
+            }
+            bytesWritten, err := f.Write(content)
+            if err != nil {
+                LOGGING_FUNC("WRINTING GOES WRONG")
+            }
+            fmt.Println("wrote : " + fmt.Sprint(bytesWritten) + "bytes")
 
+        } else if datumMsg.Body[DATUM_TYPE_INDEX] == DIRECTORY {
+            hashes := getDataHashes(datumMsg) 
+            var fk string
+            i := 0
+            for key := range hashes {
+                i++
+                fk = key
+                if i == 3 {
+                    break
+                }
+            }
+            download_and_save_file("bidule",hashes[fk],content)
+        }
+    }
 
 
 
@@ -323,11 +389,13 @@ func main() {
     //rootJuliuszREST := getRootOfPeer("jch.irif.fr")
 
     rootDatumReply := sendAndReceiveMsg(createMsg(GET_DATUM, rootJuliuszUDP))
+    // hash puis contenu
     if !check_data_integrity(
-        rootDatumReply.Body[32:rootDatumReply.Length - 32],
-        rootDatumReply.Body[rootDatumReply.Length-32:rootDatumReply.Length]) {
-        LOGGING_FUNC("DATUM IS CORRUPTED")
+        rootDatumReply.Body[:32],
+        rootDatumReply.Body[32:rootDatumReply.Length]) {
+            LOGGING_FUNC("DATUM IS CORRUPTED")
+        }
+        hashes := getDataHashes(rootDatumReply)
+        fmt.Println(hashes)
+        download_and_save_file("images",rootDatumReply.Body[:32],[]byte{})
     }
-    elt := getDataHashes(rootDatumReply)
-    fmt.Println(elt)
-}
