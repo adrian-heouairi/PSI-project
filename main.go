@@ -10,20 +10,26 @@ import (
 
 var jchConn *net.UDPConn
 
-func createDownloadDirAndCd() {
+func createDownloadDirAndCd() error {
 	_, err := os.Stat(DOWNLOAD_DIR)
 	if os.IsNotExist(err) {
 		err = os.Mkdir(DOWNLOAD_DIR, 0755)
-		checkErr(err)
+		if err != nil {
+			return err
+		}
+	} else {
+		return err
 	}
 	err = os.Chdir(DOWNLOAD_DIR)
-	checkErr(err)
+	return err
 }
 
 func main() {
-	createDownloadDirAndCd()
+	err := createDownloadDirAndCd()
+	checkErr(err)
 
-	serverUdpAddresses := getAdressesOfPeer(SERVER_PEER_NAME)
+	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
+	checkErr(err)
 
 	// Server address
 	serverAddr, err := net.ResolveUDPAddr("udp", serverUdpAddresses[0])
@@ -34,16 +40,22 @@ func main() {
 	checkErr(err)
 	defer jchConn.Close()
 
-	sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
-	publicKeyMsg := receiveMsg()
+	_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
+	checkErr(err)
+	publicKeyMsg, err := receiveMsg()
+	checkErr(err)
 	publicKeyReplyMsg := createMsgWithId(publicKeyMsg.Id, PUBLIC_KEY_REPLY, []byte{})
-	sendMsg(publicKeyReplyMsg)
-	rootMsg := receiveMsg()
+	err = sendMsg(publicKeyReplyMsg)
+	checkErr(err)
+	rootMsg, err := receiveMsg()
+	checkErr(err)
 	hasher := sha256.New()
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
-	sendMsg(rootReplyMsg)
+	err = sendMsg(rootReplyMsg)
+	checkErr(err)
 
-	listAllFilesOfPeer("jch.irif.fr")
+	err = listAllFilesOfPeer("jch.irif.fr")
+	checkErr(err)
 
 	/*download_and_save_file := func(file_name string, hash []byte, content []byte) {}
 	download_and_save_file = func(file_name string, hash []byte, content []byte) {

@@ -51,6 +51,8 @@ const ( // Message and datum constants
 	TYPE_SIZE   = 1
 	LENGTH_SIZE = 2
 
+	HELLO_EXTENSIONS_SIZE = 4
+
 	DATUM_TYPE_SIZE = 1
 	CHUNK_MAX_SIZE  = 1024
 	// These indices are relative to Body start
@@ -72,7 +74,7 @@ const ( // Message and datum constants
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
 
-func byteToMsgTypeAsStr(msgType byte) (string,error) {
+func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string
 
 	switch msgType {

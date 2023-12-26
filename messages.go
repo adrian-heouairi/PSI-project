@@ -48,22 +48,34 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 	return res
 }
 
-func byteSliceToUdpMsg(toCast []byte) udpMsg {
+// toCast is the buffer, it has the max length of a message
+func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
+	// TODO Replace indices by constants
 	var m udpMsg
 	m.Id = binary.BigEndian.Uint32(toCast[0:4])
 	m.Type = toCast[4]
+
+	_, err := byteToMsgTypeAsStr(m.Type)
+	if err != nil {
+		return udpMsg{}, err
+	}
+
 	m.Length = binary.BigEndian.Uint16(toCast[5:7])
+	expectedSize := ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length
+	if bytesRead < int(expectedSize) {
+		return udpMsg{}, fmt.Errorf("UDP message too small: stated length %d but received %d bytes", m.Length, bytesRead)
+	}
+
 	m.Body = append([]byte{}, toCast[7:7+m.Length]...)
-	return m
+	return m, nil
 }
 
 func createHello() udpMsg {
 	var helloMsg udpMsg
 	helloMsg.Id = rand.Uint32()
-	helloMsg.Type = 2
-	extensions := make([]byte, 4)
-	name := OUR_PEER_NAME
-	nameAsBytes := []byte(name)
+	helloMsg.Type = HELLO
+	extensions := make([]byte, HELLO_EXTENSIONS_SIZE)
+	nameAsBytes := []byte(OUR_PEER_NAME)
 	var res = append(extensions, nameAsBytes...)
 	helloMsg.Body = res
 	helloMsg.Length = uint16(len(res))
@@ -84,16 +96,18 @@ func createMsgWithId(msgId uint32, msgType byte, msgBody []byte) udpMsg {
 	return msg
 }
 
+// Assumes that msg is fully valid
 func udpMsgToString(msg udpMsg) string {
 	lengthToTake := len(msg.Body)
 	if lengthToTake > PRINT_MSG_BODY_TRUNCATE_SIZE {
 		lengthToTake = PRINT_MSG_BODY_TRUNCATE_SIZE
 	}
 
-	typeAsString := byteToMsgTypeAsStr(msg.Type)
+	typeAsString, _ := byteToMsgTypeAsStr(msg.Type)
 
 	if msg.Type == DATUM {
-		typeAsString += " " + byteToDatumTypeAsStr(msg.Body[DATUM_TYPE_INDEX])
+		datumType, _ := byteToDatumTypeAsStr(msg.Body[DATUM_TYPE_INDEX])
+		typeAsString += " " + datumType
 	}
 
     // TODO If datum directory, print the names inside
@@ -104,7 +118,7 @@ func udpMsgToString(msg udpMsg) string {
 		"Body: " + string(msg.Body[:lengthToTake])
 }
 
-func checkDatumIntegrity(body []byte) {
+func checkDatumIntegrity(body []byte) error {
     statedHash := body[:HASH_SIZE]
 
 	hasher := sha256.New()
@@ -112,24 +126,30 @@ func checkDatumIntegrity(body []byte) {
 	computedHash := hasher.Sum(nil)
 
     if !bytes.Equal(statedHash, computedHash) {
-        LOGGING_FUNC("Corrupted datum")
+        return fmt.Errorf("Corrupted datum")
     }
+
+	return nil
 }
 
-func byteSliceToStringWithoutTrailingZeroes(name []byte) string {
+func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 	i := 0
 	for name[i] != 0 {
 		i++
 	}
-	return string(name[:i])
+
+	if i == 0 {
+		return "", fmt.Errorf("Empty filenames are not allowed")
+	}
+
+	return string(name[:i]), nil
 }
 
 // Returns a map containing the names and the hashes of the directory datum message
 // Returns nil in case of error
-func parseDirectory(body []byte) map[string][]byte {
+func parseDirectory(body []byte) (map[string][]byte, error) {
     if body[DATUM_TYPE_INDEX] != DIRECTORY {
-        LOGGING_FUNC("Not a directory")
-        return nil
+        return nil, fmt.Errorf("Not a directory")
     }
 
 	res := make(map[string][]byte)
@@ -137,23 +157,27 @@ func parseDirectory(body []byte) map[string][]byte {
     nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
 
     if nbEntry < 0 || nbEntry > MAX_DIRECTORY_CHILDREN {
-        LOGGING_FUNC("Invalid directory")
-        return nil
+        return nil, fmt.Errorf("Wrong number %d of children for directory", nbEntry)
     }
 
     for i := 0; i < int(nbEntry); i++ {
         keyStart := int(DATUM_CONTENTS_INDEX) + i * int(DIRECTORY_ENTRY_SIZE)
         valueStart := keyStart + FILENAME_MAX_SIZE
-        res[byteSliceToStringWithoutTrailingZeroes(body[keyStart:valueStart])] = body[valueStart:valueStart + HASH_SIZE]
+		filename, err := byteSliceToStringWithoutTrailingZeroes(body[keyStart:valueStart])
+
+		if err != nil {
+			return nil, err
+		}
+
+        res[filename] = body[valueStart:valueStart + HASH_SIZE]
     }
 
-	return res
+	return res, nil
 }
 
-func parseTree(body []byte) [][]byte {
+func parseTree(body []byte) ([][]byte, error) {
     if body[DATUM_TYPE_INDEX] != TREE {
-        LOGGING_FUNC("Not a tree/big file")
-        return nil
+        return nil, fmt.Errorf("Not a tree/big file")
     }
 
 	res := [][]byte{}
@@ -161,8 +185,7 @@ func parseTree(body []byte) [][]byte {
     nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(HASH_SIZE)
 
     if nbEntry < MIN_TREE_CHILDREN || nbEntry > MAX_TREE_CHILDREN {
-        LOGGING_FUNC("Invalid tree/big file")
-        return nil
+        return nil, fmt.Errorf("Invalid number %d of children for tree/big file", nbEntry)
     }
 
     for i := 0; i < int(nbEntry); i++ {
@@ -170,56 +193,86 @@ func parseTree(body []byte) [][]byte {
         res = append(res, body[hashStart:hashStart + HASH_SIZE])
     }
 
-	return res
+	return res, nil
 }
 
 // We assume that the udpMsg that is parsed will not be modified
-func parseDatum(body []byte) (byte, interface{}) {
+func parseDatum(body []byte) (byte, interface{}, error) {
     datumType := body[DATUM_TYPE_INDEX]
     statedHash := body[:HASH_SIZE]
 
     switch(datumType) {
         case CHUNK:
-            return datumType, datumChunk{statedHash, datumType, body[DATUM_CONTENTS_INDEX:]}
+            return datumType, datumChunk{statedHash, datumType, body[DATUM_CONTENTS_INDEX:]}, nil
         case TREE:
-            return datumType, datumTree{statedHash, datumType, parseTree(body)}
+			hashList, err := parseTree(body)
+
+			if err != nil {
+				return 0, nil, err
+			}
+
+            return datumType, datumTree{statedHash, datumType, hashList}, nil
         case DIRECTORY:
-            return datumType, datumDirectory{statedHash, datumType, parseDirectory(body)}
+			filenameHashMap, err := parseDirectory(body)
+
+			if err != nil {
+				return 0, nil, err
+			}
+
+            return datumType, datumDirectory{statedHash, datumType, filenameHashMap}, nil
         default:
-            LOGGING_FUNC("Invalid datum type")
-            return 0, nil
+            return 0, nil, fmt.Errorf("Invalid datum type")
     }
 }
 
-func sendAndReceiveMsg(toSend udpMsg) udpMsg {
-    sendMsg(toSend)
-    replyMsg := receiveMsg()
+// Returns error if peer does not respond after multiple retries or if peer
+// does not respect the protocol e.g. Length field doesn't match Body length
+func sendAndReceiveMsg(toSend udpMsg) (udpMsg, error) {
+    err := sendMsg(toSend)
+	if err != nil {
+		return udpMsg{}, err
+	}
+
+    replyMsg, err := receiveMsg()
+	if err != nil {
+		return udpMsg{}, err
+	}
 
     // TODO We should verify that the type of the response corresponds to the request
 
+	// TODO Print ErrorReply messages
+
     if toSend.Id != replyMsg.Id {
-        LOGGING_FUNC("Query and reply IDs don't match")
+		return replyMsg, fmt.Errorf("Query and reply IDs don't match")
     }
 
-    return replyMsg
+    return replyMsg, nil
 }
 
-func sendMsg(toSend udpMsg) {
+func sendMsg(toSend udpMsg) error {
     _, err := jchConn.Write(udpMsgToByteSlice(toSend))
-    checkErr(err)
+    return err
 }
 
-func receiveMsg() udpMsg {
+func receiveMsg() (udpMsg, error) {
     buffer := make([]byte, UDP_BUFFER_SIZE)
 
-    _, err := jchConn.Read(buffer)
-    checkErr(err)
+    bytesRead, err := jchConn.Read(buffer)
+    if err != nil {
+		return udpMsg{}, err
+	}
 
-    replyMsg := byteSliceToUdpMsg(buffer)
+    replyMsg, err := byteSliceToUdpMsg(buffer, bytesRead)
+	if err != nil {
+		return udpMsg{}, err
+	}
 
     if replyMsg.Type == DATUM {
-        checkDatumIntegrity(replyMsg.Body)
+        err = checkDatumIntegrity(replyMsg.Body)
+		if err != nil {
+			return udpMsg{}, err
+		}
     }
 
-    return replyMsg
+    return replyMsg, nil
 }
