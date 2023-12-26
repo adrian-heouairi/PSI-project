@@ -4,24 +4,42 @@ import (
 	"fmt"
 )
 
-func lsRecursive(hash []byte) {
-    datumReply := sendAndReceiveMsg(createMsg(GET_DATUM, hash))
-    datumType, datumToCast := parseDatum(datumReply.Body)
+func lsRecursive(hash []byte, depth int) error {
+    datumReply, err := sendAndReceiveMsg(createMsg(GET_DATUM, hash))
+    if err != nil {
+        return err
+    }
+
+    datumType, datumToCast, err := parseDatum(datumReply.Body)
+    if err != nil {
+        LOGGING_FUNC("Peer has invalid tree")
+        return err
+    }
     
     if (datumType == DIRECTORY) {
         datum := datumToCast.(datumDirectory)
 
-        fmt.Print("Map : ")
-        fmt.Println(datum.Children)
+        for key, value := range datum.Children { // TODO Sort keys by alphabetical order
+            for i := 0; i < depth; i++ {
+                fmt.Print("\t")
+            }
+            fmt.Println(key)
 
-        for _, value := range datum.Children {
-            lsRecursive(value)
+            err := lsRecursive(value, depth + 1)
+            if err != nil {
+                return err
+            }
         }
     }
+
+    return nil
 }
 
-func listAllFilesOfPeer(peer string) {
-    RESTPeerRootHash := getRootOfPeer(peer)
+func listAllFilesOfPeer(peer string) error {
+    RESTPeerRootHash, err := getRootOfPeer(peer) // TODO This should try REST and UDP
+    if err != nil {
+        return err
+    }
     
-    lsRecursive(RESTPeerRootHash)
+    return lsRecursive(RESTPeerRootHash, 0)
 }

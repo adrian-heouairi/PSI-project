@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+    "fmt"
 )
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
@@ -50,6 +51,8 @@ const ( // Message and datum constants
 	TYPE_SIZE   = 1
 	LENGTH_SIZE = 2
 
+	HELLO_EXTENSIONS_SIZE = 4
+
 	DATUM_TYPE_SIZE = 1
 	CHUNK_MAX_SIZE  = 1024
 	// These indices are relative to Body start
@@ -71,7 +74,7 @@ const ( // Message and datum constants
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
 
-func byteToMsgTypeAsStr(msgType byte) string {
+func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string
 
 	switch msgType {
@@ -105,13 +108,13 @@ func byteToMsgTypeAsStr(msgType byte) string {
 		typeAsString = "NatTraversal"
 	default:
 		typeAsString = "Unknown"
-		LOGGING_FUNC("Unknown message type")
+        return typeAsString, fmt.Errorf("Unknown message type")
 	}
 
-	return typeAsString
+	return typeAsString, nil
 }
 
-func byteToDatumTypeAsStr(datumType byte) string {
+func byteToDatumTypeAsStr(datumType byte) (string,error) {
 	var typeOfDatumAsString string
 
 	switch datumType {
@@ -123,8 +126,8 @@ func byteToDatumTypeAsStr(datumType byte) string {
 		typeOfDatumAsString = "Directory"
 	default:
 		typeOfDatumAsString = "Unknown"
-		LOGGING_FUNC("Unknown datum type")
+        return typeOfDatumAsString,fmt.Errorf("Unknown datum type")
 	}
 
-	return typeOfDatumAsString
+	return typeOfDatumAsString, nil
 }

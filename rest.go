@@ -7,42 +7,57 @@ import (
 	"strings"
 )
 
-func httpGet(url string) (*http.Response, []byte) {
+func httpGet(url string) (*http.Response, []byte, error) {
 	resp, err := http.Get(url)
-	checkErr(err)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	bodyAsByteSlice, err := ioutil.ReadAll(resp.Body)
-	checkErr(err)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	return resp, bodyAsByteSlice
+	return resp, bodyAsByteSlice, nil
 }
 
-func getPeers() {
-	_, bodyAsByteSlice := httpGet(SERVER_ADDRESS + PEERS_PATH)
+func getPeers() error {
+	// TODO Return something
+	_, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
+	if err != nil {
+		return err
+	}
+
 	fmt.Println(string(bodyAsByteSlice))
+
+	return nil
 }
 
-func getAdressesOfPeer(peerName string) []string {
-	resp, bodyAsByteSlice := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
+func getAdressesOfPeer(peerName string) ([]string, error) {
+	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
+	if err != nil {
+		return nil, err
+	}
 
 	if resp.StatusCode == 404 {
-		LOGGING_FUNC(peerName + " is not known by server")
-		return make([]string, 0)
+		return nil, fmt.Errorf(peerName + " is not known by server")
 	}
 
-	return strings.Split(string(bodyAsByteSlice), "\n")
+	return strings.Split(string(bodyAsByteSlice), "\n"), nil
 }
 
-func getRootOfPeer(peerName string) []byte {
-	resp, bodyAsByteSlice := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/root")
-
-	if resp.StatusCode == 204 {
-		LOGGING_FUNC(peerName + " has not declared a root yet!")
-		return make([]byte, 0) // TODO Fix this and other instances of returning wrong value after logging (maybe exit?)
-	} else if resp.StatusCode == 404 {
-		LOGGING_FUNC(peerName + "is not known by server!")
-		return make([]byte, 0)
+func getRootOfPeer(peerName string) ([]byte, error) {
+	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/root")
+	if err != nil {
+		return nil, err
 	}
 
-	return bodyAsByteSlice
+	if resp.StatusCode == 204 {
+		// TODO Return the hash of the empty string?
+		return nil, fmt.Errorf(peerName + " has not declared a root yet")
+	} else if resp.StatusCode == 404 {
+		return nil, fmt.Errorf(peerName + "is not known by server")
+	}
+
+	return bodyAsByteSlice, nil
 }
