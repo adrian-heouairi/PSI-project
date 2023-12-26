@@ -19,13 +19,16 @@ func lsRecursive(hash []byte, depth int) error {
     if (datumType == DIRECTORY) {
         datum := datumToCast.(datumDirectory)
 
-        for key, value := range datum.Children {
+        for key, value := range datum.Children { // TODO Sort keys by alphabetical order
             for i := 0; i < depth; i++ {
                 fmt.Print("\t")
             }
             fmt.Println(key)
 
-            return lsRecursive(value, depth + 1)
+            err := lsRecursive(value, depth + 1)
+            if err != nil {
+                return err
+            }
         }
     }
 
