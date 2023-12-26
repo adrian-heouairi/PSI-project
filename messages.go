@@ -239,6 +239,7 @@ func sendAndReceiveMsg(toSend udpMsg) (udpMsg, error) {
 	}
 
     // TODO We should verify that the type of the response corresponds to the request
+	// TODO Check for NoDatum
 
 	// TODO Print ErrorReply messages
 
@@ -275,4 +276,13 @@ func receiveMsg() (udpMsg, error) {
     }
 
     return replyMsg, nil
+}
+
+func downloadDatum(hash []byte) (byte, interface{}, error) {
+	datumReply, err := sendAndReceiveMsg(createMsg(GET_DATUM, hash))
+    if err != nil {
+        return 0, nil, err
+    }
+
+    return parseDatum(datumReply.Body)
 }
