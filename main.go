@@ -10,22 +10,11 @@ import (
 
 var jchConn *net.UDPConn
 
-func createDownloadDirAndCd() error {
-	_, err := os.Stat(DOWNLOAD_DIR)
-	if os.IsNotExist(err) {
-		err = os.Mkdir(DOWNLOAD_DIR, 0755)
-		if err != nil {
-			return err
-		}
-	} else {
-		return err
-	}
-	err = os.Chdir(DOWNLOAD_DIR)
-	return err
-}
-
 func main() {
-	err := createDownloadDirAndCd()
+	err := mkdir(DOWNLOAD_DIR)
+	checkErr(err)
+
+	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
 
 	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
@@ -54,6 +43,9 @@ func main() {
 	err = sendMsg(rootReplyMsg)
 	checkErr(err)
 
-	err = listAllFilesOfPeer("jch.irif.fr")
+	//err = listAllFilesOfPeer("jch.irif.fr")
+	//checkErr(err)
+
+	err = downloadFullTreeOfPeer("jch.irif.fr")
 	checkErr(err)
 }
