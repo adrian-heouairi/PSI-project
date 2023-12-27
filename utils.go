@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/list"
+	"net"
 	"os"
 	"sync"
 )
@@ -41,3 +42,8 @@ func threadSafeAppendToList(list *list.List, mutex *sync.RWMutex, elem any) {
 
 	list.PushBack(elem)
 }
+
+func compareUDPAddr(first *net.UDPAddr, second *net.UDPAddr) bool {
+    return first.String() == second.String()
+}
+

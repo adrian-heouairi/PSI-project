@@ -1,17 +1,23 @@
 package main
 
-/*import (
+import (
 	"fmt"
-	"os"
+    "net"
+//	"os"
 )
 
 func lsRecursive(hash []byte, depth int) error {
-    datumReply, err := sendAndReceiveMsg(createMsg(GET_DATUM, hash))
+	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
+	checkErr(err)
+	
+	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
+	checkErr(err)
+    datumReply, err := sendAndReceiveMsg(addrUdpMsg{jchAddr, createMsg(GET_DATUM, hash)})
     if err != nil {
         return err
     }
 
-    datumType, datumToCast, err := parseDatum(datumReply.Body)
+    datumType, datumToCast, err := parseDatum(datumReply.Msg.Body)
     if err != nil {
         LOGGING_FUNC("Peer has invalid tree")
         return err
@@ -44,7 +50,7 @@ func listAllFilesOfPeer(peer string) error {
     
     return lsRecursive(RESTPeerRootHash, 0)
 }
-
+/*
 func writeBigFile(datum datumTree, path string) error {
     for _, hash := range datum.ChildrenHashes {
         datumType, datumToCast, err := downloadDatum(hash)

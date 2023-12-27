@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"strings"
 )
@@ -33,7 +34,7 @@ func getPeers() error {
 	return nil
 }
 
-func getAdressesOfPeer(peerName string) ([]string, error) {
+func getAdressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
 	if err != nil {
 		return nil, err
@@ -43,7 +44,16 @@ func getAdressesOfPeer(peerName string) ([]string, error) {
 		return nil, fmt.Errorf(peerName + " is not known by server")
 	}
 
-	return strings.Split(string(bodyAsByteSlice), "\n"), nil
+    addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") 
+    res := []*net.UDPAddr{}
+    for _, s := range addrAsStrings {
+        addr, err := net.ResolveUDPAddr("udp",s)
+        if err != nil {
+            return nil, err
+        }
+        res = append(res, addr)
+    }
+    return res, nil
 }
 
 func getRootOfPeer(peerName string) ([]byte, error) {

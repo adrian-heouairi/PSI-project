@@ -5,12 +5,12 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net"
-	"reflect"
 	"sync"
 )
 
 var connIPv4 *net.UDPConn
 var connIPv6 *net.UDPConn
+var peers map[string]*net.UDPAddr
 
 type addrUdpMsg struct {
 	Addr *net.UDPAddr
@@ -22,6 +22,7 @@ var msgQueueMutex *sync.RWMutex
 
 func initUdp() error {
 	msgQueue = list.New()
+    peers = make(map[string]*net.UDPAddr)
 	msgQueueMutex = &sync.RWMutex{}
 
 	v4ListenAddr, err := net.ResolveUDPAddr("udp4", ":" + fmt.Sprint(UDP_LISTEN_PORT))
@@ -72,37 +73,42 @@ func receiveMsg() (addrUdpMsg, error) {
     return addrUdpMsg{peerAddr, replyMsg}, nil
 }
 
-func sendMsg(toSend addrUdpMsg) error {
+func sendMsg(peerName string, toSend udpMsg) error {
+    peerAddr,found := peers[peerName]
+    if !found {
+       peerAddr, _ = getAdressesOfPeer(peerName)[0]
+       peers[peerName] = peerAddr
+    }
 	// TODO Verify number of bytes written and underscores everywhere in the code
-    _, err := connIPv4.WriteToUDP(udpMsgToByteSlice(toSend.Msg), toSend.Addr)
+    _, err := connIPv4.WriteToUDP(udpMsgToByteSlice(toSend), peerAddr)
     return err
 }
 
-func handleMsg(receivedMsg addrUdpMsg) {
+func handleMsg(peerName string, receivedMsg udpMsg) {
 	shouldReply := true
 	var replyMsg udpMsg
 
-	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
+	if receivedMsg.Type >= FIRST_RESPONSE_MSG_TYPE {
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
 
 	// The received message is a request
-	switch receivedMsg.Msg.Type {
+	switch receivedMsg.Type {
 	//case HELLO: // TODO Implement this and others
 		//sendMsg()
 	case PUBLIC_KEY:
-		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
+		replyMsg = createMsgWithId(receivedMsg.Id, PUBLIC_KEY_REPLY, []byte{})
 	case ROOT:
 		hasher := sha256.New()
-		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
+		replyMsg = createMsgWithId(receivedMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	default:
 		shouldReply = false
-		LOGGING_FUNC(udpMsgToString(receivedMsg.Msg))
+		LOGGING_FUNC(udpMsgToString(receivedMsg))
 	}
 
 	if shouldReply {
-		_ = sendMsg(addrUdpMsg{receivedMsg.Addr, replyMsg})
+		_ = sendMsg(peerName, replyMsg)
 	}
 }
 
@@ -114,24 +120,24 @@ func listenAndRespond() {
 }
 
 func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg { // TODO Return error?
-	msgQueueMutex.RLock()
 	
 	var foundMsg *list.Element
 	for {
 		msgFound := false
+        msgQueueMutex.RLock()
 		for m := msgQueue.Front(); m != nil; m = m.Next() {
 			mCasted := m.Value.(addrUdpMsg)
-			if reflect.DeepEqual(mCasted.Addr, sentMsg.Addr) && mCasted.Msg.Id == sentMsg.Msg.Id {
+			if compareUDPAddr(mCasted.Addr, sentMsg.Addr)&& mCasted.Msg.Id == sentMsg.Msg.Id {
 				msgFound = true
 				foundMsg = m
 				break
 			}
 		}
+        msgQueueMutex.RUnlock()
 		if msgFound {
 			break
 		}
 	}
-	msgQueueMutex.RUnlock()
 
 	msgQueueMutex.Lock()
 	msgQueue.Remove(foundMsg)
@@ -143,15 +149,16 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg { // TODO Return error?
 // TODO Improve this comment
 // Returns error if peer does not respond after multiple retries or if peer
 // does not respect the protocol e.g. Length field doesn't match Body length
-func sendAndReceiveMsg(toSend addrUdpMsg) (addrUdpMsg, error) {
-    err := sendMsg(toSend)
+func sendAndReceiveMsg(peerName string, toSend udpMsg) (addrUdpMsg, error) {
+    err := sendMsg(peerName, toSend)
 	if err != nil {
 		return addrUdpMsg{}, err
 	}
 
-    replyMsg := retrieveInMsgQueue(toSend)
+    replyMsg := retrieveInMsgQueue(addrUdpMsg{peers[peerName],toSend})
 
     // TODO We should verify that the type of the response corresponds to the request
+    //reply - request = 127
 	// TODO Check for NoDatum
 
 	// TODO Print ErrorReply messages
@@ -159,9 +166,9 @@ func sendAndReceiveMsg(toSend addrUdpMsg) (addrUdpMsg, error) {
     return replyMsg, nil
 }
 
-func downloadDatum(peerAddr *net.UDPAddr, hash []byte) (byte, interface{}, error) {
+func downloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 	getDatumMsg := createMsg(GET_DATUM, hash)
-	datumReply, err := sendAndReceiveMsg(addrUdpMsg{peerAddr, getDatumMsg})
+	datumReply, err := sendAndReceiveMsg(peerName, getDatumMsg)
     if err != nil {
         return 0, nil, err
     }

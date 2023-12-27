@@ -1,0 +1,34 @@
+main :
+    go anttente de connexion
+attente de connexion:
+    - connexion:
+        go start_udp_sessiono(connexion)
+
+
+receive_msg en boucle
+premier msg -> go Treat msg 
+
+
+
+
+
+
+
+
+IDEALEMENT:
+**********************************************************
+* 1st thread wait user input (busy wait inifnite for loop) *
+ 2nd thread (keep alive jch)
+ 3r:d thread (wait a udp comm start)
+ 4..n : peers other than meet up server
+ ith thread (peer who asks data or gives data) for i in [4:n]
+....
+**************************************************************
+
+**********************************************
+1
+2
+3
+4
+$> 
+*********************************************
