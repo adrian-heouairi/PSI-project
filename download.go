@@ -1,6 +1,6 @@
 package main
 
-import (
+/*import (
 	"fmt"
 	"os"
 )
@@ -109,3 +109,4 @@ func downloadFullTreeOfPeer(peer string) error {
     // TODO Replace slashes by underscore in peer name
     return downloadRecursive(RESTPeerRootHash, peer)
 }
+*/

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"container/list"
 	"os"
+	"sync"
 )
 
 func mkdir(path string) error {
@@ -31,4 +33,11 @@ func writeChunk(path string, chunk []byte) error {
 	}
 
 	return nil
+}
+
+func threadSafeAppendToList(list *list.List, mutex *sync.RWMutex, elem any) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	list.PushBack(elem)
 }

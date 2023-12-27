@@ -10,6 +10,9 @@ const PEERS_PATH = "/peers/"
 const OUR_PEER_NAME = "AS"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
+const UDP_LISTEN_PORT = 8444
+
+const MSG_QUEUE_SIZE = 1024
 
 const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
@@ -18,6 +21,12 @@ var LOGGING_FUNC = log.Println
 func checkErr(err error) {
 	if err != nil {
 		LOGGING_FUNC(err)
+	}
+}
+
+func checkErrPanic(err error) {
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -36,6 +45,8 @@ const ( // UDP message types
 	NO_DATUM              byte = 133
 	NAT_TRAVERSAL_REQUEST byte = 6
 	NAT_TRAVERSAL         byte = 7
+
+	FIRST_RESPONSE_MSG_TYPE byte = 128
 )
 
 const ( // Datum message types

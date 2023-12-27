@@ -1,14 +1,10 @@
 package main
 
 import (
-	"crypto/sha256"
-	//"fmt"
-	//"log"
+	"fmt"
 	"net"
 	"os"
 )
-
-var jchConn *net.UDPConn
 
 func main() {
 	err := mkdir(DOWNLOAD_DIR)
@@ -17,19 +13,19 @@ func main() {
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
 
+	checkErrPanic(initUdp())
+
 	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
-
-	// Server address
-	serverAddr, err := net.ResolveUDPAddr("udp", serverUdpAddresses[0])
+	
+	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
 	checkErr(err)
 
-	// Establish a connection
-	jchConn, err = net.DialUDP("udp", nil, serverAddr)
-	checkErr(err)
-	defer jchConn.Close()
+	helloReply, _ := sendAndReceiveMsg(addrUdpMsg{jchAddr, createHello()})
 
-	_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
+	fmt.Println(udpMsgToString(helloReply.Msg))
+
+	/*_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
 	checkErr(err)
 	publicKeyMsg, err := receiveMsg()
 	checkErr(err)
@@ -41,11 +37,11 @@ func main() {
 	hasher := sha256.New()
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
-	checkErr(err)
+	checkErr(err)*/
 
 	//err = listAllFilesOfPeer("jch.irif.fr")
 	//checkErr(err)
 
-	err = downloadFullTreeOfPeer("jch.irif.fr")
-	checkErr(err)
+	//err = downloadFullTreeOfPeer("jch.irif.fr")
+	//checkErr(err)
 }
