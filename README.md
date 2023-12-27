@@ -12,7 +12,9 @@
 
 
 
-******************* IDEALEMENT FINI POUR SAMEDI
+******************* IDEALEMENT FINI POUR DIMANCHE SOIR
++ keep alive thread TODO
++ ui thread TODO
 + udp reemissions TODO
 + try ipv6 if ipv4 does not work and vice-versa
 + handle msg :
