@@ -3,61 +3,74 @@ package main
 import (
 	"fmt"
 	"os"
+    "strings"
 )
 
-func lsRecursive(hash []byte, depth int) error {
-    datumReply, err := sendAndReceiveMsg(createMsg(GET_DATUM, hash))
-    if err != nil {
-        return err
-    }
+// Shows all the names of the elements in the directory.
+//   - peerName: the peer whose tree we are interested in
+//   - hash: of the directory
+//   - depth: number of tabs to print before the name
+//     Returns : error if communication with peer was impossible or the sent datum is invalid
+func lsRecursive(peerName string, hash []byte, depth int) error {
+	/*serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
+	checkErr(err)
 
-    datumType, datumToCast, err := parseDatum(datumReply.Body)
-    if err != nil {
-        LOGGING_FUNC("Peer has invalid tree")
-        return err
-    }
-    
-    if (datumType == DIRECTORY) {
-        datum := datumToCast.(datumDirectory)
+	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
+	checkErr(err)
+	datumReply, err := sendAndReceiveMsg(addrUdpMsg{jchAddr, createMsg(GET_DATUM, hash)})
+	if err != nil {
+		return err
+	}
+    */
+	datumType, datumToCast, err := downloadDatum(peerName, hash)
+	if err != nil {
+		return fmt.Errorf("Peer has invalid tree")
+	}
 
-        for key, value := range datum.Children { // TODO Sort keys by alphabetical order
-            for i := 0; i < depth; i++ {
-                fmt.Print("\t")
-            }
-            fmt.Println(key)
+	if datumType == DIRECTORY {
+		datum := datumToCast.(datumDirectory)
 
-            err := lsRecursive(value, depth + 1)
-            if err != nil {
-                return err
-            }
-        }
-    }
+		for key, value := range datum.Children { // TODO Sort keys by alphabetical order
+			for i := 0; i < depth; i++ {
+				fmt.Print("\t")
+			}
+			fmt.Println(key)
 
-    return nil
+			err := lsRecursive(peerName, value, depth + 1)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
+// Wrapper for lsRecursive.
+//   - peer: name of the peer we want to see root structure
+//     Returns : error if we could not retrive root or lsRecursive returns error
 func listAllFilesOfPeer(peer string) error {
-    RESTPeerRootHash, err := getRootOfPeer(peer) // TODO This should try REST and UDP
-    if err != nil {
-        return err
-    }
-    
-    return lsRecursive(RESTPeerRootHash, 0)
+	RESTPeerRootHash, err := restGetRootOfPeer(peer) // TODO This should try REST and UDP
+	if err != nil {
+		return err
+	}
+
+	return lsRecursive(peer, RESTPeerRootHash, 0)
 }
 
-func writeBigFile(datum datumTree, path string) error {
+
+func writeBigFile(peerName string, datum datumTree, path string) error {
     for _, hash := range datum.ChildrenHashes {
-        datumType, datumToCast, err := downloadDatum(hash)
+        datumType, datumToCast, err := downloadDatum(peerName, hash)
         if err != nil {
             return err
         }
 
         if datumType == CHUNK {
-            datum := datumToCast.(datumChunk)
-            writeChunk(path, datum.Contents)
+            newDatum := datumToCast.(datumChunk)
+            writeChunk(path, newDatum.Contents)
         } else if datumType == TREE {
-            datum := datumToCast.(datumTree)
-            writeBigFile(datum, path)
+            newDatum := datumToCast.(datumTree)
+            writeBigFile(peerName, newDatum, path)
         } else {
             return fmt.Errorf("Children of big file should be big file or chunk")
         }
@@ -66,19 +79,19 @@ func writeBigFile(datum datumTree, path string) error {
     return nil
 }
 
-func downloadRecursive(hash []byte, path string) error {
-    datumType, datumToCast, err := downloadDatum(hash)
+func downloadRecursive(peerName string, hash []byte, path string) error {
+    datumType, datumToCast, err := downloadDatum(peerName, hash)
     if err != nil {
         return err
     }
-    
+
     if (datumType == DIRECTORY) {
         datum := datumToCast.(datumDirectory)
 
         mkdir(path)
 
         for key, value := range datum.Children { // TODO Sort keys by alphabetical order
-            err := downloadRecursive(value, path + "/" + key)
+            err := downloadRecursive(peerName, value, path + "/" + key)
             if err != nil {
                 return err
             }
@@ -92,7 +105,7 @@ func downloadRecursive(hash []byte, path string) error {
 
         os.Remove(path)
 
-        err = writeBigFile(datum, path)
+        err = writeBigFile(peerName, datum, path)
         if err != nil {
             return err
         }
@@ -101,11 +114,12 @@ func downloadRecursive(hash []byte, path string) error {
     return nil
 }
 
-func downloadFullTreeOfPeer(peer string) error {
-    RESTPeerRootHash, err := getRootOfPeer(peer) // TODO This should try REST and UDP
+func downloadFullTreeOfPeer(peerName string) error {
+    RESTPeerRootHash, err := restGetRootOfPeer(peerName) // TODO This should try REST and UDP
     if err != nil {
         return err
     }
-    // TODO Replace slashes by underscore in peer name
-    return downloadRecursive(RESTPeerRootHash, peer)
+    peerDirectory := strings.Replace(peerName, "/", "_", -1)
+    return downloadRecursive(peerName, RESTPeerRootHash, peerDirectory)
 }
+

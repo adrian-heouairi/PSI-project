@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
-    "fmt"
+	"time"
 )
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
@@ -10,6 +11,15 @@ const PEERS_PATH = "/peers/"
 const OUR_PEER_NAME = "AS"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
+const UDP_LISTEN_PORT = 8444
+
+// With exponential backoff of REEMISSION_TIME_UNIT, total one first message +
+// up to NUMBER_OF_REEMISSIONS messages
+const NUMBER_OF_REEMISSIONS = 4
+// TODO This should be based on estimated RTT (RTO)
+const REEMISSION_TIME_UNIT = 100 * time.Millisecond
+
+const MSG_QUEUE_SIZE = 1024
 
 const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
@@ -20,6 +30,19 @@ func checkErr(err error) {
 		LOGGING_FUNC(err)
 	}
 }
+
+func checkErrPanic(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+// HTTP response status codes
+const (
+	HTTP_NOT_FOUND = 404
+	HTTP_NO_CONTENT = 204
+	HTTP_OK = 200
+)
 
 const ( // UDP message types
 	NOOP                  byte = 0
@@ -36,6 +59,8 @@ const ( // UDP message types
 	NO_DATUM              byte = 133
 	NAT_TRAVERSAL_REQUEST byte = 6
 	NAT_TRAVERSAL         byte = 7
+
+	FIRST_RESPONSE_MSG_TYPE byte = 128
 )
 
 const ( // Datum message types
@@ -58,6 +83,7 @@ const ( // Message and datum constants
 	// These indices are relative to Body start
 	DATUM_TYPE_INDEX = 32
 	DATUM_CONTENTS_INDEX = DATUM_TYPE_INDEX + DATUM_TYPE_SIZE
+    BODY_START_INDEX = 7
 
 	FILENAME_MAX_SIZE = 32
 	DIRECTORY_ENTRY_SIZE = FILENAME_MAX_SIZE + HASH_SIZE

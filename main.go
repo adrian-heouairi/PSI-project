@@ -1,14 +1,9 @@
 package main
 
 import (
-	"crypto/sha256"
-	//"fmt"
-	//"log"
-	"net"
+	"fmt"
 	"os"
 )
-
-var jchConn *net.UDPConn
 
 func main() {
 	err := mkdir(DOWNLOAD_DIR)
@@ -17,19 +12,27 @@ func main() {
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
 
-	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
+	checkErrPanic(initUdp())
+
+	go listenAndRespond()
+
+	//serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
+	//checkErr(err)
+
+	//jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
+	//checkErr(err)
+	//fmt.Println("before sending hello to jch")
+	helloReply, _ := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
+
+	fmt.Println(udpMsgToString(helloReply.Msg))
+
+	err = listAllFilesOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
 
-	// Server address
-	serverAddr, err := net.ResolveUDPAddr("udp", serverUdpAddresses[0])
+	err = downloadFullTreeOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
 
-	// Establish a connection
-	jchConn, err = net.DialUDP("udp", nil, serverAddr)
-	checkErr(err)
-	defer jchConn.Close()
-
-	_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
+	/*_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
 	checkErr(err)
 	publicKeyMsg, err := receiveMsg()
 	checkErr(err)
@@ -41,11 +44,6 @@ func main() {
 	hasher := sha256.New()
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
-	checkErr(err)
-
-	//err = listAllFilesOfPeer("jch.irif.fr")
-	//checkErr(err)
-
-	err = downloadFullTreeOfPeer("jch.irif.fr")
-	checkErr(err)
+	checkErr(err)*/
 }
+
