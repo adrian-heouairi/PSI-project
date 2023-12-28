@@ -8,11 +8,16 @@ import (
 	"strings"
 )
 
+// Wrapper of htt.Get
+// - url: textual representation of the url to be visited
+// Returns: - the http Response
+//          - http repsonse body as byte slice
+//          - error if something goes wrong nil otherwise
 func httpGet(url string) (*http.Response, []byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, nil, err
-	}
+	};
 
 	bodyAsByteSlice, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -22,6 +27,8 @@ func httpGet(url string) (*http.Response, []byte, error) {
 	return resp, bodyAsByteSlice, nil
 }
 
+// Displays connected peers.
+// Returns: -error if server is not available
 func getPeers() error {
 	// TODO Return something
 	_, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
@@ -34,6 +41,10 @@ func getPeers() error {
 	return nil
 }
 
+// Gives the addresses of the given peer.
+// - peerName: the peer whose addresses we want
+// Returns: - a slice with the peer addresses
+//          - error if peer was not found
 func getAdressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
 	if err != nil {
@@ -56,7 +67,12 @@ func getAdressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
     return res, nil
 }
 
+// Gives the hash of the peer's root
+// - peerName: the peer whose root we want
+// Returns: - the root hash
+//          - error if peer does not exist or the main server is not available
 func getRootOfPeer(peerName string) ([]byte, error) {
+    //TODO : replace /root by constant
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/root")
 	if err != nil {
 		return nil, err

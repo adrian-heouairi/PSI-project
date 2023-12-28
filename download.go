@@ -6,6 +6,10 @@ import (
 //	"os"
 )
 
+// Shows all the names of the elements in the directory.
+//  - hash: of the directory
+//  - depth: number of tabs to print before the name
+//  Returns : error if communication with peer was impossible or the sent datum is invalid
 func lsRecursive(hash []byte, depth int) error {
 	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
@@ -42,6 +46,9 @@ func lsRecursive(hash []byte, depth int) error {
     return nil
 }
 
+// Wrapper for lsRecursive.
+//  - peer: name of the peer we want to see root structure
+//  Returns : error if we could not retrive root or lsRecursive returns error
 func listAllFilesOfPeer(peer string) error {
     RESTPeerRootHash, err := getRootOfPeer(peer) // TODO This should try REST and UDP
     if err != nil {

@@ -69,6 +69,7 @@ const ( // Message and datum constants
 	// These indices are relative to Body start
 	DATUM_TYPE_INDEX = 32
 	DATUM_CONTENTS_INDEX = DATUM_TYPE_INDEX + DATUM_TYPE_SIZE
+    BODY_START_INDEX = 7
 
 	FILENAME_MAX_SIZE = 32
 	DIRECTORY_ENTRY_SIZE = FILENAME_MAX_SIZE + HASH_SIZE

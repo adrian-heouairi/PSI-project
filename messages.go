@@ -17,24 +17,33 @@ type udpMsg struct {
 	Body   []byte
 }
 
+// Represent a datum message containing a chunk.
+// - StatedHash: represents the received hash that should be the same as the one computed using Contents
 type datumChunk struct {
 	StatedHash []byte
 	Type byte
     Contents []byte
 }
 
+// Represent a datum message containing a Tree/BigFile.
+// - StatedHash: represents the received hash that should be the same as the one computed using ChildrenHashes
 type datumTree struct {
 	StatedHash []byte
 	Type byte
     ChildrenHashes [][]byte
 }
 
+// Represent a datum message containing a Directory.
+// - StatedHash: represents the received hash that should be the same as the one computed using Children
 type datumDirectory struct {
 	StatedHash []byte
 	Type byte
     Children map[string][]byte // Map of filename (no \0 padding) -> hash
 }
 
+// Castes a udpMsg to byte slice ready to be sent.
+// - toCast: the message to be casted.
+// - Returns: a byte slice that can be sent through network.
 func udpMsgToByteSlice(toCast udpMsg) []byte {
 	var idToByteSlice []byte = make([]byte, 4)
 	binary.BigEndian.PutUint32(idToByteSlice, toCast.Id)
@@ -48,28 +57,33 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 	return res
 }
 
-// toCast is the buffer, it has the max length of a message
+// Casts a byte slice to a udp message.
+// - toCast: the byte slice to be casted
+//           it has the max length of a message
+// - bytesRead: the number of bytes that was received for this message
+// - Returns: a valid udpMsg and nil or an empty udpMsg and err
 func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
-	// TODO Replace indices by constants
 	var m udpMsg
-	m.Id = binary.BigEndian.Uint32(toCast[0:4])
-	m.Type = toCast[4]
+    m.Id = binary.BigEndian.Uint32(toCast[:ID_SIZE])
+	m.Type = toCast[ID_SIZE]
 
 	_, err := byteToMsgTypeAsStr(m.Type)
 	if err != nil {
 		return udpMsg{}, err
 	}
 
-	m.Length = binary.BigEndian.Uint16(toCast[5:7])
+    m.Length = binary.BigEndian.Uint16(toCast[ID_SIZE + 1:ID_SIZE + 1 + LENGTH_SIZE])
 	expectedSize := ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length
 	if bytesRead < int(expectedSize) {
 		return udpMsg{}, fmt.Errorf("UDP message too small: stated length %d but received %d bytes", m.Length, bytesRead)
 	}
 
-	m.Body = append([]byte{}, toCast[7:7+m.Length]...)
+	m.Body = append([]byte{}, toCast[BODY_START_INDEX:BODY_START_INDEX + m.Length]...)
 	return m, nil
 }
 
+// Creates a valid hello message containing our peer name.
+// - Returns: a valid hello udpMsg
 func createHello() udpMsg {
 	var helloMsg udpMsg
 	helloMsg.Id = rand.Uint32()
@@ -82,10 +96,19 @@ func createHello() udpMsg {
 	return helloMsg
 }
 
+// Creates a valid udp message with random id and the given type and body.
+// - msgType: valid type of message
+// - msgBody: valid body of message
+// - Returns: a valid udp message
 func createMsg(msgType byte, msgBody []byte) udpMsg {
     return createMsgWithId(rand.Uint32(), msgType, msgBody)
 }
 
+// Like createMsg but specifying id.
+// - msgId: the id of the message
+// - msgType: valid type of message
+// - msgBody: valid body of message
+// - Returns: a valid udp message
 func createMsgWithId(msgId uint32, msgType byte, msgBody []byte) udpMsg {
 	var msg udpMsg
 	msg.Id = msgId
@@ -96,7 +119,9 @@ func createMsgWithId(msgId uint32, msgType byte, msgBody []byte) udpMsg {
 	return msg
 }
 
-// Assumes that msg is fully valid
+// Human readable representation of a udp message.
+// - msg: fully valid udp message
+// - Returns: a string describing msg
 func udpMsgToString(msg udpMsg) string {
 	lengthToTake := len(msg.Body)
 	if lengthToTake > PRINT_MSG_BODY_TRUNCATE_SIZE {
@@ -105,19 +130,35 @@ func udpMsgToString(msg udpMsg) string {
 
 	typeAsString, _ := byteToMsgTypeAsStr(msg.Type)
 
+    childrenNames :=""
 	if msg.Type == DATUM {
 		datumType, _ := byteToDatumTypeAsStr(msg.Body[DATUM_TYPE_INDEX])
 		typeAsString += " " + datumType
+        if  msg.Body[DATUM_TYPE_INDEX] == DIRECTORY{
+            childrenNames = "\nChildren:\n\t"
+            nbEntry := (len(msg.Body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
+            startOffset := DATUM_CONTENTS_INDEX
+            for i := 0; i < nbEntry; i++ {
+                name,err := byteSliceToStringWithoutTrailingZeroes(msg.Body[startOffset + i * DIRECTORY_ENTRY_SIZE:startOffset + i * DIRECTORY_ENTRY_SIZE+ FILENAME_MAX_SIZE])
+                if err != nil {
+                    LOGGING_FUNC(err)
+                    return ""
+                }
+                childrenNames += name + "\n\t"
+            }
+        }
 	}
-
-    // TODO If datum directory, print the names inside
 
 	return "Id: " + fmt.Sprint(msg.Id) + "\n" +
 		"Type: " + typeAsString + "\n" +
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
-		"Body: " + string(msg.Body[:lengthToTake])
+		"Body: " + string(msg.Body[:lengthToTake]) +
+        childrenNames
 }
 
+// Checks datum integrity.
+// - body: message to be checked
+// - Returns: error if data is not valid
 func checkDatumIntegrity(body []byte) error {
     statedHash := body[:HASH_SIZE]
 
@@ -132,6 +173,9 @@ func checkDatumIntegrity(body []byte) error {
 	return nil
 }
 
+// Removes the trailing zeroes from name.
+// - name: from which to remove \0s
+// - Returns: a valid string or error if data is not valid
 func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 	i := 0
 	for name[i] != 0 {
@@ -145,8 +189,10 @@ func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 	return string(name[:i]), nil
 }
 
-// Returns a map containing the names and the hashes of the directory datum message
-// Returns nil in case of error
+// Parses a byte slice represneting a directory.
+// - body: directory to be parsed
+// - Returns: - a map containing the names and the hashes of the directory datum message
+//            - nil in case of error
 func parseDirectory(body []byte) (map[string][]byte, error) {
     if body[DATUM_TYPE_INDEX] != DIRECTORY {
         return nil, fmt.Errorf("Not a directory")
@@ -175,6 +221,10 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 	return res, nil
 }
 
+// Parses a byte slice represneting a big file.
+// - body: big file to be parsed
+// - Returns: - a slice of slices of byte containing the hashes of children
+//            - nil in case of error
 func parseTree(body []byte) ([][]byte, error) {
     if body[DATUM_TYPE_INDEX] != TREE {
         return nil, fmt.Errorf("Not a tree/big file")
@@ -196,6 +246,11 @@ func parseTree(body []byte) ([][]byte, error) {
 	return res, nil
 }
 
+// Parses a byte slice represneting a datum.
+// - body: datum to be parsed
+// - Returns: - the type of the datum message
+//            - a slice of slices of byte containing the hashes of children
+//            - nil in case of error
 // We assume that the udpMsg that is parsed will not be modified
 func parseDatum(body []byte) (byte, interface{}, error) {
     datumType := body[DATUM_TYPE_INDEX]
