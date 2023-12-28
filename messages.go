@@ -41,6 +41,11 @@ type datumDirectory struct {
     Children map[string][]byte // Map of filename (no \0 padding) -> hash
 }
 
+type hello struct {
+	Extensions uint32
+	PeerName string
+}
+
 // Castes a udpMsg to byte slice ready to be sent.
 // - toCast: the message to be casted.
 // - Returns: a byte slice that can be sent through network.
@@ -80,20 +85,6 @@ func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
 
 	m.Body = append([]byte{}, toCast[BODY_START_INDEX:BODY_START_INDEX + m.Length]...)
 	return m, nil
-}
-
-// Creates a valid hello message containing our peer name.
-// - Returns: a valid hello udpMsg
-func createHello() udpMsg {
-	var helloMsg udpMsg
-	helloMsg.Id = rand.Uint32()
-	helloMsg.Type = HELLO
-	extensions := make([]byte, HELLO_EXTENSIONS_SIZE)
-	nameAsBytes := []byte(OUR_PEER_NAME)
-	var res = append(extensions, nameAsBytes...)
-	helloMsg.Body = res
-	helloMsg.Length = uint16(len(res))
-	return helloMsg
 }
 
 // Creates a valid udp message with random id and the given type and body.
@@ -278,4 +269,53 @@ func parseDatum(body []byte) (byte, interface{}, error) {
         default:
             return 0, nil, fmt.Errorf("Invalid datum type")
     }
+}
+
+func helloToByteSlice(h hello) []byte {
+	res := make([]byte, HELLO_EXTENSIONS_SIZE)
+
+	binary.BigEndian.PutUint32(res, h.Extensions)
+
+	res = append(res, []byte(h.PeerName)...)
+
+	return res
+}
+
+func parseHello(body []byte) (hello, error) {
+	length := len(body)
+
+	if length < HELLO_EXTENSIONS_SIZE + 1 {
+		return hello{}, fmt.Errorf("Hello[Reply] is too short")
+	}
+
+	extensions := binary.BigEndian.Uint32(body[:HELLO_EXTENSIONS_SIZE])
+	peerName := string(body[HELLO_EXTENSIONS_SIZE:])
+
+	return hello{extensions, peerName}, nil
+}
+
+// Creates a valid hello message containing our peer name.
+// - Returns: a valid hello udpMsg
+func createHello() udpMsg {
+	var helloMsg udpMsg
+	helloMsg.Id = rand.Uint32()
+	helloMsg.Type = HELLO
+	extensions := make([]byte, HELLO_EXTENSIONS_SIZE)
+	nameAsBytes := []byte(OUR_PEER_NAME)
+	var res = append(extensions, nameAsBytes...)
+	helloMsg.Body = res
+	helloMsg.Length = uint16(len(res))
+	return helloMsg
+}
+
+func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
+	if msgType != HELLO && msgType != HELLO_REPLY {
+		msgTypeStr, _ := byteToMsgTypeAsStr(msgType)
+		return udpMsg{}, fmt.Errorf("invalid message type %s (%d) when creating Hello/HelloReply", msgTypeStr, msgType)
+	}
+
+	// TODO 0 is our extensions, replace it with constant
+	ourHelloBody := hello{0, OUR_PEER_NAME}
+
+	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }

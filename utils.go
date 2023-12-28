@@ -81,3 +81,39 @@ func httpGet(url string) (*http.Response, []byte, error) {
 
 	return resp, bodyAsByteSlice, nil
 }
+
+// TODO Addresses will never be removed but if none work we call this,
+// if size after call is bigger test the new addresses
+// If none work, give up as peer doesn't exist
+func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
+	peersMutex.RLock()
+	_, found := peers[peerName]
+	peersMutex.RUnlock()
+	if ! found {
+		createKeyValuePairInPeers(peerName)
+	}
+
+	var addrToReturn *net.UDPAddr
+
+	peersMutex.RLock()
+	peerAddresses, _ := peers[peerName]
+	if len(peerAddresses) > 0 {
+		addrToReturn = peerAddresses[0]
+	}
+	peersMutex.RUnlock()
+
+	if addrToReturn != nil {
+		return addrToReturn, nil
+	}
+	
+	restPeerAddresses, err := restGetAddressesOfPeer(peerName)
+	if err != nil {
+		return nil, err
+	}
+	
+	for _, a := range restPeerAddresses {
+		addAddrToPeers(peerName, a)
+	}
+
+	return restPeerAddresses[0], nil
+}

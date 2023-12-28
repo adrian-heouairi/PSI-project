@@ -1,6 +1,6 @@
 package main
 
-import (
+/*import (
 	"fmt"
 	"net"
 	// "os"
@@ -57,7 +57,7 @@ func listAllFilesOfPeer(peer string) error {
 
 	return lsRecursive(RESTPeerRootHash, 0)
 }
-
+*/
 /*
 func writeBigFile(datum datumTree, path string) error {
     for _, hash := range datum.ChildrenHashes {

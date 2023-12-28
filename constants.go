@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
-    "fmt"
+	"time"
 )
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
@@ -11,6 +12,12 @@ const OUR_PEER_NAME = "AS"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const UDP_LISTEN_PORT = 8444
+
+// With exponential backoff of REEMISSION_TIME_UNIT, total one first message +
+// up to NUMBER_OF_REEMISSIONS messages
+const NUMBER_OF_REEMISSIONS = 4
+// TODO This should be based on estimated RTT (RTO)
+const REEMISSION_TIME_UNIT = 100 * time.Millisecond
 
 const MSG_QUEUE_SIZE = 1024
 

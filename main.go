@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"os"
 )
 
@@ -16,18 +15,19 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-	serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
-	checkErr(err)
 
-	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
-	checkErr(err)
-	fmt.Println("before sending hello to jch")
-	helloReply, _ := sendAndReceiveMsg(addrUdpMsg{jchAddr, createHello()})
+	//serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
+	//checkErr(err)
+
+	//jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
+	//checkErr(err)
+	//fmt.Println("before sending hello to jch")
+	helloReply, _ := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
 
 	fmt.Println(udpMsgToString(helloReply.Msg))
 
-	err = listAllFilesOfPeer("jch.irif.fr")
-	checkErr(err)
+	//err = listAllFilesOfPeer("jch.irif.fr")
+	//checkErr(err)
 	/*_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
 	checkErr(err)
 	publicKeyMsg, err := receiveMsg()

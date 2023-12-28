@@ -11,21 +11,84 @@ import (
 var connIPv4 *net.UDPConn
 var connIPv6 *net.UDPConn
 
-// TODO Forget peers after 180 s
-var peers map[string]*net.UDPAddr
+// Protected by a RWMutex
+// If we received a message we assume the address is valid and add it to this map
+// If we have sent a request and received a reply we consider the address valid and add it to this map
+// If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map
+// We remove addresses from the slice value but the key remains if the slice is empty
+var peers map[string][]*net.UDPAddr
+var peersMutex *sync.RWMutex
 
 type addrUdpMsg struct {
 	Addr *net.UDPAddr
 	Msg  udpMsg
 }
 
+// TODO Rename msgQueue
 var msgQueue *list.List
 var msgQueueMutex *sync.RWMutex
 
+func addAddrToPeers(peerName string, addr *net.UDPAddr) {
+	createKeyValuePairInPeers(peerName)
+	
+	_ = removeAddrFromPeers(peerName, addr)
+
+	peersMutex.Lock()
+	peers[peerName] = append(peers[peerName], addr)
+	peersMutex.Unlock()
+}
+
+// TODO Complete Javadoc comments everywhere
+
+// Removes an element from a slice and returns the new slice
+// From https://stackoverflow.com/a/37335777
+// Assumes that peers is mutex locked
+func removeFromAddrSlice(slice []*net.UDPAddr, index int) []*net.UDPAddr {
+	slice[index] = slice[len(slice)-1]
+    return slice[:len(slice)-1]
+}
+
+func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
+	peersMutex.Lock()
+	defer peersMutex.Unlock()
+
+	addresses, valueFound := peers[peerName]
+	if ! valueFound {
+		return fmt.Errorf("peer not found when trying to remove one of its addresses")
+	}
+
+	indexToRemove := -1
+	for i, addr := range addresses {
+		if compareUDPAddr(addrToRemove, addr) {
+			indexToRemove = i
+			break
+		}
+	}
+
+	if indexToRemove == -1 {
+		return fmt.Errorf("address to remove not found")
+	}
+
+	peers[peerName] = removeFromAddrSlice(addresses, indexToRemove)
+
+	return nil
+}
+
+func createKeyValuePairInPeers(peerName string) {
+	peersMutex.Lock()
+	_, found := peers[peerName]
+	if ! found {
+		peers[peerName] = []*net.UDPAddr{}
+	}
+	peersMutex.Unlock()
+}
+
 func initUdp() error {
 	msgQueue = list.New()
-	peers = make(map[string]*net.UDPAddr)
 	msgQueueMutex = &sync.RWMutex{}
+
+	peers = make(map[string][]*net.UDPAddr)
+	peersMutex = &sync.RWMutex{}
 
 	v4ListenAddr, err := net.ResolveUDPAddr("udp4", ":"+fmt.Sprint(UDP_LISTEN_PORT))
 	if err != nil {
@@ -52,6 +115,7 @@ func initUdp() error {
 	return nil
 }
 
+// This function is internal to udp.go
 func receiveMsg() (addrUdpMsg, error) {
 	buffer := make([]byte, UDP_BUFFER_SIZE)
 
@@ -60,57 +124,64 @@ func receiveMsg() (addrUdpMsg, error) {
 		return addrUdpMsg{}, err
 	}
 
-	replyMsg, err := byteSliceToUdpMsg(buffer, bytesRead)
+	receivedMsg, err := byteSliceToUdpMsg(buffer, bytesRead)
 	if err != nil {
 		return addrUdpMsg{}, err
 	}
 
-	if replyMsg.Type == DATUM {
-		err = checkDatumIntegrity(replyMsg.Body)
+	if receivedMsg.Type == DATUM {
+		err = checkDatumIntegrity(receivedMsg.Body)
 		if err != nil {
 			return addrUdpMsg{}, err
 		}
 	}
 
-	return addrUdpMsg{peerAddr, replyMsg}, nil
+	return addrUdpMsg{peerAddr, receivedMsg}, nil
 }
 
-func sendMsg(peerName string, toSend udpMsg) error {
-	peerAddr, found := peers[peerName]
-	if !found {
-		peerAddr, _ = restGetAddressesOfPeer(peerName)[0]
-		peers[peerName] = peerAddr
+func sendMsgToPeer(peerName string, toSend udpMsg) error {
+	peerAddr, err := getAddressOfPeer(peerName)
+	if err != nil {
+		return err
 	}
+
+	return sendMsgToAddr(peerAddr, toSend)
+}
+
+func sendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
 	// TODO Verify number of bytes written and underscores everywhere in the code
 	_, err := connIPv4.WriteToUDP(udpMsgToByteSlice(toSend), peerAddr)
 	return err
 }
 
-func handleMsg(peerName string, receivedMsg udpMsg) {
+func handleMsg(receivedMsg addrUdpMsg) {
 	shouldReply := true
 	var replyMsg udpMsg
 
-	if receivedMsg.Type >= FIRST_RESPONSE_MSG_TYPE {
+	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
+		// TODO After some time remove messages that have not been retrieved from the message queue
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
 
 	// The received message is a request
-	switch receivedMsg.Type {
-	//case HELLO: // TODO Implement this and others
-	//sendMsg()
+	switch receivedMsg.Msg.Type {
+	case HELLO: // TODO Implement others
+		hello, _ := parseHello(receivedMsg.Msg.Body)
+		addAddrToPeers(hello.PeerName, receivedMsg.Addr)
+		replyMsg, _ = createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
 	case PUBLIC_KEY:
-		replyMsg = createMsgWithId(receivedMsg.Id, PUBLIC_KEY_REPLY, []byte{})
+		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
 	case ROOT:
 		hasher := sha256.New()
-		replyMsg = createMsgWithId(receivedMsg.Id, ROOT_REPLY, hasher.Sum(nil))
+		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
 	default:
 		shouldReply = false
-		LOGGING_FUNC(udpMsgToString(receivedMsg))
+		LOGGING_FUNC(udpMsgToString(receivedMsg.Msg))
 	}
 
 	if shouldReply {
-		_ = sendMsg(peerName, replyMsg)
+		_ = sendMsgToAddr(receivedMsg.Addr, replyMsg)
 	}
 }
 
@@ -152,12 +223,17 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg { // TODO Return error?
 // Returns error if peer does not respond after multiple retries or if peer
 // does not respect the protocol e.g. Length field doesn't match Body length
 func sendAndReceiveMsg(peerName string, toSend udpMsg) (addrUdpMsg, error) {
-	err := sendMsg(peerName, toSend)
+	peerAddr, err := getAddressOfPeer(peerName)
 	if err != nil {
 		return addrUdpMsg{}, err
 	}
 
-	replyMsg := retrieveInMsgQueue(addrUdpMsg{peers[peerName], toSend})
+	err = sendMsgToAddr(peerAddr, toSend)
+	if err != nil {
+		return addrUdpMsg{}, err
+	}
+
+	replyMsg := retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
 
 	// TODO We should verify that the type of the response corresponds to the request
 	//reply - request = 127

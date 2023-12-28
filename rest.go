@@ -42,7 +42,12 @@ func restGetAddressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
 		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
 
-	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n")
+	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") // TODO Check that this doesn't have an empty string at the end
+
+	if len(addrAsStrings) == 0 {
+		return nil, fmt.Errorf("REST API: peer exists but has no addresses")
+	}
+
 	res := []*net.UDPAddr{}
 	for _, s := range addrAsStrings {
 		addr, err := net.ResolveUDPAddr("udp", s)
