@@ -26,8 +26,12 @@ func main() {
 
 	fmt.Println(udpMsgToString(helloReply.Msg))
 
-	//err = listAllFilesOfPeer("jch.irif.fr")
-	//checkErr(err)
+	err = listAllFilesOfPeer(SERVER_PEER_NAME)
+	checkErr(err)
+
+	err = downloadFullTreeOfPeer(SERVER_PEER_NAME)
+	checkErr(err)
+
 	/*_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
 	checkErr(err)
 	publicKeyMsg, err := receiveMsg()
@@ -41,7 +45,5 @@ func main() {
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
 	checkErr(err)*/
-
-	//err = downloadFullTreeOfPeer("jch.irif.fr")
-	//checkErr(err)
 }
+
