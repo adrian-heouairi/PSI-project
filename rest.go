@@ -2,38 +2,21 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net"
-	"net/http"
 	"strings"
 )
 
-// Wrapper of htt.Get
-// - url: textual representation of the url to be visited
-// Returns: - the http Response
-//          - http repsonse body as byte slice
-//          - error if something goes wrong nil otherwise
-func httpGet(url string) (*http.Response, []byte, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return nil, nil, err
-	};
-
-	bodyAsByteSlice, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return resp, bodyAsByteSlice, nil
-}
-
 // Displays connected peers.
 // Returns: -error if server is not available
-func getPeers() error {
+func restGetPeers() error {
 	// TODO Return something
-	_, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
+	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode != HTTP_OK {
+		return fmt.Errorf("code other than HTTP OK received")
 	}
 
 	fmt.Println(string(bodyAsByteSlice))
@@ -44,45 +27,53 @@ func getPeers() error {
 // Gives the addresses of the given peer.
 // - peerName: the peer whose addresses we want
 // Returns: - a slice with the peer addresses
-//          - error if peer was not found
-func getAdressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
+//   - error if peer was not found
+func restGetAddressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode == 404 {
+	if resp.StatusCode == HTTP_NOT_FOUND {
 		return nil, fmt.Errorf(peerName + " is not known by server")
 	}
 
-    addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") 
-    res := []*net.UDPAddr{}
-    for _, s := range addrAsStrings {
-        addr, err := net.ResolveUDPAddr("udp",s)
-        if err != nil {
-            return nil, err
-        }
-        res = append(res, addr)
-    }
-    return res, nil
+	if resp.StatusCode != HTTP_OK {
+		return nil, fmt.Errorf("code other than HTTP OK received")
+	}
+
+	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n")
+	res := []*net.UDPAddr{}
+	for _, s := range addrAsStrings {
+		addr, err := net.ResolveUDPAddr("udp", s)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, addr)
+	}
+	return res, nil
 }
 
 // Gives the hash of the peer's root
 // - peerName: the peer whose root we want
 // Returns: - the root hash
-//          - error if peer does not exist or the main server is not available
-func getRootOfPeer(peerName string) ([]byte, error) {
-    //TODO : replace /root by constant
+//   - error if peer does not exist or the main server is not available
+func restGetRootOfPeer(peerName string) ([]byte, error) {
+	//TODO : replace /root by constant
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/root")
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode == 204 {
+	if resp.StatusCode == HTTP_NO_CONTENT {
 		// TODO Return the hash of the empty string?
 		return nil, fmt.Errorf(peerName + " has not declared a root yet")
-	} else if resp.StatusCode == 404 {
+	} else if resp.StatusCode == HTTP_NOT_FOUND {
 		return nil, fmt.Errorf(peerName + "is not known by server")
+	}
+
+	if resp.StatusCode != HTTP_OK {
+		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
 
 	return bodyAsByteSlice, nil

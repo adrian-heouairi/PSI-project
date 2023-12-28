@@ -2,12 +2,14 @@ package main
 
 import (
 	"container/list"
+	"io"
 	"net"
+	"net/http"
 	"os"
 	"sync"
 )
 
-// Wraps Mkdir func call 
+// Wraps Mkdir func call
 // -path: path of the directory to be created
 // Returns: error if the user has not writing right in working directory
 func mkdir(path string) error {
@@ -61,3 +63,21 @@ func compareUDPAddr(first *net.UDPAddr, second *net.UDPAddr) bool {
     return first.String() == second.String()
 }
 
+// Wrapper of http.Get
+// - url: textual representation of the url to be visited
+// Returns: - the http Response
+//   - http repsonse body as byte slice
+//   - error if something goes wrong nil otherwise
+func httpGet(url string) (*http.Response, []byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	bodyAsByteSlice, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resp, bodyAsByteSlice, nil
+}

@@ -30,6 +30,13 @@ func checkErrPanic(err error) {
 	}
 }
 
+// HTTP response status codes
+const (
+	HTTP_NOT_FOUND = 404
+	HTTP_NO_CONTENT = 204
+	HTTP_OK = 200
+)
+
 const ( // UDP message types
 	NOOP                  byte = 0
 	ERROR                 byte = 1

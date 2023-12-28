@@ -15,13 +15,13 @@ func main() {
 
 	checkErrPanic(initUdp())
 
-    go listenAndRespond()
-	serverUdpAddresses, err := getAdressesOfPeer(SERVER_PEER_NAME)
+	go listenAndRespond()
+	serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
-	
+
 	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
 	checkErr(err)
-    fmt.Println("before sending hello to jch")
+	fmt.Println("before sending hello to jch")
 	helloReply, _ := sendAndReceiveMsg(addrUdpMsg{jchAddr, createHello()})
 
 	fmt.Println(udpMsgToString(helloReply.Msg))
@@ -41,7 +41,6 @@ func main() {
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
 	checkErr(err)*/
-
 
 	//err = downloadFullTreeOfPeer("jch.irif.fr")
 	//checkErr(err)
