@@ -25,13 +25,13 @@ func main() {
 	helloReply, _ := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
 
 	fmt.Println(udpMsgToString(helloReply.Msg))
-
+/*
 	err = listAllFilesOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
 
 	err = downloadFullTreeOfPeer(SERVER_PEER_NAME)
 	checkErr(err)
-
+*/
 	/*_, err = sendAndReceiveMsg(createHello()) // TODO Check that it is a HelloReply
 	checkErr(err)
 	publicKeyMsg, err := receiveMsg()
@@ -45,5 +45,6 @@ func main() {
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
 	checkErr(err)*/
+    mainMenu()
 }
 

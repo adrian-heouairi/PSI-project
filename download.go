@@ -12,16 +12,6 @@ import (
 //   - depth: number of tabs to print before the name
 //     Returns : error if communication with peer was impossible or the sent datum is invalid
 func lsRecursive(peerName string, hash []byte, depth int) error {
-	/*serverUdpAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME)
-	checkErr(err)
-
-	jchAddr, err := net.ResolveUDPAddr("udp4", serverUdpAddresses[0])
-	checkErr(err)
-	datumReply, err := sendAndReceiveMsg(addrUdpMsg{jchAddr, createMsg(GET_DATUM, hash)})
-	if err != nil {
-		return err
-	}
-    */
 	datumType, datumToCast, err := downloadDatum(peerName, hash)
 	if err != nil {
 		return fmt.Errorf("Peer has invalid tree")

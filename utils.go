@@ -106,7 +106,7 @@ func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
 		return addrToReturn, nil
 	}
 	
-	restPeerAddresses, err := restGetAddressesOfPeer(peerName)
+	restPeerAddresses, err := restGetAddressesOfPeer(peerName, false)
 	if err != nil {
 		return nil, err
 	}

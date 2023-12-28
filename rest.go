@@ -8,27 +8,30 @@ import (
 
 // Displays connected peers.
 // Returns: -error if server is not available
-func restGetPeers() error {
+func restGetPeers(show bool) ([]string,error) {
 	// TODO Return something
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if resp.StatusCode != HTTP_OK {
-		return fmt.Errorf("code other than HTTP OK received")
+		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
+    
+    if show {
+        fmt.Println(string(bodyAsByteSlice))
+    }
 
-	fmt.Println(string(bodyAsByteSlice))
-
-	return nil
+    peers := strings.Split(string(bodyAsByteSlice),"\n")
+    return peers[:len(peers) - 1], nil
 }
 
 // Gives the addresses of the given peer.
 // - peerName: the peer whose addresses we want
 // Returns: - a slice with the peer addresses
 //   - error if peer was not found
-func restGetAddressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
+func restGetAddressesOfPeer(peerName string, display bool) ([]*net.UDPAddr, error) {
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/addresses")
 	if err != nil {
 		return nil, err
@@ -42,6 +45,9 @@ func restGetAddressesOfPeer(peerName string) ([]*net.UDPAddr, error) {
 		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
 
+    if display {
+        fmt.Println(string(bodyAsByteSlice))
+    }
 	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") // TODO Check that this doesn't have an empty string at the end
 
 	if len(addrAsStrings) == 0 {
