@@ -1,7 +1,20 @@
 package main
-import "fmt"
 
-func displayMenuAndTakeChoice(choices []string) (int, error) {
+import (
+	"fmt"
+)
+
+func squareText(text string) string {
+    stars := ""
+    for i := 0; i < len(text) + 2; i++ {
+       stars += "*"
+    }
+    res := stars + "\n|" + text + "|\n" + stars
+    return res
+}
+
+func displayMenuAndTakeChoice(title string, choices []string) (int, error) {
+    fmt.Println(squareText(title))
     for i, value :=range choices {
         fmt.Println(i + 1, " - ", value)
     }
@@ -16,34 +29,55 @@ func displayMenuAndTakeChoice(choices []string) (int, error) {
 }
 
 func mainMenu() {
-    choices := []string{"Show available peers", "Show addresses of peer", "Show tree of peer", "Dump full peer tree"}
-    choice ,err := displayMenuAndTakeChoice(choices)
-    fmt.Println(choice,err)
-    switch choice {
-    case 1:
-        restGetPeers(true)
-    case 2:
-        peers, err := restGetPeers(false)
-        if err != nil {
-           return
-        }
-        choice, err = displayMenuAndTakeChoice(peers)
-        restGetAddressesOfPeer(peers[choice - 1],true)
-    case 3: 
+    restart := true
+    for restart {
+        choices := []string{"Show available peers", "Show addresses of peer", "Show tree of peer", "Dump full peer tree", "Exit"}
+        choice ,err := displayMenuAndTakeChoice("PEER CLIENT", choices)
+        fmt.Println(choice,err)
+        switch choice {
+        case 1:
+            restGetPeers(true)
+        case 2:
+            peers, err := restGetPeers(false)
+            if err != nil {
+                return
+            }
+            choice, err = displayMenuAndTakeChoice("ADRESSES", peers)
+            restGetAddressesOfPeer(peers[choice - 1],true)
+            case 3: 
 
-        peers, err := restGetPeers(false)
-        if err != nil {
-           return
+            peers, err := restGetPeers(false)
+            if err != nil {
+                return
+            }
+            choice, err = displayMenuAndTakeChoice("TREE OF PEER", peers)
+            peerName := peers[choice - 1]
+            rootHash,err := restGetRootOfPeer(peerName)
+            datumType, datumToCast, err := downloadDatum(peers[choice - 1], rootHash)
+            if err != nil {
+                return 
+            }
+
+            if datumType == DIRECTORY {
+                datum := datumToCast.(datumDirectory)
+                fileNames := make([]string,len(datum.Children))
+
+                for key, _:= range datum.Children {
+                    fileNames = append(fileNames, key)
+                }
+                choice, err = displayMenuAndTakeChoice("CHOOSE FILE TO DOWNLOAD", fileNames)
+                downloadRecursive(peerName, datum.Children[fileNames[choice - 1]], fileNames[choice - 1])
+            }
+        case 4:
+            peers, err := restGetPeers(false)
+            if err != nil {
+                return
+            }
+            choice, err = displayMenuAndTakeChoice("DOWNLOAD TREE", peers)
+            downloadFullTreeOfPeer(peers[choice - 1])
+        case 5:
+            restart = false
         }
-        choice, err = displayMenuAndTakeChoice(peers)
-        listAllFilesOfPeer(peers[choice - 1])
-        // TODO CONTINUE THIS CASE
-    case 4:
-        peers, err := restGetPeers(false)
-        if err != nil {
-           return
-        }
-        choice, err = displayMenuAndTakeChoice(peers)
-        downloadFullTreeOfPeer(peers[choice - 1])
+
     }
 }
