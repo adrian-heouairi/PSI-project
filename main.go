@@ -45,6 +45,7 @@ func main() {
 	rootReplyMsg := createMsgWithId(rootMsg.Id, ROOT_REPLY, hasher.Sum(nil))
 	err = sendMsg(rootReplyMsg)
 	checkErr(err)*/
+    go keepAlive()
     mainMenu()
 }
 
