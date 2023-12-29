@@ -255,11 +255,12 @@ func downloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 	return parseDatum(datumReply.Msg.Body)
 }
 
-func keepAlive() {
+func keepAliveMainServer() {
     for {
-        helloReply, _ := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
-
-        //fmt.Println(udpMsgToString(helloReply.Msg))
-        time.Sleep(KEEP_ALIVE_PERIOD * time.Second) 
+        //sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
+        sendMsgToPeer(SERVER_PEER_NAME, createHello())
+        
+        // fmt.Println(udpMsgToString(helloReply.Msg))
+        time.Sleep(KEEP_ALIVE_PERIOD) 
        } 
    }
