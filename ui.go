@@ -62,7 +62,7 @@ func mainMenu() {
                 datum := datumToCast.(datumDirectory)
                 fileNames := make([]string,len(datum.Children))
 
-                for key, _:= range datum.Children {
+                for key := range datum.Children {
                     fileNames = append(fileNames, key)
                 }
                 choice, err = displayMenuAndTakeChoice("CHOOSE FILE TO DOWNLOAD", fileNames)
