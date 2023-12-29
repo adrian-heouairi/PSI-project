@@ -112,4 +112,3 @@ func downloadFullTreeOfPeer(peerName string) error {
     peerDirectory := strings.Replace(peerName, "/", "_", -1)
     return downloadRecursive(peerName, RESTPeerRootHash, peerDirectory)
 }
-

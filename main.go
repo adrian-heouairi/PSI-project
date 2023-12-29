@@ -15,6 +15,5 @@ func main() {
 
 	go listenAndRespond() 
     go keepAliveMainServer()
-    mainMenu()
+    mainMenu2()
 }
-

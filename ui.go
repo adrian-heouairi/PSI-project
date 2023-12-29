@@ -2,7 +2,15 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
+	"github.com/chzyer/readline"
 )
+
+var helpMessage = 
+fmt.Sprintf(`help
+help 2`)
 
 func squareText(text string) string {
     stars := ""
@@ -15,12 +23,12 @@ func squareText(text string) string {
 
 func displayMenuAndTakeChoice(title string, choices []string) (int, error) {
     fmt.Println(squareText(title))
-    for i, value :=range choices {
+    for i, value := range choices {
         fmt.Println(i + 1, " - ", value)
     }
     var choice int
     fmt.Print("[", 1, "..", len(choices), "] : ")
-    _, err := fmt.Scanf("%d",&choice)
+    _, err := fmt.Scanf("%d", &choice)
     if err != nil {
         fmt.Println(err)
         return -1, err
@@ -79,5 +87,68 @@ func mainMenu() {
             restart = false
         }
 
+    }
+}
+
+func parseLine(line string) {
+    line = strings.TrimSpace(line)
+    line = replaceAllRegexBy(line, " +", " ")
+    splitLine := strings.Split(line, " ")
+    
+    if len(splitLine) == 0 {
+        return
+    }
+
+    switch splitLine[0] {
+	case LIST_PEERS_CMD:
+        restGetPeers(true)
+	case LIST_FILES_CMD:
+        if len(splitLine) < 2 {
+            fmt.Fprintln(os.Stderr, helpMessage)
+        } else {
+            listAllFilesOfPeer(splitLine[1])
+        }
+	//case CAT_FILE_CMD:
+	case DOWNLOAD_FILE_CMD:
+        if len(splitLine) < 2 {
+            fmt.Fprintln(os.Stderr, helpMessage)
+        } else {
+            downloadFullTreeOfPeer(splitLine[1])
+        }
+    default: // Includes HELP_CMD
+        fmt.Fprintln(os.Stderr, helpMessage)
+    }
+}
+
+func mainMenu2() error {
+    /*reader := bufio.NewReader(os.Stdin)
+
+    for {
+        //line := ""
+        fmt.Print(CLI_PROMPT)
+        //_, err := fmt.Scanf("%s\n", &line)
+        line, err := reader.ReadString('\n')
+        if err != nil {
+            return
+        }
+            
+        line = strings.TrimSpace(line)
+
+        fmt.Println(line)
+    }*/
+
+    rl, err := readline.New(CLI_PROMPT)
+    if err != nil {
+        return err
+    }
+    defer rl.Close()
+
+    for {
+        line, err := rl.Readline()
+        if err != nil { // io.EOF
+            return err
+        }
+        
+        parseLine(line)
     }
 }

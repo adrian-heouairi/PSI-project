@@ -8,7 +8,7 @@ import (
 
 // Displays connected peers.
 // Returns: -error if server is not available
-func restGetPeers(show bool) ([]string,error) {
+func restGetPeers(show bool) ([]string, error) {
 	// TODO Return something
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
 	if err != nil {
@@ -20,7 +20,7 @@ func restGetPeers(show bool) ([]string,error) {
 	}
     
     if show {
-        fmt.Println(string(bodyAsByteSlice))
+        fmt.Println(strings.TrimSpace(string(bodyAsByteSlice)))
     }
 
     peers := strings.Split(string(bodyAsByteSlice),"\n")

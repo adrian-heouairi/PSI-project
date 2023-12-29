@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"regexp"
 	"sync"
 )
 
@@ -116,4 +117,9 @@ func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
 	}
 
 	return restPeerAddresses[0], nil
+}
+
+func replaceAllRegexBy(src, regex, replacement string) string {
+	pattern := regexp.MustCompile(regex)
+	return pattern.ReplaceAllString(src, replacement)
 }
