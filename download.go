@@ -3,93 +3,93 @@ package main
 import (
 	"fmt"
 	"os"
-    "strings"
+	"strings"
 )
 
 func writeBigFile(peerName string, datum datumTree, path string) error {
-    for _, hash := range datum.ChildrenHashes {
-        datumType, datumToCast, err := downloadDatum(peerName, hash)
-        if err != nil {
-            return err
-        }
+	for _, hash := range datum.ChildrenHashes {
+		datumType, datumToCast, err := downloadDatum(peerName, hash)
+		if err != nil {
+			return err
+		}
 
-        if datumType == CHUNK {
-            newDatum := datumToCast.(datumChunk)
-            writeChunk(path, newDatum.Contents)
-        } else if datumType == TREE {
-            newDatum := datumToCast.(datumTree)
-            writeBigFile(peerName, newDatum, path)
-        } else {
-            return fmt.Errorf("Children of big file should be big file or chunk")
-        }
-    }
+		if datumType == CHUNK {
+			newDatum := datumToCast.(datumChunk)
+			writeChunk(path, newDatum.Contents)
+		} else if datumType == TREE {
+			newDatum := datumToCast.(datumTree)
+			writeBigFile(peerName, newDatum, path)
+		} else {
+			return fmt.Errorf("Children of big file should be big file or chunk")
+		}
+	}
 
-    return nil
+	return nil
 }
 
 // TODO handle case where an file becomes a directory
 func downloadRecursive(peerName string, hash []byte, path string) error {
-    fmt.Println("Downloading ", path)
-    datumType, datumToCast, err := downloadDatum(peerName, hash)
-    if err != nil {
-        return err
-    }
-    fmt.Println(path, "->", replaceAllRegexBy(path, "/[^/]+$", ""))
-    mkdir(replaceAllRegexBy(path, "/[^/]+$", ""))
+	fmt.Println("Downloading ", path)
+	datumType, datumToCast, err := downloadDatum(peerName, hash)
+	if err != nil {
+		return err
+	}
+	fmt.Println(path, "->", replaceAllRegexBy(path, "/[^/]+$", ""))
+	mkdir(replaceAllRegexBy(path, "/[^/]+$", ""))
 
-    if (datumType == DIRECTORY) {
-        datum := datumToCast.(datumDirectory)
+	if datumType == DIRECTORY {
+		datum := datumToCast.(datumDirectory)
 
-        for key, value := range datum.Children {
-            err := downloadRecursive(peerName, value, path + "/" + key)
-            if err != nil {
-                return err
-            }
-        }
-    } else if datumType == CHUNK {
-        datum := datumToCast.(datumChunk)
-        os.Remove(path)
-        writeChunk(path, datum.Contents)
-    } else { // Tree/big file
-        datum := datumToCast.(datumTree)
+		for key, value := range datum.Children {
+			err := downloadRecursive(peerName, value, path+"/"+key)
+			if err != nil {
+				return err
+			}
+		}
+	} else if datumType == CHUNK {
+		datum := datumToCast.(datumChunk)
+		os.Remove(path)
+		writeChunk(path, datum.Contents)
+	} else { // Tree/big file
+		datum := datumToCast.(datumTree)
 
-        os.Remove(path)
+		os.Remove(path)
 
-        err = writeBigFile(peerName, datum, path)
-        if err != nil {
-            return err
-        }
-    }
+		err = writeBigFile(peerName, datum, path)
+		if err != nil {
+			return err
+		}
+	}
 
-    return nil
+	return nil
 }
 
-func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error{
+func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error {
 	datumType, datumToCast, err := downloadDatum(peerName, hash)
 	if err != nil {
 		return fmt.Errorf("Peer has invalid tree")
 	}
-    currentMap[path] = hash
+	currentMap[path] = hash
 
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
 
 		for key, value := range datum.Children { // TODO Sort keys by alphabetical order
-            getPeerAllDataHashesRecursive(peerName, value, path + "/" + key, currentMap)
+			getPeerAllDataHashesRecursive(peerName, value, path+"/"+key, currentMap)
 		}
-    }
-    return nil
+	}
+	return nil
 }
 
 func getPeerAllDataHashes(peerName string) (map[string][]byte, error) {
-    res := make(map[string][]byte)
-    root, err := restGetRootOfPeer(peerName)
-    if err != nil {
-        return nil, err
-    }
-    err = getPeerAllDataHashesRecursive(peerName,root,strings.Replace(peerName, "/", "_", -1),res)
-    if err != nil {
-        return nil, err
-    }
-    return res, nil
+	res := make(map[string][]byte)
+	root, err := restGetRootOfPeer(peerName)
+	if err != nil {
+		return nil, err
+	}
+	err = getPeerAllDataHashesRecursive(peerName, root, strings.Replace(peerName, "/", "_", -1), res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }

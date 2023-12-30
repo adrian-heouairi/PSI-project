@@ -17,6 +17,7 @@ const KEEP_ALIVE_PERIOD = 30 * time.Second
 // With exponential backoff of REEMISSION_TIME_UNIT, total one first message +
 // up to NUMBER_OF_REEMISSIONS messages
 const NUMBER_OF_REEMISSIONS = 4
+
 // TODO This should be based on estimated RTT (RTO)
 const REEMISSION_TIME_UNIT = 100 * time.Millisecond
 
@@ -40,9 +41,9 @@ func checkErrPanic(err error) {
 
 // HTTP response status codes
 const (
-	HTTP_NOT_FOUND = 404
+	HTTP_NOT_FOUND  = 404
 	HTTP_NO_CONTENT = 204
-	HTTP_OK = 200
+	HTTP_OK         = 200
 )
 
 const ( // UDP message types
@@ -82,11 +83,11 @@ const ( // Message and datum constants
 	DATUM_TYPE_SIZE = 1
 	CHUNK_MAX_SIZE  = 1024
 	// These indices are relative to Body start
-	DATUM_TYPE_INDEX = 32
+	DATUM_TYPE_INDEX     = 32
 	DATUM_CONTENTS_INDEX = DATUM_TYPE_INDEX + DATUM_TYPE_SIZE
-    BODY_START_INDEX = 7
+	BODY_START_INDEX     = 7
 
-	FILENAME_MAX_SIZE = 32
+	FILENAME_MAX_SIZE    = 32
 	DIRECTORY_ENTRY_SIZE = FILENAME_MAX_SIZE + HASH_SIZE
 
 	MAX_DIRECTORY_CHILDREN = 16
@@ -100,13 +101,13 @@ const ( // Message and datum constants
 
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
-	
+
 // TODO Implement readline library
 const (
-	HELP_CMD = "help"
+	HELP_CMD       = "help"
 	LIST_PEERS_CMD = "lspeers" // TODO Add --addr option
 	LIST_FILES_CMD = "lsrem"
-	CAT_FILE_CMD = "curl"
+	CAT_FILE_CMD   = "curl"
 	// TODO Make this download anywhere
 	// TODO Implement -r
 	DOWNLOAD_FILE_CMD = "wget"
@@ -148,13 +149,13 @@ func byteToMsgTypeAsStr(msgType byte) (string, error) {
 		typeAsString = "NatTraversal"
 	default:
 		typeAsString = "Unknown"
-        return typeAsString, fmt.Errorf("Unknown message type")
+		return typeAsString, fmt.Errorf("Unknown message type")
 	}
 
 	return typeAsString, nil
 }
 
-func byteToDatumTypeAsStr(datumType byte) (string,error) {
+func byteToDatumTypeAsStr(datumType byte) (string, error) {
 	var typeOfDatumAsString string
 
 	switch datumType {
@@ -166,7 +167,7 @@ func byteToDatumTypeAsStr(datumType byte) (string,error) {
 		typeOfDatumAsString = "Directory"
 	default:
 		typeOfDatumAsString = "Unknown"
-        return typeOfDatumAsString,fmt.Errorf("Unknown datum type")
+		return typeOfDatumAsString, fmt.Errorf("Unknown datum type")
 	}
 
 	return typeOfDatumAsString, nil
