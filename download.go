@@ -69,18 +69,20 @@ func writeBigFile(peerName string, datum datumTree, path string) error {
     return nil
 }
 
+// TODO handle case where an file becomes a directory
 func downloadRecursive(peerName string, hash []byte, path string) error {
+    fmt.Println("Downloading ", path)
     datumType, datumToCast, err := downloadDatum(peerName, hash)
     if err != nil {
         return err
     }
+    fmt.Println(path, "->", replaceAllRegexBy(path, "/[^/]+$", ""))
+    mkdir(replaceAllRegexBy(path, "/[^/]+$", ""))
 
     if (datumType == DIRECTORY) {
         datum := datumToCast.(datumDirectory)
 
-        mkdir(path)
-
-        for key, value := range datum.Children { // TODO Sort keys by alphabetical order
+        for key, value := range datum.Children {
             err := downloadRecursive(peerName, value, path + "/" + key)
             if err != nil {
                 return err
@@ -111,4 +113,34 @@ func downloadFullTreeOfPeer(peerName string) error {
     }
     peerDirectory := strings.Replace(peerName, "/", "_", -1)
     return downloadRecursive(peerName, RESTPeerRootHash, peerDirectory)
+}
+
+func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error{
+	datumType, datumToCast, err := downloadDatum(peerName, hash)
+	if err != nil {
+		return fmt.Errorf("Peer has invalid tree")
+	}
+    currentMap[path] = hash
+
+	if datumType == DIRECTORY {
+		datum := datumToCast.(datumDirectory)
+
+		for key, value := range datum.Children { // TODO Sort keys by alphabetical order
+            getPeerAllDataHashesRecursive(peerName, value, path + "/" + key, currentMap)
+		}
+    }
+    return nil
+}
+
+func getPeerAllDataHashes(peerName string) (map[string][]byte, error) {
+    res := make(map[string][]byte)
+    root, err := restGetRootOfPeer(peerName)
+    if err != nil {
+        return nil, err
+    }
+    err = getPeerAllDataHashesRecursive(peerName,root,strings.Replace(peerName, "/", "_", -1),res)
+    if err != nil {
+        return nil, err
+    }
+    return res, nil
 }

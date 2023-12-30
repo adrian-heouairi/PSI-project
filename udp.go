@@ -27,6 +27,7 @@ type addrUdpMsg struct {
 
 // TODO Rename msgQueue
 // TODO Replace msgQueue with a map whose keys are struct {*net.UDPAddr, uint32 (Msg.Id)} and value is the udpMsg
+// TODO ADD WAITING MARKER TO MAP BEFORE SENDING MSG
 var msgQueue *list.List
 var msgQueueMutex *sync.RWMutex
 

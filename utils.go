@@ -16,7 +16,7 @@ import (
 func mkdir(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		err = os.Mkdir(path, 0755)
+		err = os.MkdirAll(path, 0755)
 		if err != nil {
 			return err
 		}
@@ -122,4 +122,19 @@ func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
 func replaceAllRegexBy(src, regex, replacement string) string {
 	pattern := regexp.MustCompile(regex)
 	return pattern.ReplaceAllString(src, replacement)
+}
+
+func removeTrailingSlash(path string) string {
+    if path[len(path) - 1] == '/' {
+        return path[:len(path) -1]
+    }
+    return path
+}
+
+func getKeys(m map[string][]byte) []string {
+    res := make([]string, 0)
+    for key := range m {
+        res = append(res, key)
+    }
+    return res
 }
