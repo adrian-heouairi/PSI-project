@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 )
 
 var connIPv4 *net.UDPConn
@@ -25,6 +26,8 @@ type addrUdpMsg struct {
 }
 
 // TODO Rename msgQueue
+// TODO Replace msgQueue with a map whose keys are struct {*net.UDPAddr, uint32 (Msg.Id)} and value is the udpMsg
+// TODO ADD WAITING MARKER TO MAP BEFORE SENDING MSG
 var msgQueue *list.List
 var msgQueueMutex *sync.RWMutex
 
@@ -139,6 +142,7 @@ func receiveMsg() (addrUdpMsg, error) {
 	return addrUdpMsg{peerAddr, receivedMsg}, nil
 }
 
+// Use only if a reply is not expected e.g. NoOp
 func sendMsgToPeer(peerName string, toSend udpMsg) error {
 	peerAddr, err := getAddressOfPeer(peerName)
 	if err != nil {
@@ -148,18 +152,23 @@ func sendMsgToPeer(peerName string, toSend udpMsg) error {
 	return sendMsgToAddr(peerAddr, toSend)
 }
 
+// If using manually, use only when a reply is not expected e.g. NoOp
 func sendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
 	// TODO Verify number of bytes written and underscores everywhere in the code
 	_, err := connIPv4.WriteToUDP(udpMsgToByteSlice(toSend), peerAddr)
 	return err
 }
 
+// Internal to udp.go
 func handleMsg(receivedMsg addrUdpMsg) {
 	shouldReply := true
 	var replyMsg udpMsg
 
 	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
-		// TODO After some time remove messages that have not been retrieved from the message queue
+		// TODO After some time remove messages that have not been retrieved from the message queue and log them
+        if receivedMsg.Msg.Type == ERROR_REPLY {
+           LOGGING_FUNC(udpMsgToString(receivedMsg.Msg)) 
+        }
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
@@ -219,10 +228,15 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg { // TODO Return error?
 	return foundMsg.Value.(addrUdpMsg)
 }
 
-// TODO Improve this comment
-// Returns error if peer does not respond after multiple retries or if peer
-// does not respect the protocol e.g. Length field doesn't match Body length
+// TODO Reemissions here? -> return err after multiple retries
+// TODO Verify that we verify that Length is sufficient or respect protocol generally
+// TODO If we receive a datum, its integrity is verified?
+// TODO No need to return addrUdpMsg, just return udpMsg?
+// TODO Check that we don't send replies or requests without a reply e.g. NoOp
+// Call this manually
+// TODO Checks that a correct reply is indeed received
 func sendAndReceiveMsg(peerName string, toSend udpMsg) (addrUdpMsg, error) {
+	// TODO If we have never talked to peerName, send Hello, receive HelloReply, receive PublicKey and respond, receive Root and respond, only after this we can send toSend and receive the reply
 	peerAddr, err := getAddressOfPeer(peerName)
 	if err != nil {
 		return addrUdpMsg{}, err
@@ -252,4 +266,16 @@ func downloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 	}
 
 	return parseDatum(datumReply.Msg.Body)
+}
+
+// Must not stop e.g. internet connection stops and comes back 10 minutes after...
+func keepAliveMainServer() {
+    for {
+        _, err := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
+		if err != nil {
+			LOGGING_FUNC(err)
+		}
+        
+        time.Sleep(KEEP_ALIVE_PERIOD)
+	}
 }

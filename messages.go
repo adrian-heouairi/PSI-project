@@ -319,3 +319,4 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }
+

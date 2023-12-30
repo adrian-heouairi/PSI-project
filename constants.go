@@ -12,6 +12,7 @@ const OUR_PEER_NAME = "AS"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const UDP_LISTEN_PORT = 8444
+const KEEP_ALIVE_PERIOD = 30 * time.Second
 
 // With exponential backoff of REEMISSION_TIME_UNIT, total one first message +
 // up to NUMBER_OF_REEMISSIONS messages
@@ -99,6 +100,19 @@ const ( // Message and datum constants
 
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
+	
+// TODO Implement readline library
+const (
+	HELP_CMD = "help"
+	LIST_PEERS_CMD = "lspeers" // TODO Add --addr option
+	LIST_FILES_CMD = "lsrem"
+	CAT_FILE_CMD = "curl"
+	// TODO Make this download anywhere
+	// TODO Implement -r
+	DOWNLOAD_FILE_CMD = "wget"
+
+	CLI_PROMPT = "> "
+)
 
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string
