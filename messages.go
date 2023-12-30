@@ -320,3 +320,7 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }
+
+func checkMsgTypePair(sent uint8, received uint8) bool {
+	return received - sent == MSG_VALID_PAIR
+}

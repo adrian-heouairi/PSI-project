@@ -63,6 +63,7 @@ const ( // UDP message types
 	NAT_TRAVERSAL         byte = 7
 
 	FIRST_RESPONSE_MSG_TYPE byte = 128
+	MSG_VALID_PAIR byte = 127
 )
 
 const ( // Datum message types
