@@ -14,16 +14,35 @@ var helpMessage = fmt.Sprintf(
     - %s PATH : downloads the datum at the PATH asumes that the path is absolute i.e contains peer name
     - %s PEER : shows the files shared by PEER`, LIST_PEERS_CMD, DOWNLOAD_FILE_CMD, LIST_FILES_CMD)
 
+/*func autoCompleteSuggestion() []string {
+  var commands = []string{LIST_PEERS_CMD, LIST_FILES_CMD, DOWNLOAD_FILE_CMD, "exit"}  
+  line := d.GetWordBeforeCursor()
+	if line == "" {
+		return commands
+	}
+
+	var suggestions []string
+	for _, command := range commands {
+		if strings.HasPrefix(command, line) {
+			suggestions = append(suggestions, command)
+		}
+	}
+
+	return suggestions
+}
+*/ 
 func parseLine(line string) {
 	line = strings.TrimSpace(line)
 	line = replaceAllRegexBy(line, " +", " ")
 	splitLine := strings.Split(line, " ")
 
 	if len(splitLine) == 0 {
-		return
+		fmt.Println(helpMessage)
 	}
 
 	switch splitLine[0] {
+    case EXIT_CMD:
+        os.Exit(0)
 	case LIST_PEERS_CMD:
 		restGetPeers(true)
 	case LIST_FILES_CMD:
@@ -68,12 +87,24 @@ func parseLine(line string) {
 }
 
 func mainMenu() error {
-	rl, err := readline.New(CLI_PROMPT)
+	var completer = readline.NewPrefixCompleter(
+        readline.PcItem(LIST_PEERS_CMD),
+        readline.PcItem(LIST_FILES_CMD),
+        readline.PcItem(DOWNLOAD_FILE_CMD),
+        readline.PcItem("exit"))
+	rl, err := readline.NewEx(&readline.Config{
+        UniqueEditLine: true,
+        Prompt: CLI_PROMPT,
+        InterruptPrompt: "^C",
+        EOFPrompt: "exit",
+        HistoryFile: "/tmp/readlinehistory.tmp",
+        AutoComplete: completer,
+    })
+
 	if err != nil {
 		return err
 	}
 	defer rl.Close()
-
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF

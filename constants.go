@@ -104,6 +104,7 @@ const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 
 // TODO Implement readline library
 const (
+    EXIT_CMD       = "exit"
 	HELP_CMD       = "help"
 	LIST_PEERS_CMD = "lspeers" // TODO Add --addr option
 	LIST_FILES_CMD = "lsrem"
