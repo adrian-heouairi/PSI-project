@@ -13,7 +13,7 @@ func main() {
 
 	checkErrPanic(initUdp())
 
-	go listenAndRespond() 
-    go keepAliveMainServer()
-    mainMenu()
+	go listenAndRespond()
+	go keepAliveMainServer()
+	mainMenu()
 }

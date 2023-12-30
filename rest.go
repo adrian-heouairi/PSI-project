@@ -18,13 +18,13 @@ func restGetPeers(show bool) ([]string, error) {
 	if resp.StatusCode != HTTP_OK {
 		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
-    
-    if show {
-        fmt.Println(strings.TrimSpace(string(bodyAsByteSlice)))
-    }
 
-    peers := strings.Split(string(bodyAsByteSlice),"\n")
-    return peers[:len(peers) - 1], nil
+	if show {
+		fmt.Println(strings.TrimSpace(string(bodyAsByteSlice)))
+	}
+
+	peers := strings.Split(string(bodyAsByteSlice), "\n")
+	return peers[:len(peers)-1], nil
 }
 
 // Gives the addresses of the given peer.
@@ -45,9 +45,9 @@ func restGetAddressesOfPeer(peerName string, display bool) ([]*net.UDPAddr, erro
 		return nil, fmt.Errorf("code other than HTTP OK received")
 	}
 
-    if display {
-        fmt.Println(string(bodyAsByteSlice))
-    }
+	if display {
+		fmt.Println(string(bodyAsByteSlice))
+	}
 	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") // TODO Check that this doesn't have an empty string at the end
 
 	if len(addrAsStrings) == 0 {

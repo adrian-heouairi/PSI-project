@@ -33,7 +33,7 @@ var msgQueueMutex *sync.RWMutex
 
 func addAddrToPeers(peerName string, addr *net.UDPAddr) {
 	createKeyValuePairInPeers(peerName)
-	
+
 	_ = removeAddrFromPeers(peerName, addr)
 
 	peersMutex.Lock()
@@ -48,7 +48,7 @@ func addAddrToPeers(peerName string, addr *net.UDPAddr) {
 // Assumes that peers is mutex locked
 func removeFromAddrSlice(slice []*net.UDPAddr, index int) []*net.UDPAddr {
 	slice[index] = slice[len(slice)-1]
-    return slice[:len(slice)-1]
+	return slice[:len(slice)-1]
 }
 
 func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
@@ -56,7 +56,7 @@ func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
 	defer peersMutex.Unlock()
 
 	addresses, valueFound := peers[peerName]
-	if ! valueFound {
+	if !valueFound {
 		return fmt.Errorf("peer not found when trying to remove one of its addresses")
 	}
 
@@ -80,7 +80,7 @@ func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
 func createKeyValuePairInPeers(peerName string) {
 	peersMutex.Lock()
 	_, found := peers[peerName]
-	if ! found {
+	if !found {
 		peers[peerName] = []*net.UDPAddr{}
 	}
 	peersMutex.Unlock()
@@ -166,9 +166,9 @@ func handleMsg(receivedMsg addrUdpMsg) {
 
 	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
 		// TODO After some time remove messages that have not been retrieved from the message queue and log them
-        if receivedMsg.Msg.Type == ERROR_REPLY {
-           LOGGING_FUNC(udpMsgToString(receivedMsg.Msg)) 
-        }
+		if receivedMsg.Msg.Type == ERROR_REPLY {
+			LOGGING_FUNC(udpMsgToString(receivedMsg.Msg))
+		}
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
@@ -270,12 +270,12 @@ func downloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 
 // Must not stop e.g. internet connection stops and comes back 10 minutes after...
 func keepAliveMainServer() {
-    for {
-        _, err := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
+	for {
+		_, err := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
 		if err != nil {
 			LOGGING_FUNC(err)
 		}
-        
-        time.Sleep(KEEP_ALIVE_PERIOD)
+
+		time.Sleep(KEEP_ALIVE_PERIOD)
 	}
 }

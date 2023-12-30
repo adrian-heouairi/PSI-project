@@ -31,7 +31,7 @@ func mkdir(path string) error {
 // -path: represnts the file to write in
 // Retruns: error if file does not exists or we can not write in
 func writeChunk(path string, chunk []byte) error {
-	file, err := os.OpenFile(path, os.O_WRONLY | os.O_CREATE | os.O_APPEND, 0644)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func threadSafeAppendToList(list *list.List, mutex *sync.RWMutex, elem any) {
 // -second: the second address
 // Returns: true if addresses are equal false otherwise
 func compareUDPAddr(first *net.UDPAddr, second *net.UDPAddr) bool {
-    return first.String() == second.String()
+	return first.String() == second.String()
 }
 
 // Wrapper of http.Get
@@ -90,7 +90,7 @@ func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
 	peersMutex.RLock()
 	_, found := peers[peerName]
 	peersMutex.RUnlock()
-	if ! found {
+	if !found {
 		createKeyValuePairInPeers(peerName)
 	}
 
@@ -106,12 +106,12 @@ func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
 	if addrToReturn != nil {
 		return addrToReturn, nil
 	}
-	
+
 	restPeerAddresses, err := restGetAddressesOfPeer(peerName, false)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	for _, a := range restPeerAddresses {
 		addAddrToPeers(peerName, a)
 	}
@@ -125,16 +125,16 @@ func replaceAllRegexBy(src, regex, replacement string) string {
 }
 
 func removeTrailingSlash(path string) string {
-    if path[len(path) - 1] == '/' {
-        return path[:len(path) -1]
-    }
-    return path
+	if path[len(path)-1] == '/' {
+		return path[:len(path)-1]
+	}
+	return path
 }
 
 func getKeys(m map[string][]byte) []string {
-    res := make([]string, 0)
-    for key := range m {
-        res = append(res, key)
-    }
-    return res
+	res := make([]string, 0)
+	for key := range m {
+		res = append(res, key)
+	}
+	return res
 }
