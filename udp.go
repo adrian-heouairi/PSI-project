@@ -166,6 +166,9 @@ func handleMsg(receivedMsg addrUdpMsg) {
 
 	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
 		// TODO After some time remove messages that have not been retrieved from the message queue and log them
+        if receivedMsg.Msg.Type == ERROR_REPLY {
+           LOGGING_FUNC(udpMsgToString(receivedMsg.Msg)) 
+        }
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}

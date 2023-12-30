@@ -11,9 +11,9 @@ import (
 var helpMessage = 
 fmt.Sprintf(
 `CMD [OPTION]
-    - lspeers : shows the connected peers
-    - wget PATH : downloads the datum at the PATH asumes that the path is absolute i.e contains peer name
-    - lsrem PEER : shows the files shared by PEER`)
+    - %s : shows the connected peers
+    - %s PATH : downloads the datum at the PATH asumes that the path is absolute i.e contains peer name
+    - %s PEER : shows the files shared by PEER`, LIST_PEERS_CMD, DOWNLOAD_FILE_CMD, LIST_FILES_CMD)
 func parseLine(line string) {
     line = strings.TrimSpace(line)
     line = replaceAllRegexBy(line, " +", " ")
@@ -30,7 +30,15 @@ func parseLine(line string) {
         if len(splitLine) < 2 {
             fmt.Fprintln(os.Stderr, helpMessage)
         } else {
-            listAllFilesOfPeer(splitLine[1])
+            filenamesAndHashes, err := getPeerAllDataHashes(splitLine[1])
+            if err != nil {
+                fmt.Println(err) 
+            }
+            availableFiles := getKeys(filenamesAndHashes)
+            for _,elt := range availableFiles {
+                fmt.Println(elt)
+                
+            }
         }
 	//case CAT_FILE_CMD:
 	case DOWNLOAD_FILE_CMD:
@@ -59,7 +67,7 @@ func parseLine(line string) {
     }
 }
 
-func mainMenu2() error {
+func mainMenu() error {
     rl, err := readline.New(CLI_PROMPT)
     if err != nil {
         return err
