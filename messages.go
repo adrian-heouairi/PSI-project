@@ -305,7 +305,7 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
-	return received - sent == MSG_VALID_PAIR
+	return received-sent == MSG_VALID_PAIR
 }
 
 // Checks datum integrity.
