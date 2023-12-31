@@ -115,6 +115,7 @@ const (
 
 	CLI_PROMPT = "> "
 )
+var CMD_LIST = []string{EXIT_CMD, HELP_CMD, LIST_PEERS_CMD, LIST_FILES_CMD, CAT_FILE_CMD, DOWNLOAD_FILE_CMD}
 
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string

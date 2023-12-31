@@ -1,25 +1,62 @@
 package main
 
 import (
-	"fmt"
-	"os"
-	"strings"
+    "fmt"
+    "os"
+    "strings"
 
-	"github.com/chzyer/readline"
+    "github.com/chzyer/readline"
 )
 
-var helpMessage = fmt.Sprintf(
-	`CMD [OPTION]
-    - %s : shows the connected peers
-    - %s PATH : downloads the datum at the PATH asumes that the path is absolute i.e contains peer name
-    - %s PEER : shows the files shared by PEER
-    - %s quit`, LIST_PEERS_CMD, DOWNLOAD_FILE_CMD, LIST_FILES_CMD, EXIT_CMD)
-    
+var helpMessage = fmt.Sprintf(`CMD [OPTION]
+- %s: quit
+- %s: shows this message
+- %s: shows the connected peers
+- %s PEER: shows the files shared by PEER
+- %s PATH: cats the remote file at PATH 
+- %s PATH: downloads the datum at the PATH asumes that the path is absolute i.e contains peer name`,
+stringSliceToAnySlice(CMD_LIST)...)
 
-    func peersList() []string {
-        peers, _ := restGetPeers(false)
-        return peers
+
+func peersListAutoComplete(str string) []string {
+    peers, _ := restGetPeers(false)
+    return peers
+}
+
+func pathAutoComplete(str string) []string {
+    pathMap, _ := getPeerAllDataHashes(replaceAllRegexBy(str, "/.*",""))
+    return getKeys(pathMap)
+}
+
+func mainMenu() error {
+    var completer = readline.NewPrefixCompleter(
+        readline.PcItem(LIST_PEERS_CMD),
+        readline.PcItem(LIST_FILES_CMD, readline.PcItemDynamic(peersListAutoComplete)),
+        readline.PcItem(DOWNLOAD_FILE_CMD, readline.PcItemDynamic(peersListAutoComplete), readline.PcItemDynamic(pathAutoComplete)),
+        readline.PcItem(EXIT_CMD))
+        rl, err := readline.NewEx(&readline.Config{
+            UniqueEditLine: true,
+            Prompt: CLI_PROMPT,
+            InterruptPrompt: "^C",
+            EOFPrompt: "exit",
+            HistoryFile: "/tmp/readlinehistory.tmp",
+            AutoComplete: completer,
+        })
+
+        if err != nil {
+            return err
+        }
+        defer rl.Close()
+        for {
+            line, err := rl.Readline()
+            if err != nil { // io.EOF
+                return err
+            }
+
+            parseLine(line)
+        }
     }
+
     func parseLine(line string) {
         line = strings.TrimSpace(line)
         line = replaceAllRegexBy(line, " +", " ")
@@ -75,31 +112,3 @@ var helpMessage = fmt.Sprintf(
         }
     }
 
-    func mainMenu() error {
-        var completer = readline.NewPrefixCompleter(
-            //readline.PcItem(LIST_PEERS_CMD, readline.PcItemDynamic(peersList)),
-            readline.PcItem(LIST_FILES_CMD),
-            readline.PcItem(DOWNLOAD_FILE_CMD),
-            readline.PcItem(EXIT_CMD))
-            rl, err := readline.NewEx(&readline.Config{
-                UniqueEditLine: true,
-                Prompt: CLI_PROMPT,
-                InterruptPrompt: "^C",
-                EOFPrompt: "exit",
-                HistoryFile: "/tmp/readlinehistory.tmp",
-                AutoComplete: completer,
-            })
-
-            if err != nil {
-                return err
-            }
-            defer rl.Close()
-            for {
-                line, err := rl.Readline()
-                if err != nil { // io.EOF
-                    return err
-                }
-
-                parseLine(line)
-            }
-        }

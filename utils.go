@@ -138,3 +138,11 @@ func getKeys(m map[string][]byte) []string {
 	}
 	return res
 }
+
+func stringSliceToAnySlice(slc []string) [] any{
+    var res[]any = make([]any, 0)
+    for _, elt := range slc {
+        res = append(res, elt) 
+    }
+    return res
+}

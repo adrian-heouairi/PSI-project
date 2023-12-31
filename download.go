@@ -34,7 +34,6 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(path, "->", replaceAllRegexBy(path, "/[^/]+$", ""))
 	mkdir(replaceAllRegexBy(path, "/[^/]+$", ""))
 
 	if datumType == DIRECTORY {
