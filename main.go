@@ -14,6 +14,6 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-	go keepAliveMainServer()
+	go keepAliveMainPeer()
 	mainMenu()
 }

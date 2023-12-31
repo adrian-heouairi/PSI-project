@@ -8,7 +8,7 @@ import (
 
 func writeBigFile(peerName string, datum datumTree, path string) error {
 	for _, hash := range datum.ChildrenHashes {
-		datumType, datumToCast, err := downloadDatum(peerName, hash)
+		datumType, datumToCast, err := DownloadDatum(peerName, hash)
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ func writeBigFile(peerName string, datum datumTree, path string) error {
 // TODO handle case where an file becomes a directory
 func downloadRecursive(peerName string, hash []byte, path string) error {
 	fmt.Println("Downloading ", path)
-	datumType, datumToCast, err := downloadDatum(peerName, hash)
+	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 }
 
 func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error {
-	datumType, datumToCast, err := downloadDatum(peerName, hash)
+	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
 		return fmt.Errorf("Peer has invalid tree")
 	}

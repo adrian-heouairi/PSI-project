@@ -147,23 +147,6 @@ func udpMsgToString(msg udpMsg) string {
 		childrenNames
 }
 
-// Checks datum integrity.
-// - body: message to be checked
-// - Returns: error if data is not valid
-func checkDatumIntegrity(body []byte) error {
-	statedHash := body[:HASH_SIZE]
-
-	hasher := sha256.New()
-	hasher.Write(body[DATUM_TYPE_INDEX:])
-	computedHash := hasher.Sum(nil)
-
-	if !bytes.Equal(statedHash, computedHash) {
-		return fmt.Errorf("Corrupted datum")
-	}
-
-	return nil
-}
-
 // Removes the trailing zeroes from name.
 // - name: from which to remove \0s
 // - Returns: a valid string or error if data is not valid
@@ -323,4 +306,35 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
 	return received - sent == MSG_VALID_PAIR
+}
+
+// Checks datum integrity.
+// - body: message to be checked
+// - Returns: error if data is not valid
+// TODO Check that filenames in directory are UTF-8
+// TODO Call parseDatum
+func checkDatumIntegrity(body []byte) error {
+	statedHash := body[:HASH_SIZE]
+
+	hasher := sha256.New()
+	hasher.Write(body[DATUM_TYPE_INDEX:])
+	computedHash := hasher.Sum(nil)
+
+	if !bytes.Equal(statedHash, computedHash) {
+		return fmt.Errorf("Corrupted datum")
+	}
+
+	return nil
+}
+
+func checkMsgIntegrity(msg udpMsg) error {
+	switch msg.Type {
+	case HELLO, HELLO_REPLY:
+		_, err := parseHello(msg.Body)
+		return err
+	case DATUM:
+		return checkDatumIntegrity(msg.Body)
+	}
+
+	return nil
 }
