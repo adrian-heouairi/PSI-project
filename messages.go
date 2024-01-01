@@ -305,14 +305,27 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }
 
-// We never send NAT TRAVERSAL it is the main server who does it
-//func createNatTraversalRequestMsg(peerName string) udpMsg {
-func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
-    var addrAsByteSlice []byte = addr.IP.To4()
-    addrAsByteSlice = append(addrAsByteSlice, byte(addr.Port))
-    msg := createMsg(NAT_TRAVERSAL,addrAsByteSlice)
-    return msg
+// TODO Use htons/htonl
 
+// We never send NatTraversal, it is the main server who does it
+func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
+	body := []byte{}
+
+    var addrAsByteSlice []byte = addr.IP.To4()
+
+	if addrAsByteSlice == nil {
+		panic("IPv6 not supported")
+	}
+
+	body = append(body, addrAsByteSlice...)
+
+	var portAsByteSlice []byte = make([]byte, 2)
+	binary.BigEndian.PutUint16(portAsByteSlice, uint16(addr.Port))
+
+	body = append(body, portAsByteSlice...)
+
+    msg := createMsg(NAT_TRAVERSAL_REQUEST, body)
+    return msg
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {

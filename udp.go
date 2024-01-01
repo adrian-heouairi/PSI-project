@@ -231,33 +231,34 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg,error) {
     return addrUdpMsg{}, fmt.Errorf("Msg not found in msg queue")
 }
 
-// TODO Reemissions here? -> return err after multiple retries
 // TODO Check that we don't send replies or requests without a reply e.g. NoOp
 // TODO The error returned should allow the caller to tell if NoDatum or ErrorReply
 // This is not supposed to modify peers
 func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
-    var err error
-    // The ID match check is here
+    var retrieveErr error
     var replyMsg addrUdpMsg
     for i := 0; i < NUMBER_OF_REEMISSIONS + 1; i++ {
         if i != 0 {
-            fmt.Println(i,"th reemission of id : ", toSend.Id)
+            fmt.Printf("Reemission %d of ID %d\n", i, toSend.Id)
         }
-        err = simpleSendMsgToAddr(peerAddr, toSend)
+
+        err := simpleSendMsgToAddr(peerAddr, toSend)
         if err != nil {
             return udpMsg{}, err
         }
-        replyMsg, err = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
-        if err == nil {
-           break 
+
+		// The ID match check is here
+        replyMsg, retrieveErr = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
+        if retrieveErr == nil {
+           break
         }
     }
-    if err != nil {
-       return udpMsg{}, err 
+
+    if retrieveErr != nil {
+       return udpMsg{}, retrieveErr
     }
 
-
-    err = checkMsgIntegrity(replyMsg.Msg)
+    err := checkMsgIntegrity(replyMsg.Msg)
     if err != nil {
         return udpMsg{}, err
     }
