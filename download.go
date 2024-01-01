@@ -7,8 +7,9 @@ import (
 )
 
 func writeBigFile(peerName string, datum datumTree, path string) error {
-	for _, hash := range datum.ChildrenHashes {
+	for i, hash := range datum.ChildrenHashes {
 		datumType, datumToCast, err := DownloadDatum(peerName, hash)
+        fmt.Printf("\rDownloaded %d/%d chlidren of %s", i + 1, len(datum.ChildrenHashes), path)
 		if err != nil {
 			return err
 		}
@@ -45,7 +46,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 				return err
 			}
             i++
-            fmt.Println("Downloaded", i, "/", len(datum.Children), "children of ", path)
+            fmt.Printf("\rDownloaded %d/%d chlidren of %s", i + 1, len(datum.Children), path)
 		}
 	} else if datumType == CHUNK {
 		datum := datumToCast.(datumChunk)
