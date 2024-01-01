@@ -8,11 +8,55 @@ import (
 	"github.com/chzyer/readline"
 )
 
-var helpMessage = fmt.Sprintf(
-	`CMD [OPTION]
-    - %s : shows the connected peers
-    - %s PATH : downloads the datum at the PATH asumes that the path is absolute i.e contains peer name
-    - %s PEER : shows the files shared by PEER`, LIST_PEERS_CMD, DOWNLOAD_FILE_CMD, LIST_FILES_CMD)
+var helpMessage = fmt.Sprintf(`CMD [OPTION]
+    - %s: quit
+    - %s: shows this message
+    - %s: shows the connected peers
+    - %s PEER: shows the files shared by PEER
+    - %s PATH: cats the remote file at PATH, assumes that the path is absolute
+               i.e contains peer name
+    - %s PATH: downloads recursively the file or directory at PATH, assumes that
+               the path is absolute i.e contains peer name`,
+	stringSliceToAnySlice(CMD_LIST)...)
+
+func peersListAutoComplete(str string) []string {
+	peers, err := restGetPeers(false)
+	if err != nil {
+		return []string{}
+	}
+	return peers
+}
+
+func mainMenu() error {
+	var completer = readline.NewPrefixCompleter(
+		readline.PcItem(EXIT_CMD),
+		readline.PcItem(HELP_CMD),
+		readline.PcItem(LIST_PEERS_CMD),
+		readline.PcItem(LIST_FILES_CMD, readline.PcItemDynamic(peersListAutoComplete)),
+		readline.PcItem(CAT_FILE_CMD, readline.PcItemDynamic(peersListAutoComplete)),
+		readline.PcItem(DOWNLOAD_FILE_CMD, readline.PcItemDynamic(peersListAutoComplete)))
+
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:       CLI_PROMPT,
+		EOFPrompt:    EXIT_MESSAGE,
+		HistoryFile:  READLINE_HISTORY_FILE,
+		AutoComplete: completer,
+	})
+	if err != nil {
+		return err
+	}
+
+	defer rl.Close()
+
+	for {
+		line, err := rl.Readline()
+		if err != nil {
+			return err
+		}
+
+		parseLine(line)
+	}
+}
 
 func parseLine(line string) {
 	line = strings.TrimSpace(line)
@@ -20,10 +64,13 @@ func parseLine(line string) {
 	splitLine := strings.Split(line, " ")
 
 	if len(splitLine) == 0 {
+		fmt.Fprintln(os.Stderr, helpMessage)
 		return
 	}
 
 	switch splitLine[0] {
+	case EXIT_CMD:
+		os.Exit(0)
 	case LIST_PEERS_CMD:
 		restGetPeers(true)
 	case LIST_FILES_CMD:
@@ -32,15 +79,14 @@ func parseLine(line string) {
 		} else {
 			filenamesAndHashes, err := getPeerAllDataHashes(splitLine[1])
 			if err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(os.Stderr, err)
 			}
 			availableFiles := getKeys(filenamesAndHashes)
 			for _, elt := range availableFiles {
 				fmt.Println(elt)
-
 			}
 		}
-	//case CAT_FILE_CMD:
+		//case CAT_FILE_CMD:
 	case DOWNLOAD_FILE_CMD:
 		if len(splitLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
@@ -50,36 +96,16 @@ func parseLine(line string) {
 			peerName := replaceAllRegexBy(path, "/.*", "")
 			filenamesAndHashes, err := getPeerAllDataHashes(peerName)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(os.Stderr, err)
 			}
 			val, found := filenamesAndHashes[path]
 			if found {
 				downloadRecursive(peerName, val, path)
-
 			} else {
-				fmt.Println("NOT FOUND")
-				fmt.Println(path)
+				fmt.Fprintf(os.Stderr, "File %s not found\n", path)
 			}
 		}
-
 	default: // Includes HELP_CMD
 		fmt.Fprintln(os.Stderr, helpMessage)
-	}
-}
-
-func mainMenu() error {
-	rl, err := readline.New(CLI_PROMPT)
-	if err != nil {
-		return err
-	}
-	defer rl.Close()
-
-	for {
-		line, err := rl.Readline()
-		if err != nil { // io.EOF
-			return err
-		}
-
-		parseLine(line)
 	}
 }

@@ -120,3 +120,11 @@ func appendAddressesIfNotPresent(slice []*net.UDPAddr, addresses []*net.UDPAddr)
 		}
 	}
 }
+
+func stringSliceToAnySlice(slc []string) []any {
+	var res []any = make([]any, 0)
+	for _, elt := range slc {
+		res = append(res, elt)
+	}
+	return res
+}
