@@ -161,3 +161,9 @@ func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
 
 	return append(slice, portAsByteSlice...)
 }
+
+func stringToZeroPaddedByteSlice(str string) []byte {
+    res := []byte(str)
+    res = append(res, make([]byte, FILENAME_MAX_SIZE - len(str))...)
+    return res
+}
