@@ -13,18 +13,19 @@
     1. Datum getDatum DONE
     2. Hello hello reply DONE
     3. ROOT DONE
++ ui thread DONE
++ udp reemissions DONE
++ NAT / NAT TRAVERSAL DONE
 
-******************* IDEALEMENT FINI POUR DIMANCHE SOIR
-+ ui thread TODO
-+ udp reemissions TODO
-+ try ipv6 if ipv4 does not work and vice-versa
+========================================
+
++ implement IPv6 TODO
++ ask Root with UDP and try REST if it fails TODO
 + handle msg :
-    1. ROOT REPLY TODO (mekle tree export)
-    2. NAT / NAT TRAVERSAL TODO
+    1. ROOT REPLY TODO (Merkle tree export)
     3. ERROR / ERROR REPLY TODO
 + Merkle Tree struct and export TODO
 
-******************* IDEALEMENT FINI POUR SAMEDI
 
 
 
