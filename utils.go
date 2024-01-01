@@ -2,6 +2,8 @@ package main
 
 import (
 	"container/list"
+	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -127,4 +129,33 @@ func stringSliceToAnySlice(slc []string) []any {
 		res = append(res, elt)
 	}
 	return res
+}
+
+// We assume that slice will never be modified after calling this
+func byteSliceToUDPAddr(slice []byte) (*net.UDPAddr, error) {
+	if len(slice) == UDP_V4_SOCKET_SIZE {
+		port := binary.BigEndian.Uint16(slice[IPV4_SIZE:])
+		return &net.UDPAddr{IP: slice[:IPV4_SIZE], Port: int(port)}, nil
+	} else if len(slice) == UDP_V6_SOCKET_SIZE {
+		panic("IPv6 not supported")
+	} else {
+		return nil, fmt.Errorf("invalid slice length")
+	}
+}
+
+func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
+	slice := []byte{}
+
+    var addrAsByteSlice []byte = addr.IP.To4()
+
+	if addrAsByteSlice == nil {
+		panic("IPv6 not supported")
+	}
+
+	slice = append(slice, addrAsByteSlice...)
+
+	var portAsByteSlice []byte = make([]byte, 2)
+	binary.BigEndian.PutUint16(portAsByteSlice, uint16(addr.Port))
+
+	return append(slice, portAsByteSlice...)
 }

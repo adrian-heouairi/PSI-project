@@ -6,6 +6,8 @@ import (
 	"time"
 )
 
+// TODO Organize this and rename some and split it by .go file
+
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
 const PEERS_PATH = "/peers/"
 const OUR_PEER_NAME = "AS"
@@ -13,6 +15,12 @@ const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const UDP_LISTEN_PORT = 8444
 const KEEP_ALIVE_PERIOD = 30 * time.Second
+
+const UDP_V4_SOCKET_SIZE = 6
+const UDP_V6_SOCKET_SIZE = 18
+const IPV4_SIZE = 4
+const IPV6_SIZE = 16
+const PORT_SIZE = 2
 
 // To achieve 500 ms of waiting for a reply before reemitting the request
 const MSG_QUEUE_CHECK_PERIOD = 2 * time.Millisecond

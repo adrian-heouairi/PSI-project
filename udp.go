@@ -185,6 +185,13 @@ func handleMsg(receivedMsg addrUdpMsg) {
 	case ROOT:
 		hasher := sha256.New()
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
+	case NAT_TRAVERSAL:
+		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
+		_, err = sendToAddrAndReceiveMsgWithReemissions(peerAddr, createHello())
+		if err == nil {
+			LOGGING_FUNC("Received HelloReply from peer behind a NAT", peerAddr.String())
+		}
+		return
 	default:
 		LOGGING_FUNC("received request that we don't handle: " + udpMsgToString(receivedMsg.Msg))
 		return
@@ -305,6 +312,26 @@ func keepAliveMainPeer() {
 	}
 }
 
+func natTraversal(addr *net.UDPAddr) error {
+	natTraversalRequest := createNatTraversalRequestMsg(addr)
+
+	mainPeerAddresses, found := peersGet(SERVER_PEER_NAME)
+	if !found {
+		return fmt.Errorf("no connection with main peer found during NAT traversal")
+	}
+
+
+	for i := 0; i < 2; i++ {
+		simpleSendMsgToAddr(mainPeerAddresses[0], natTraversalRequest)
+		_, err := sendToAddrAndReceiveMsgWithReemissions(addr, createHello())
+		if err == nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("NAT traversal failed")
+}
+
 ////////////////////////////////////////////////// Below is API used by other files
 
 // Can safely be used for SERVER_PEER_NAME (it should already be in peers, and anyways sending more Hellos is OK)
@@ -335,8 +362,14 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 
 	for _, a := range restPeerAddresses {
 		if a.IP.To4() != nil {
-			_, err = sendToAddrAndReceiveMsgWithReemissions(a, createHello())
-			if err == nil {
+			_, helloWithoutNatErr := sendToAddrAndReceiveMsgWithReemissions(a, createHello())
+
+			var natTraversalErr error
+			if helloWithoutNatErr != nil {
+				natTraversalErr = natTraversal(a)
+			}
+
+			if helloWithoutNatErr == nil || natTraversalErr == nil {
 				replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
 				if err == nil {
 					peersAddAddr(peerName, a)
