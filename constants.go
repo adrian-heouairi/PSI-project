@@ -13,6 +13,8 @@ const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const UDP_LISTEN_PORT = 8444
 const KEEP_ALIVE_PERIOD = 30 * time.Second
+const MSG_QUEUE_CHECK_PERIOD = 2 * time.Millisecond
+const MSG_QUEUE_CHECK_NUMBER = 250 // To achieve 500 ms
 
 // With exponential backoff of REEMISSION_TIME_UNIT, total one first message +
 // up to NUMBER_OF_REEMISSIONS messages

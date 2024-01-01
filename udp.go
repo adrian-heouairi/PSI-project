@@ -203,30 +203,32 @@ func listenAndRespond() {
 	}
 }
 
-func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg {
+func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg,error) {
 	var foundMsg *list.Element
-	for {
-		msgFound := false
+    for i := 0; i < MSG_QUEUE_CHECK_NUMBER; i++ {
 		msgQueueMutex.RLock()
 		for m := msgQueue.Front(); m != nil; m = m.Next() {
 			mCasted := m.Value.(addrUdpMsg)
 			if compareUDPAddr(mCasted.Addr, sentMsg.Addr) && mCasted.Msg.Id == sentMsg.Msg.Id {
-				msgFound = true
 				foundMsg = m
 				break
 			}
 		}
 		msgQueueMutex.RUnlock()
-		if msgFound {
+		if foundMsg != nil {
 			break
 		}
+        time.Sleep(MSG_QUEUE_CHECK_PERIOD)
 	}
 
-	msgQueueMutex.Lock()
-	msgQueue.Remove(foundMsg)
-	msgQueueMutex.Unlock()
+    if foundMsg != nil {
+        msgQueueMutex.Lock()
+        msgQueue.Remove(foundMsg)
+        msgQueueMutex.Unlock()
 
-	return foundMsg.Value.(addrUdpMsg)
+        return foundMsg.Value.(addrUdpMsg), nil
+    }
+    return addrUdpMsg{}, fmt.Errorf("Msg not found in msg queue")
 }
 
 // TODO Reemissions here? -> return err after multiple retries
@@ -234,26 +236,39 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg {
 // TODO The error returned should allow the caller to tell if NoDatum or ErrorReply
 // This is not supposed to modify peers
 func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
-	err := simpleSendMsgToAddr(peerAddr, toSend)
-	if err != nil {
-		return udpMsg{}, err
-	}
+    var err error
+    // The ID match check is here
+    var replyMsg addrUdpMsg
+    for i := 0; i < NUMBER_OF_REEMISSIONS + 1; i++ {
+        if i != 0 {
+            fmt.Println(i,"th reemission of id : ", toSend.Id)
+        }
+        err = simpleSendMsgToAddr(peerAddr, toSend)
+        if err != nil {
+            return udpMsg{}, err
+        }
+        replyMsg, err = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
+        if err == nil {
+           break 
+        }
+    }
+    if err != nil {
+       return udpMsg{}, err 
+    }
 
-	// The ID match check is here
-	replyMsg := retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend}) // TODO May block forever
 
-	err = checkMsgIntegrity(replyMsg.Msg)
-	if err != nil {
-		return udpMsg{}, err
-	}
+    err = checkMsgIntegrity(replyMsg.Msg)
+    if err != nil {
+        return udpMsg{}, err
+    }
 
-	// TODO Verify NatTraversal
-	// TODO Reemit if ErrorReply?
-	if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
-		return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
-	}
+    // TODO Verify NatTraversal
+    // TODO Reemit if ErrorReply?
+    if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
+        return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
+    }
 
-	return replyMsg.Msg, nil
+    return replyMsg.Msg, nil
 }
 
 // Must not stop e.g. internet connection stops and comes back 10 minutes after...
