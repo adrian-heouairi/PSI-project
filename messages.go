@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/rand"
+	"net"
 )
 
 // It is assumed that len(Body) == Length
@@ -302,6 +303,16 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 	ourHelloBody := hello{0, OUR_PEER_NAME}
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
+}
+
+// We never send NAT TRAVERSAL it is the main server who does it
+//func createNatTraversalRequestMsg(peerName string) udpMsg {
+func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
+    var addrAsByteSlice []byte = addr.IP.To4()
+    addrAsByteSlice = append(addrAsByteSlice, byte(addr.Port))
+    msg := createMsg(NAT_TRAVERSAL,addrAsByteSlice)
+    return msg
+
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
