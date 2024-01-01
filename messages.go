@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/rand"
+	"net"
 )
 
 // It is assumed that len(Body) == Length
@@ -147,23 +148,6 @@ func udpMsgToString(msg udpMsg) string {
 		childrenNames
 }
 
-// Checks datum integrity.
-// - body: message to be checked
-// - Returns: error if data is not valid
-func checkDatumIntegrity(body []byte) error {
-	statedHash := body[:HASH_SIZE]
-
-	hasher := sha256.New()
-	hasher.Write(body[DATUM_TYPE_INDEX:])
-	computedHash := hasher.Sum(nil)
-
-	if !bytes.Equal(statedHash, computedHash) {
-		return fmt.Errorf("Corrupted datum")
-	}
-
-	return nil
-}
-
 // Removes the trailing zeroes from name.
 // - name: from which to remove \0s
 // - Returns: a valid string or error if data is not valid
@@ -174,7 +158,7 @@ func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 	}
 
 	if i == 0 {
-		return "", fmt.Errorf("Empty filenames are not allowed")
+		return "", fmt.Errorf("empty filenames are not allowed")
 	}
 
 	return string(name[:i]), nil
@@ -186,7 +170,7 @@ func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 //   - nil in case of error
 func parseDirectory(body []byte) (map[string][]byte, error) {
 	if body[DATUM_TYPE_INDEX] != DIRECTORY {
-		return nil, fmt.Errorf("Not a directory")
+		return nil, fmt.Errorf("not a directory")
 	}
 
 	res := make(map[string][]byte)
@@ -194,7 +178,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 	nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
 
 	if nbEntry < 0 || nbEntry > MAX_DIRECTORY_CHILDREN {
-		return nil, fmt.Errorf("Wrong number %d of children for directory", nbEntry)
+		return nil, fmt.Errorf("wrong number %d of children for directory", nbEntry)
 	}
 
 	for i := 0; i < int(nbEntry); i++ {
@@ -218,7 +202,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 //   - nil in case of error
 func parseTree(body []byte) ([][]byte, error) {
 	if body[DATUM_TYPE_INDEX] != TREE {
-		return nil, fmt.Errorf("Not a tree/big file")
+		return nil, fmt.Errorf("not a tree/big file")
 	}
 
 	res := [][]byte{}
@@ -226,7 +210,7 @@ func parseTree(body []byte) ([][]byte, error) {
 	nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(HASH_SIZE)
 
 	if nbEntry < MIN_TREE_CHILDREN || nbEntry > MAX_TREE_CHILDREN {
-		return nil, fmt.Errorf("Invalid number %d of children for tree/big file", nbEntry)
+		return nil, fmt.Errorf("invalid number %d of children for tree/big file", nbEntry)
 	}
 
 	for i := 0; i < int(nbEntry); i++ {
@@ -268,7 +252,7 @@ func parseDatum(body []byte) (byte, interface{}, error) {
 
 		return datumType, datumDirectory{statedHash, datumType, filenameHashMap}, nil
 	default:
-		return 0, nil, fmt.Errorf("Invalid datum type")
+		return 0, nil, fmt.Errorf("invalid datum type")
 	}
 }
 
@@ -319,4 +303,51 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 	ourHelloBody := hello{0, OUR_PEER_NAME}
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
+}
+
+// TODO Use htons/htonl
+
+// We never send NatTraversal, it is the main server who does it
+func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
+	msg := createMsg(NAT_TRAVERSAL_REQUEST, udpAddrToByteSlice(addr))
+	return msg
+}
+
+func checkMsgTypePair(sent uint8, received uint8) bool {
+	return received-sent == MSG_VALID_PAIR
+}
+
+// Checks datum integrity.
+// - body: message to be checked
+// - Returns: error if data is not valid
+// TODO Check that filenames in directory are UTF-8
+// TODO Call parseDatum
+func checkDatumIntegrity(body []byte) error {
+	statedHash := body[:HASH_SIZE]
+
+	hasher := sha256.New()
+	hasher.Write(body[DATUM_TYPE_INDEX:])
+	computedHash := hasher.Sum(nil)
+
+	if !bytes.Equal(statedHash, computedHash) {
+		return fmt.Errorf("corrupted datum")
+	}
+
+	return nil
+}
+
+func checkMsgIntegrity(msg udpMsg) error {
+	switch msg.Type {
+	case HELLO, HELLO_REPLY:
+		_, err := parseHello(msg.Body)
+		return err
+	case DATUM:
+		return checkDatumIntegrity(msg.Body)
+	case NAT_TRAVERSAL_REQUEST, NAT_TRAVERSAL:
+		if msg.Length != UDP_V4_SOCKET_SIZE && msg.Length != UDP_V6_SOCKET_SIZE {
+			return fmt.Errorf("invalid NatTraversal[Request] size")
+		}
+	}
+
+	return nil
 }

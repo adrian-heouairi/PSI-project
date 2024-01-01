@@ -10,13 +10,17 @@ import (
 )
 
 var connIPv4 *net.UDPConn
-var connIPv6 *net.UDPConn
+var connIPv6 *net.UDPConn // TODO Implement IPv6 e.g. use the right conn according to the IP address (v4 or v6 of the query)
+
+// TODO Send ErrorReply
+// TODO Vérifier qu'on peut envoyer des messages à AS
+// TODO Enlever une IP à laquelle on ne peut pas parler lors des réémissions
 
 // Protected by a RWMutex
-// If we received a message we assume the address is valid and add it to this map
-// If we have sent a request and received a reply we consider the address valid and add it to this map
-// If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map
-// We remove addresses from the slice value but the key remains if the slice is empty
+// If we received a Hello we send HelloReply and we assume the address is valid and add it to this map
+// If we have sent a Hello and received a HelloReply we consider the address valid and add it to this map
+// TODO If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map (and the key if the slice becomes empty)
+// We don't remove an address from this map after 180 s with nothing sent or received
 var peers map[string][]*net.UDPAddr
 var peersMutex *sync.RWMutex
 
@@ -25,25 +29,31 @@ type addrUdpMsg struct {
 	Msg  udpMsg
 }
 
-// TODO Rename msgQueue
-// TODO Replace msgQueue with a map whose keys are struct {*net.UDPAddr, uint32 (Msg.Id)} and value is the udpMsg
-// TODO ADD WAITING MARKER TO MAP BEFORE SENDING MSG
+// TODO Replace msgQueue with a map whose keys are struct {*net.UDPAddr, uint32 (Msg.Id)} and value is *udpMsg. When we sent a request we add the corresponding key with a nil value and wait for the value to become not nil, we then retrieve the value and remove the key
 var msgQueue *list.List
 var msgQueueMutex *sync.RWMutex
 
-func addAddrToPeers(peerName string, addr *net.UDPAddr) {
-	createKeyValuePairInPeers(peerName)
+func peersAddAddr(peerName string, addr *net.UDPAddr) {
+	peersCreateKeyValuePairIfNotExist(peerName)
 
-	_ = removeAddrFromPeers(peerName, addr)
+	_ = peersRemoveAddr(peerName, addr)
 
 	peersMutex.Lock()
 	peers[peerName] = append(peers[peerName], addr)
 	peersMutex.Unlock()
 }
 
+func peersGet(key string) ([]*net.UDPAddr, bool) {
+	peersMutex.RLock()
+	defer peersMutex.RUnlock()
+
+	value, found := peers[key]
+	return value, found
+}
+
 // TODO Complete Javadoc comments everywhere
 
-// Removes an element from a slice and returns the new slice
+// Removes an element from a slice and returns the new slice, order after is arbitrary
 // From https://stackoverflow.com/a/37335777
 // Assumes that peers is mutex locked
 func removeFromAddrSlice(slice []*net.UDPAddr, index int) []*net.UDPAddr {
@@ -51,7 +61,8 @@ func removeFromAddrSlice(slice []*net.UDPAddr, index int) []*net.UDPAddr {
 	return slice[:len(slice)-1]
 }
 
-func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
+// Removes the key if the value slice becomes empty
+func peersRemoveAddr(peerName string, addrToRemove *net.UDPAddr) error {
 	peersMutex.Lock()
 	defer peersMutex.Unlock()
 
@@ -74,10 +85,14 @@ func removeAddrFromPeers(peerName string, addrToRemove *net.UDPAddr) error {
 
 	peers[peerName] = removeFromAddrSlice(addresses, indexToRemove)
 
+	if len(peers[peerName]) == 0 {
+		delete(peers, peerName)
+	}
+
 	return nil
 }
 
-func createKeyValuePairInPeers(peerName string) {
+func peersCreateKeyValuePairIfNotExist(peerName string) {
 	peersMutex.Lock()
 	_, found := peers[peerName]
 	if !found {
@@ -118,8 +133,10 @@ func initUdp() error {
 	return nil
 }
 
-// This function is internal to udp.go
-func receiveMsg() (addrUdpMsg, error) {
+// This function is internal to udp.go, used to receive all messages
+// Called only by listenAndRespond
+// Will return the message normally even for invalid messages e.g. Hello with empty body
+func receiveAnyMsg() (addrUdpMsg, error) {
 	buffer := make([]byte, UDP_BUFFER_SIZE)
 
 	bytesRead, peerAddr, err := connIPv4.ReadFromUDP(buffer)
@@ -132,28 +149,11 @@ func receiveMsg() (addrUdpMsg, error) {
 		return addrUdpMsg{}, err
 	}
 
-	if receivedMsg.Type == DATUM {
-		err = checkDatumIntegrity(receivedMsg.Body)
-		if err != nil {
-			return addrUdpMsg{}, err
-		}
-	}
-
 	return addrUdpMsg{peerAddr, receivedMsg}, nil
 }
 
-// Use only if a reply is not expected e.g. NoOp
-func sendMsgToPeer(peerName string, toSend udpMsg) error {
-	peerAddr, err := getAddressOfPeer(peerName)
-	if err != nil {
-		return err
-	}
-
-	return sendMsgToAddr(peerAddr, toSend)
-}
-
-// If using manually, use only when a reply is not expected e.g. NoOp
-func sendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
+// Send a message and do not wait for a reply
+func simpleSendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
 	// TODO Verify number of bytes written and underscores everywhere in the code
 	_, err := connIPv4.WriteToUDP(udpMsgToByteSlice(toSend), peerAddr)
 	return err
@@ -161,121 +161,247 @@ func sendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
 
 // Internal to udp.go
 func handleMsg(receivedMsg addrUdpMsg) {
-	shouldReply := true
-	var replyMsg udpMsg
-
 	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
-		// TODO After some time remove messages that have not been retrieved from the message queue and log them
-		if receivedMsg.Msg.Type == ERROR_REPLY {
-			LOGGING_FUNC(udpMsgToString(receivedMsg.Msg))
-		}
+		// TODO Remove from msgQueue after some time
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
 
 	// The received message is a request
+	err := checkMsgIntegrity(receivedMsg.Msg)
+	if err != nil {
+		LOGGING_FUNC("not replying to invalid request received: " + udpMsgToString(receivedMsg.Msg))
+		return
+	}
+
+	var replyMsg udpMsg
 	switch receivedMsg.Msg.Type {
 	case HELLO: // TODO Implement others
 		hello, _ := parseHello(receivedMsg.Msg.Body)
-		addAddrToPeers(hello.PeerName, receivedMsg.Addr)
+		peersAddAddr(hello.PeerName, receivedMsg.Addr)
 		replyMsg, _ = createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
 	case PUBLIC_KEY:
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
 	case ROOT:
 		hasher := sha256.New()
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
+	case NAT_TRAVERSAL:
+		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
+		if peerAddr.IP.To4() == nil {
+			LOGGING_FUNC("Received a NAT traversal request with an IPv6, ignoring")
+			return
+		}
+
+		var theirNatTraversalErr error
+		for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
+			_, theirNatTraversalErr = sendToAddrAndReceiveMsgWithReemissions(peerAddr, createHello())
+			if theirNatTraversalErr == nil {
+				break
+			}
+		}
+		if theirNatTraversalErr == nil {
+			LOGGING_FUNC("Received HelloReply from peer", peerAddr.String(), "after they started a NAT traversal")
+		} else {
+			LOGGING_FUNC("NAT traversal started by", peerAddr.String(), "failed")
+		}
+		return
 	default:
-		shouldReply = false
-		LOGGING_FUNC(udpMsgToString(receivedMsg.Msg))
+		LOGGING_FUNC("received request that we don't handle: " + udpMsgToString(receivedMsg.Msg))
+		return
 	}
 
-	if shouldReply {
-		_ = sendMsgToAddr(receivedMsg.Addr, replyMsg)
-	}
+	// Note that we reply to peers even if they have never sent Hello
+	simpleSendMsgToAddr(receivedMsg.Addr, replyMsg)
 }
 
 func listenAndRespond() {
 	for {
-		addrMsg, _ := receiveMsg()
-		go handleMsg(addrMsg)
+		addrMsg, err := receiveAnyMsg()
+		if err == nil {
+			go handleMsg(addrMsg)
+		}
 	}
 }
 
-func retrieveInMsgQueue(sentMsg addrUdpMsg) addrUdpMsg { // TODO Return error?
-
+func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
 	var foundMsg *list.Element
-	for {
-		msgFound := false
+	for i := 0; i < MSG_QUEUE_CHECK_NUMBER; i++ {
 		msgQueueMutex.RLock()
 		for m := msgQueue.Front(); m != nil; m = m.Next() {
 			mCasted := m.Value.(addrUdpMsg)
 			if compareUDPAddr(mCasted.Addr, sentMsg.Addr) && mCasted.Msg.Id == sentMsg.Msg.Id {
-				msgFound = true
 				foundMsg = m
 				break
 			}
 		}
 		msgQueueMutex.RUnlock()
-		if msgFound {
+		if foundMsg != nil {
+			break
+		}
+		time.Sleep(MSG_QUEUE_CHECK_PERIOD)
+	}
+
+	if foundMsg != nil {
+		msgQueueMutex.Lock()
+		msgQueue.Remove(foundMsg)
+		msgQueueMutex.Unlock()
+
+		return foundMsg.Value.(addrUdpMsg), nil
+	}
+	return addrUdpMsg{}, fmt.Errorf("msg not found in msg queue")
+}
+
+// TODO Check that we don't send replies or requests without a reply e.g. NoOp
+// TODO The error returned should allow the caller to tell if NoDatum or ErrorReply
+// This is not supposed to modify peers
+func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
+	var retrieveErr error
+	var replyMsg addrUdpMsg
+	for i := 0; i < NUMBER_OF_REEMISSIONS+1; i++ {
+		if i != 0 {
+			fmt.Printf("Reemission %d of ID %d\n", i, toSend.Id)
+		}
+
+		err := simpleSendMsgToAddr(peerAddr, toSend)
+		if err != nil {
+			return udpMsg{}, err
+		}
+
+		// The ID match check is here
+		replyMsg, retrieveErr = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
+		if retrieveErr == nil {
 			break
 		}
 	}
 
-	msgQueueMutex.Lock()
-	msgQueue.Remove(foundMsg)
-	msgQueueMutex.Unlock()
-
-	return foundMsg.Value.(addrUdpMsg)
-}
-
-// TODO Reemissions here? -> return err after multiple retries
-// TODO Verify that we verify that Length is sufficient or respect protocol generally
-// TODO If we receive a datum, its integrity is verified?
-// TODO No need to return addrUdpMsg, just return udpMsg?
-// TODO Check that we don't send replies or requests without a reply e.g. NoOp
-// Call this manually
-// TODO Checks that a correct reply is indeed received
-func sendAndReceiveMsg(peerName string, toSend udpMsg) (addrUdpMsg, error) {
-	// TODO If we have never talked to peerName, send Hello, receive HelloReply, receive PublicKey and respond, receive Root and respond, only after this we can send toSend and receive the reply
-	peerAddr, err := getAddressOfPeer(peerName)
-	if err != nil {
-		return addrUdpMsg{}, err
+	if retrieveErr != nil {
+		return udpMsg{}, retrieveErr
 	}
 
-	err = sendMsgToAddr(peerAddr, toSend)
+	err := checkMsgIntegrity(replyMsg.Msg)
 	if err != nil {
-		return addrUdpMsg{}, err
+		return udpMsg{}, err
 	}
 
-	replyMsg := retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
-
-	// TODO We should verify that the type of the response corresponds to the request
-	//reply - request = 127
-	// TODO Check for NoDatum
-
-	// TODO Print ErrorReply messages
-
-	return replyMsg, nil
-}
-
-func downloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
-	getDatumMsg := createMsg(GET_DATUM, hash)
-	datumReply, err := sendAndReceiveMsg(peerName, getDatumMsg)
-	if err != nil {
-		return 0, nil, err
+	// TODO Reemit if ErrorReply?
+	if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
+		return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
 	}
 
-	return parseDatum(datumReply.Msg.Body)
+	return replyMsg.Msg, nil
 }
 
 // Must not stop e.g. internet connection stops and comes back 10 minutes after...
-func keepAliveMainServer() {
+// Keeps alive existing server addresses and new addresses obtained from REST
+// TODO Redo this
+// This maintains SERVER_PEER_NAME in peers, no other function should modify key SERVER_PEER_NAME in peers
+func keepAliveMainPeer() {
 	for {
-		_, err := sendAndReceiveMsg(SERVER_PEER_NAME, createHello())
-		if err != nil {
-			LOGGING_FUNC(err)
+		restMainPeerAddresses, err := restGetAddressesOfPeer(SERVER_PEER_NAME, false)
+		currentMainPeerAddresses, found := peersGet(SERVER_PEER_NAME)
+
+		allMainPeerAddresses := []*net.UDPAddr{}
+		if err == nil {
+			allMainPeerAddresses = appendAddressesIfNotPresent(allMainPeerAddresses, restMainPeerAddresses)
+		}
+		if found {
+			allMainPeerAddresses = appendAddressesIfNotPresent(allMainPeerAddresses, currentMainPeerAddresses)
+		}
+
+		for _, a := range allMainPeerAddresses {
+			if a.IP.To4() != nil { // If it is a v4 IP
+				_, err := sendToAddrAndReceiveMsgWithReemissions(a, createHello())
+				if err != nil {
+					peersRemoveAddr(SERVER_PEER_NAME, a)
+					LOGGING_FUNC("Main peer doesn't reply: ", err)
+				} else {
+					peersAddAddr(SERVER_PEER_NAME, a)
+				}
+			}
 		}
 
 		time.Sleep(KEEP_ALIVE_PERIOD)
 	}
+}
+
+func natTraversal(addr *net.UDPAddr) error {
+	natTraversalRequest := createNatTraversalRequestMsg(addr)
+
+	mainPeerAddresses, found := peersGet(SERVER_PEER_NAME)
+	if !found {
+		return fmt.Errorf("no connection with main peer found during our NAT traversal")
+	}
+
+	for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
+		simpleSendMsgToAddr(mainPeerAddresses[0], natTraversalRequest)
+		_, err := sendToAddrAndReceiveMsgWithReemissions(addr, createHello())
+		if err == nil {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("our NAT traversal failed")
+}
+
+////////////////////////////////////////////////// Below is API used by other files
+
+// Can safely be used for SERVER_PEER_NAME (it should already be in peers, and anyways sending more Hellos is OK)
+// TODO Check that we send a request that requires a reply
+func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
+	addressesInPeers, found := peersGet(peerName)
+
+	// If it is in peers we have already sent Hello before, first try to send toSend to the addresses already in peers
+
+	if found {
+		addressesInPeersCopy := []*net.UDPAddr{}
+		addressesInPeersCopy = append(addressesInPeersCopy, addressesInPeers...)
+
+		for _, a := range addressesInPeersCopy {
+			replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
+			if err != nil {
+				peersRemoveAddr(peerName, a)
+			} else {
+				return replyMsg, nil
+			}
+		}
+	}
+
+	restPeerAddresses, err := restGetAddressesOfPeer(peerName, false)
+	if err != nil {
+		return udpMsg{}, err
+	}
+
+	for _, a := range restPeerAddresses {
+		if a.IP.To4() != nil {
+			_, helloWithoutNatErr := sendToAddrAndReceiveMsgWithReemissions(a, createHello())
+
+			var natTraversalErr error
+			if helloWithoutNatErr != nil {
+				natTraversalErr = natTraversal(a)
+				if natTraversalErr == nil {
+					LOGGING_FUNC("NAT traversal started by us succeeded")
+				}
+			}
+
+			if helloWithoutNatErr == nil || natTraversalErr == nil {
+				replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
+				if err == nil {
+					peersAddAddr(peerName, a)
+					return replyMsg, nil
+				}
+			}
+		}
+	}
+
+	return udpMsg{}, fmt.Errorf("can't resolve peer named %s", peerName)
+}
+
+func DownloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
+	getDatumMsg := createMsg(GET_DATUM, hash)
+	datumReply, err := ConnectAndSendAndReceive(peerName, getDatumMsg)
+	if err != nil {
+		return 0, nil, err
+	}
+
+	return parseDatum(datumReply.Body)
 }

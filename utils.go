@@ -2,6 +2,8 @@ package main
 
 import (
 	"container/list"
+	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -45,6 +47,7 @@ func writeChunk(path string, chunk []byte) error {
 	return nil
 }
 
+// TODO Remove this
 // Appends elem to list concurrency safe.
 // -list: the list in which to add
 // -mutex: to protect critical section
@@ -83,42 +86,6 @@ func httpGet(url string) (*http.Response, []byte, error) {
 	return resp, bodyAsByteSlice, nil
 }
 
-// TODO Addresses will never be removed but if none work we call this,
-// if size after call is bigger test the new addresses
-// If none work, give up as peer doesn't exist
-func getAddressOfPeer(peerName string) (*net.UDPAddr, error) {
-	peersMutex.RLock()
-	_, found := peers[peerName]
-	peersMutex.RUnlock()
-	if !found {
-		createKeyValuePairInPeers(peerName)
-	}
-
-	var addrToReturn *net.UDPAddr
-
-	peersMutex.RLock()
-	peerAddresses, _ := peers[peerName]
-	if len(peerAddresses) > 0 {
-		addrToReturn = peerAddresses[0]
-	}
-	peersMutex.RUnlock()
-
-	if addrToReturn != nil {
-		return addrToReturn, nil
-	}
-
-	restPeerAddresses, err := restGetAddressesOfPeer(peerName, false)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, a := range restPeerAddresses {
-		addAddrToPeers(peerName, a)
-	}
-
-	return restPeerAddresses[0], nil
-}
-
 func replaceAllRegexBy(src, regex, replacement string) string {
 	pattern := regexp.MustCompile(regex)
 	return pattern.ReplaceAllString(src, replacement)
@@ -139,10 +106,58 @@ func getKeys(m map[string][]byte) []string {
 	return res
 }
 
+func addrIsInSlice(slice []*net.UDPAddr, addr *net.UDPAddr) bool {
+	for _, a := range slice {
+		if compareUDPAddr(addr, a) {
+			return true
+		}
+	}
+	return false
+}
+
+func appendAddressesIfNotPresent(slice []*net.UDPAddr, addresses []*net.UDPAddr) []*net.UDPAddr {
+	for _, a := range addresses {
+		if !addrIsInSlice(slice, a) {
+			slice = append(slice, a)
+		}
+	}
+
+	return slice
+}
+
 func stringSliceToAnySlice(slc []string) []any {
 	var res []any = make([]any, 0)
 	for _, elt := range slc {
 		res = append(res, elt)
 	}
 	return res
+}
+
+// We assume that slice will never be modified after calling this
+func byteSliceToUDPAddr(slice []byte) (*net.UDPAddr, error) {
+	if len(slice) == UDP_V4_SOCKET_SIZE {
+		port := binary.BigEndian.Uint16(slice[IPV4_SIZE:])
+		return &net.UDPAddr{IP: slice[:IPV4_SIZE], Port: int(port)}, nil
+	} else if len(slice) == UDP_V6_SOCKET_SIZE {
+		panic("IPv6 not supported")
+	} else {
+		return nil, fmt.Errorf("invalid slice length")
+	}
+}
+
+func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
+	slice := []byte{}
+
+	var addrAsByteSlice []byte = addr.IP.To4()
+
+	if addrAsByteSlice == nil {
+		panic("IPv6 not supported")
+	}
+
+	slice = append(slice, addrAsByteSlice...)
+
+	var portAsByteSlice []byte = make([]byte, 2)
+	binary.BigEndian.PutUint16(portAsByteSlice, uint16(addr.Port))
+
+	return append(slice, portAsByteSlice...)
 }

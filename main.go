@@ -5,6 +5,8 @@ import (
 )
 
 func main() {
+	initOurPeerName()
+
 	err := mkdir(DOWNLOAD_DIR)
 	checkErr(err)
 
@@ -14,6 +16,6 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-	go keepAliveMainServer()
+	go keepAliveMainPeer()
 	mainMenu()
 }
