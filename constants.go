@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 )
 
@@ -10,11 +11,24 @@ import (
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
 const PEERS_PATH = "/peers/"
-const OUR_PEER_NAME = "AS"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const UDP_LISTEN_PORT = 8444
 const KEEP_ALIVE_PERIOD = 30 * time.Second
+
+var OUR_PEER_NAME string
+var OUR_OTHER_PEER_NAME string
+
+func initOurPeerName() {
+	hostname, _ := os.Hostname()
+	if hostname == "aetu2" {
+		OUR_PEER_NAME = "AS"
+		OUR_OTHER_PEER_NAME = "AS2"
+	} else {
+		OUR_PEER_NAME = "AS2"
+		OUR_OTHER_PEER_NAME = "AS"
+	}
+}
 
 const UDP_V4_SOCKET_SIZE = 6
 const UDP_V6_SOCKET_SIZE = 18
@@ -27,6 +41,8 @@ const MSG_QUEUE_CHECK_PERIOD = 2 * time.Millisecond
 const MSG_QUEUE_CHECK_NUMBER = 250
 
 const NUMBER_OF_REEMISSIONS = 4
+
+const NAT_TRAVERSAL_RETRIES = 3 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
 
 const MSG_QUEUE_SIZE = 1024
 
@@ -159,7 +175,7 @@ func byteToMsgTypeAsStr(msgType byte) (string, error) {
 		typeAsString = "NatTraversal"
 	default:
 		typeAsString = "Unknown"
-		return typeAsString, fmt.Errorf("Unknown message type")
+		return typeAsString, fmt.Errorf("unknown message type")
 	}
 
 	return typeAsString, nil
@@ -177,7 +193,7 @@ func byteToDatumTypeAsStr(datumType byte) (string, error) {
 		typeOfDatumAsString = "Directory"
 	default:
 		typeOfDatumAsString = "Unknown"
-		return typeOfDatumAsString, fmt.Errorf("Unknown datum type")
+		return typeOfDatumAsString, fmt.Errorf("unknown datum type")
 	}
 
 	return typeOfDatumAsString, nil

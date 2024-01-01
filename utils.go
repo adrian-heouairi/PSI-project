@@ -148,7 +148,7 @@ func byteSliceToUDPAddr(slice []byte) (*net.UDPAddr, error) {
 func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
 	slice := []byte{}
 
-    var addrAsByteSlice []byte = addr.IP.To4()
+	var addrAsByteSlice []byte = addr.IP.To4()
 
 	if addrAsByteSlice == nil {
 		panic("IPv6 not supported")

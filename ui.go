@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"strings"
@@ -69,6 +70,28 @@ func parseLine(line string) {
 	}
 
 	switch splitLine[0] {
+
+	case "test":
+		m, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, createHello())
+		if err != nil {
+			LOGGING_FUNC(err)
+		} else {
+			fmt.Println("Received HelloReply from teammate:", udpMsgToString(m))
+		}
+		hasher := sha256.New()
+		rootMsg := createMsg(ROOT, hasher.Sum(nil))
+		rootReply, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, rootMsg)
+		checkErr(err)
+		if err == nil {
+			fmt.Println(udpMsgToString(rootReply))
+		}
+		getDatum := createMsg(GET_DATUM, rootReply.Body)
+		datum, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, getDatum)
+		checkErr(err)
+		if err == nil {
+			fmt.Println(udpMsgToString(datum))
+		}
+
 	case EXIT_CMD:
 		os.Exit(0)
 	case LIST_PEERS_CMD:

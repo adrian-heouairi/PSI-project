@@ -158,7 +158,7 @@ func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 	}
 
 	if i == 0 {
-		return "", fmt.Errorf("Empty filenames are not allowed")
+		return "", fmt.Errorf("empty filenames are not allowed")
 	}
 
 	return string(name[:i]), nil
@@ -170,7 +170,7 @@ func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
 //   - nil in case of error
 func parseDirectory(body []byte) (map[string][]byte, error) {
 	if body[DATUM_TYPE_INDEX] != DIRECTORY {
-		return nil, fmt.Errorf("Not a directory")
+		return nil, fmt.Errorf("not a directory")
 	}
 
 	res := make(map[string][]byte)
@@ -178,7 +178,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 	nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
 
 	if nbEntry < 0 || nbEntry > MAX_DIRECTORY_CHILDREN {
-		return nil, fmt.Errorf("Wrong number %d of children for directory", nbEntry)
+		return nil, fmt.Errorf("wrong number %d of children for directory", nbEntry)
 	}
 
 	for i := 0; i < int(nbEntry); i++ {
@@ -202,7 +202,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 //   - nil in case of error
 func parseTree(body []byte) ([][]byte, error) {
 	if body[DATUM_TYPE_INDEX] != TREE {
-		return nil, fmt.Errorf("Not a tree/big file")
+		return nil, fmt.Errorf("not a tree/big file")
 	}
 
 	res := [][]byte{}
@@ -210,7 +210,7 @@ func parseTree(body []byte) ([][]byte, error) {
 	nbEntry := (len(body) - int(DATUM_CONTENTS_INDEX)) / int(HASH_SIZE)
 
 	if nbEntry < MIN_TREE_CHILDREN || nbEntry > MAX_TREE_CHILDREN {
-		return nil, fmt.Errorf("Invalid number %d of children for tree/big file", nbEntry)
+		return nil, fmt.Errorf("invalid number %d of children for tree/big file", nbEntry)
 	}
 
 	for i := 0; i < int(nbEntry); i++ {
@@ -252,7 +252,7 @@ func parseDatum(body []byte) (byte, interface{}, error) {
 
 		return datumType, datumDirectory{statedHash, datumType, filenameHashMap}, nil
 	default:
-		return 0, nil, fmt.Errorf("Invalid datum type")
+		return 0, nil, fmt.Errorf("invalid datum type")
 	}
 }
 
@@ -309,8 +309,8 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 // We never send NatTraversal, it is the main server who does it
 func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
-    msg := createMsg(NAT_TRAVERSAL_REQUEST, udpAddrToByteSlice(addr))
-    return msg
+	msg := createMsg(NAT_TRAVERSAL_REQUEST, udpAddrToByteSlice(addr))
+	return msg
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
@@ -330,7 +330,7 @@ func checkDatumIntegrity(body []byte) error {
 	computedHash := hasher.Sum(nil)
 
 	if !bytes.Equal(statedHash, computedHash) {
-		return fmt.Errorf("Corrupted datum")
+		return fmt.Errorf("corrupted datum")
 	}
 
 	return nil

@@ -9,7 +9,7 @@ import (
 func writeBigFile(peerName string, datum datumTree, path string) error {
 	for i, hash := range datum.ChildrenHashes {
 		datumType, datumToCast, err := DownloadDatum(peerName, hash)
-        fmt.Printf("\rDownloaded %d/%d chlidren of %s", i + 1, len(datum.ChildrenHashes), path)
+		fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.ChildrenHashes), path)
 		if err != nil {
 			return err
 		}
@@ -21,7 +21,7 @@ func writeBigFile(peerName string, datum datumTree, path string) error {
 			newDatum := datumToCast.(datumTree)
 			writeBigFile(peerName, newDatum, path)
 		} else {
-			return fmt.Errorf("Children of big file should be big file or chunk")
+			return fmt.Errorf("children of big file should be big file or chunk")
 		}
 	}
 
@@ -41,16 +41,16 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
-        i := 0
+		i := 0
 		for key, value := range datum.Children {
 			err := downloadRecursive(peerName, value, path+"/"+key)
 			if err != nil {
 				return err
 			}
-            i++
-            fmt.Printf("\rDownloaded %d/%d chlidren of %s", i + 1, len(datum.Children), path)
+			i++
+			fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
 		}
-        fmt.Println()
+		fmt.Println()
 	} else if datumType == CHUNK {
 		datum := datumToCast.(datumChunk)
 		os.Remove(path)
@@ -64,7 +64,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 		if err != nil {
 			return err
 		}
-        fmt.Println()
+		fmt.Println()
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error {
 	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
-		return fmt.Errorf("Peer has invalid tree")
+		return err
 	}
 	currentMap[path] = hash
 

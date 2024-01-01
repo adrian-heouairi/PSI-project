@@ -187,9 +187,22 @@ func handleMsg(receivedMsg addrUdpMsg) {
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
 	case NAT_TRAVERSAL:
 		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
-		_, err = sendToAddrAndReceiveMsgWithReemissions(peerAddr, createHello())
-		if err == nil {
-			LOGGING_FUNC("Received HelloReply from peer behind a NAT", peerAddr.String())
+		if peerAddr.IP.To4() == nil {
+			LOGGING_FUNC("Received a NAT traversal request with an IPv6, ignoring")
+			return
+		}
+
+		var theirNatTraversalErr error
+		for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
+			_, theirNatTraversalErr = sendToAddrAndReceiveMsgWithReemissions(peerAddr, createHello())
+			if theirNatTraversalErr == nil {
+				break
+			}
+		}
+		if theirNatTraversalErr == nil {
+			LOGGING_FUNC("Received HelloReply from peer", peerAddr.String(), "after they started a NAT traversal")
+		} else {
+			LOGGING_FUNC("NAT traversal started by", peerAddr.String(), "failed")
 		}
 		return
 	default:
@@ -210,9 +223,9 @@ func listenAndRespond() {
 	}
 }
 
-func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg,error) {
+func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
 	var foundMsg *list.Element
-    for i := 0; i < MSG_QUEUE_CHECK_NUMBER; i++ {
+	for i := 0; i < MSG_QUEUE_CHECK_NUMBER; i++ {
 		msgQueueMutex.RLock()
 		for m := msgQueue.Front(); m != nil; m = m.Next() {
 			mCasted := m.Value.(addrUdpMsg)
@@ -225,58 +238,57 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg,error) {
 		if foundMsg != nil {
 			break
 		}
-        time.Sleep(MSG_QUEUE_CHECK_PERIOD)
+		time.Sleep(MSG_QUEUE_CHECK_PERIOD)
 	}
 
-    if foundMsg != nil {
-        msgQueueMutex.Lock()
-        msgQueue.Remove(foundMsg)
-        msgQueueMutex.Unlock()
+	if foundMsg != nil {
+		msgQueueMutex.Lock()
+		msgQueue.Remove(foundMsg)
+		msgQueueMutex.Unlock()
 
-        return foundMsg.Value.(addrUdpMsg), nil
-    }
-    return addrUdpMsg{}, fmt.Errorf("Msg not found in msg queue")
+		return foundMsg.Value.(addrUdpMsg), nil
+	}
+	return addrUdpMsg{}, fmt.Errorf("msg not found in msg queue")
 }
 
 // TODO Check that we don't send replies or requests without a reply e.g. NoOp
 // TODO The error returned should allow the caller to tell if NoDatum or ErrorReply
 // This is not supposed to modify peers
 func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
-    var retrieveErr error
-    var replyMsg addrUdpMsg
-    for i := 0; i < NUMBER_OF_REEMISSIONS + 1; i++ {
-        if i != 0 {
-            fmt.Printf("Reemission %d of ID %d\n", i, toSend.Id)
-        }
+	var retrieveErr error
+	var replyMsg addrUdpMsg
+	for i := 0; i < NUMBER_OF_REEMISSIONS+1; i++ {
+		if i != 0 {
+			fmt.Printf("Reemission %d of ID %d\n", i, toSend.Id)
+		}
 
-        err := simpleSendMsgToAddr(peerAddr, toSend)
-        if err != nil {
-            return udpMsg{}, err
-        }
+		err := simpleSendMsgToAddr(peerAddr, toSend)
+		if err != nil {
+			return udpMsg{}, err
+		}
 
 		// The ID match check is here
-        replyMsg, retrieveErr = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
-        if retrieveErr == nil {
-           break
-        }
-    }
+		replyMsg, retrieveErr = retrieveInMsgQueue(addrUdpMsg{peerAddr, toSend})
+		if retrieveErr == nil {
+			break
+		}
+	}
 
-    if retrieveErr != nil {
-       return udpMsg{}, retrieveErr
-    }
+	if retrieveErr != nil {
+		return udpMsg{}, retrieveErr
+	}
 
-    err := checkMsgIntegrity(replyMsg.Msg)
-    if err != nil {
-        return udpMsg{}, err
-    }
+	err := checkMsgIntegrity(replyMsg.Msg)
+	if err != nil {
+		return udpMsg{}, err
+	}
 
-    // TODO Verify NatTraversal
-    // TODO Reemit if ErrorReply?
-    if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
-        return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
-    }
+	// TODO Reemit if ErrorReply?
+	if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
+		return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
+	}
 
-    return replyMsg.Msg, nil
+	return replyMsg.Msg, nil
 }
 
 // Must not stop e.g. internet connection stops and comes back 10 minutes after...
@@ -317,11 +329,10 @@ func natTraversal(addr *net.UDPAddr) error {
 
 	mainPeerAddresses, found := peersGet(SERVER_PEER_NAME)
 	if !found {
-		return fmt.Errorf("no connection with main peer found during NAT traversal")
+		return fmt.Errorf("no connection with main peer found during our NAT traversal")
 	}
 
-
-	for i := 0; i < 2; i++ {
+	for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
 		simpleSendMsgToAddr(mainPeerAddresses[0], natTraversalRequest)
 		_, err := sendToAddrAndReceiveMsgWithReemissions(addr, createHello())
 		if err == nil {
@@ -329,7 +340,7 @@ func natTraversal(addr *net.UDPAddr) error {
 		}
 	}
 
-	return fmt.Errorf("NAT traversal failed")
+	return fmt.Errorf("our NAT traversal failed")
 }
 
 ////////////////////////////////////////////////// Below is API used by other files
@@ -367,6 +378,9 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 			var natTraversalErr error
 			if helloWithoutNatErr != nil {
 				natTraversalErr = natTraversal(a)
+				if natTraversalErr == nil {
+					LOGGING_FUNC("NAT traversal started by us succeeded")
+				}
 			}
 
 			if helloWithoutNatErr == nil || natTraversalErr == nil {
