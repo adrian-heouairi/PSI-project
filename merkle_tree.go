@@ -18,6 +18,9 @@ type merkleTreeNode struct {
     //  - BIG_FILE: 2 <= len(ChildrenNodes) <= 32
     //  - DIRECTORY: 0 <= len(ChildrenNodes) <= 16
 
+    // The parent node of the current one useful for hash computation
+    // Root parent node is root
+    Parent *merkleTreeNode
     // Never nil
     ChildrenNodes []*merkleTreeNode
     // Never nil, len == 32
@@ -31,13 +34,14 @@ type merkleTreeNode struct {
 
 var ourTree merkleTreeNode
 
-func pathToMerkleTreeWithoutHashComputation(path string) (*merkleTreeNode, error) {
+// First call is supposed to be done on the directory represneting root and parent is the same as the current node we try to produce.
+func pathToMerkleTreeWithoutHashComputation(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
     fileInfo, err := os.Stat(path)
     if err != nil {
         return nil, err
     }
 
-    ret := &merkleTreeNode{ChildrenNodes: []*merkleTreeNode{}, Hash: make([]byte, HASH_SIZE)}
+    ret := &merkleTreeNode{ChildrenNodes: []*merkleTreeNode{}, Hash: make([]byte, HASH_SIZE), Parent: parent}
 
     if fileInfo.IsDir() {
         ret.Type = DIRECTORY
@@ -50,7 +54,7 @@ func pathToMerkleTreeWithoutHashComputation(path string) (*merkleTreeNode, error
 
         for _, entry := range entries {
             ret.DirectoryChildrenNames = append(ret.DirectoryChildrenNames, stringToZeroPaddedByteSlice(entry.Name()))
-            recursiveCall, err := pathToMerkleTreeWithoutHashComputation(path + entry.Name())
+            recursiveCall, err := pathToMerkleTreeWithoutHashComputation(path + entry.Name(), ret)
             if err != nil {
                 return nil, err
             }
