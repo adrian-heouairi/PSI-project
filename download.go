@@ -38,12 +38,14 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
-
+        i := 0
 		for key, value := range datum.Children {
 			err := downloadRecursive(peerName, value, path+"/"+key)
 			if err != nil {
 				return err
 			}
+            i++
+            fmt.Println("Downloaded", i, "/", len(datum.Children), "children of ", path)
 		}
 	} else if datumType == CHUNK {
 		datum := datumToCast.(datumChunk)
