@@ -115,12 +115,14 @@ func addrIsInSlice(slice []*net.UDPAddr, addr *net.UDPAddr) bool {
 	return false
 }
 
-func appendAddressesIfNotPresent(slice []*net.UDPAddr, addresses []*net.UDPAddr) {
+func appendAddressesIfNotPresent(slice []*net.UDPAddr, addresses []*net.UDPAddr) []*net.UDPAddr {
 	for _, a := range addresses {
 		if !addrIsInSlice(slice, a) {
 			slice = append(slice, a)
 		}
 	}
+
+	return slice
 }
 
 func stringSliceToAnySlice(slc []string) []any {

@@ -290,10 +290,10 @@ func keepAliveMainPeer() {
 
 		allMainPeerAddresses := []*net.UDPAddr{}
 		if err == nil {
-			appendAddressesIfNotPresent(allMainPeerAddresses, restMainPeerAddresses)
+			allMainPeerAddresses = appendAddressesIfNotPresent(allMainPeerAddresses, restMainPeerAddresses)
 		}
 		if found {
-			appendAddressesIfNotPresent(allMainPeerAddresses, currentMainPeerAddresses)
+			allMainPeerAddresses = appendAddressesIfNotPresent(allMainPeerAddresses, currentMainPeerAddresses)
 		}
 
 		for _, a := range allMainPeerAddresses {
