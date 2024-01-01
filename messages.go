@@ -131,11 +131,7 @@ func udpMsgToString(msg udpMsg) string {
 			nbEntry := (len(msg.Body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
 			startOffset := DATUM_CONTENTS_INDEX
 			for i := 0; i < nbEntry; i++ {
-				name, err := byteSliceToStringWithoutTrailingZeroes(msg.Body[startOffset+i*DIRECTORY_ENTRY_SIZE : startOffset+i*DIRECTORY_ENTRY_SIZE+FILENAME_MAX_SIZE])
-				if err != nil {
-					LOGGING_FUNC(err)
-					return ""
-				}
+				name := zeroPaddedByteSliceToString(msg.Body[startOffset+i*DIRECTORY_ENTRY_SIZE : startOffset+i*DIRECTORY_ENTRY_SIZE+FILENAME_MAX_SIZE])
 				childrenNames += name + "\n\t"
 			}
 		}
@@ -146,22 +142,6 @@ func udpMsgToString(msg udpMsg) string {
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
 		"Body: " + string(msg.Body[:lengthToTake]) +
 		childrenNames
-}
-
-// Removes the trailing zeroes from name.
-// - name: from which to remove \0s
-// - Returns: a valid string or error if data is not valid
-func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
-	i := 0
-	for name[i] != 0 {
-		i++
-	}
-
-	if i == 0 {
-		return "", fmt.Errorf("empty filenames are not allowed")
-	}
-
-	return string(name[:i]), nil
 }
 
 // Parses a byte slice represneting a directory.
@@ -184,11 +164,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 	for i := 0; i < int(nbEntry); i++ {
 		keyStart := int(DATUM_CONTENTS_INDEX) + i*int(DIRECTORY_ENTRY_SIZE)
 		valueStart := keyStart + FILENAME_MAX_SIZE
-		filename, err := byteSliceToStringWithoutTrailingZeroes(body[keyStart:valueStart])
-
-		if err != nil {
-			return nil, err
-		}
+		filename := zeroPaddedByteSliceToString(body[keyStart:valueStart])
 
 		res[filename] = body[valueStart : valueStart+HASH_SIZE]
 	}

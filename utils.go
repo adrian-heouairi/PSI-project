@@ -162,8 +162,26 @@ func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
 	return append(slice, portAsByteSlice...)
 }
 
+// Assumes that str is no more than 32 bytes
 func stringToZeroPaddedByteSlice(str string) []byte {
-    res := []byte(str)
-    res = append(res, make([]byte, FILENAME_MAX_SIZE - len(str))...)
-    return res
+	res := []byte(str)
+	res = append(res, make([]byte, FILENAME_MAX_SIZE-len(res))...)
+	return res
+}
+
+// Removes the trailing zeroes from name.
+// - name: from which to remove \0s
+// - Returns: a valid string or error if data is not valid
+func zeroPaddedByteSliceToString(name []byte) string {
+	i := 0
+	for name[i] != 0 {
+		i++
+	}
+
+	if i == 0 {
+		LOGGING_FUNC("empty filenames are not allowed")
+		return ""
+	}
+
+	return string(name[:i])
 }
