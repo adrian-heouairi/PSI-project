@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/list"
+	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -184,4 +185,10 @@ func zeroPaddedByteSliceToString(name []byte) string {
 	}
 
 	return string(name[:i])
+}
+
+func getHashOfByteSlice(slice []byte) []byte {
+	hasher := sha256.New()
+	hasher.Write(slice)
+	return hasher.Sum(nil)
 }

@@ -1,154 +1,160 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"os"
 )
 
-// May have index 0 for empty files
-type chunk struct {
-    Path string
-    Index int
-}
-
 type merkleTreeNode struct {
-    // Depends on Type:
-    //  - CHUNK: {path, id}
-    //  - BIG_FILE: 2 <= len(ChildrenNodes) <= 32
-    //  - DIRECTORY: 0 <= len(ChildrenNodes) <= 16
+	// Depends on Type:
+	//  - CHUNK: ChunkIndex starting at 0
+	//  - BIG_FILE: 2 <= len(ChildrenNodes) <= 32
+	//  - DIRECTORY: 0 <= len(ChildrenNodes) <= 16
 
-    // The parent node of the current one useful for hash computation
-    // Root parent node is nil
-    Parent *merkleTreeNode
-    // Never nil
-    ChildrenNodes []*merkleTreeNode
-    // Never nil, len == 32
-    Hash []byte
-    Type byte // CHUNK, TREE, DIRECTORY
-    // nil if not CHUNK
-    ChunkContent *chunk
-    // There are no \0 at the end of children names, this field is nil if not DIRECTORY
-    DirectoryChildrenNames [][]byte
+	// The parent node, useful for hash computation
+	// Never nil except for the root node
+	Parent *merkleTreeNode
+
+	// Path of the file or directory this node represents
+	Path string
+
+	// Never nil (even for CHUNK)
+	Children []*merkleTreeNode
+
+	// Nil if not computed yet
+	Hash []byte
+
+	// CHUNK, TREE, DIRECTORY
+	Type byte
+
+	// nil if not CHUNK
+	ChunkIndex int
 }
 
 var ourTree *merkleTreeNode
 
-// First call is supposed to be done on the directory represneting root and parent is the same as the current node we try to produce.
-func pathToMerkleTreeWithoutHashComputation(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
-    fileInfo, err := os.Stat(path)
-    if err != nil {
-        return nil, err
-    }
+func (node *merkleTreeNode) basename() string {
+	return replaceAllRegexBy(node.Path, ".*/", "")
+}
 
-    ret := &merkleTreeNode{ChildrenNodes: []*merkleTreeNode{}, Hash: make([]byte, HASH_SIZE), Parent: parent}
+// First call is supposed to be done on the directory representing the root, its Parent will be nil
+func pathToMerkleTreeWithoutNonChunkHashes(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
+	fileInfo, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
 
-    if fileInfo.IsDir() {
-        ret.Type = DIRECTORY
-        ret.DirectoryChildrenNames = [][]byte{}
+	ret := &merkleTreeNode{Children: []*merkleTreeNode{}, Parent: parent, Path: path, ChunkIndex: -1}
 
-        entries, err := os.ReadDir(path)
-        if err != nil {
-            return nil, err
+	if fileInfo.IsDir() {
+		ret.Type = DIRECTORY
+
+		entries, err := os.ReadDir(path)
+		if err != nil {
+			return nil, err
+		}
+
+        if len(entries) == 0 {
+            ret.Hash = getHashOfByteSlice([]byte{DIRECTORY})
         }
 
-        for _, entry := range entries {
-            ret.DirectoryChildrenNames = append(ret.DirectoryChildrenNames, stringToZeroPaddedByteSlice(entry.Name()))
-            recursiveCall, err := pathToMerkleTreeWithoutHashComputation(path + "/" + entry.Name(), ret)
-            if err != nil {
-                fmt.Println("err :",err)
-                return nil, err
-            }
-            ret.ChildrenNodes = append(ret.ChildrenNodes, recursiveCall)
-        }
-    } else {
-        if fileInfo.Size() <= CHUNK_MAX_SIZE {
-            ret.Type = CHUNK
-            ret.ChunkContent = &chunk{path, 0}
-        } else {
-            // TODO BIG_FILE
-            return nil, fmt.Errorf("BIG_FILE not implemented")
-        }
-    }
+		for _, entry := range entries {
+			recursiveCall, err := pathToMerkleTreeWithoutNonChunkHashes(path + "/" + entry.Name(), ret)
+			if err != nil {
+				return nil, err
+			}
+			ret.Children = append(ret.Children, recursiveCall)
+		}
+	} else {
+		if fileInfo.Size() <= CHUNK_MAX_SIZE {
+			ret.Type = CHUNK
+			ret.ChunkIndex = 0
 
-    return ret, nil
+            hashOfChunk, _, _ := chunkFile(path, 0)
+            ret.Hash = hashOfChunk
+		} else {
+			// TODO BIG_FILE
+            ret.Type = TREE
+			return nil, fmt.Errorf("BIG_FILE not implemented")
+		}
+	}
+
+	return ret, nil
 }
 
 // Returns the hash and the content of the chunk at index chunkIndex in the file at path
 func chunkFile(path string, chunkIndex int64) ([]byte, []byte, error) {
-    fi, err := os.Stat(path)
-    if err != nil {
-        return nil, nil, err
-    }
+	fi, err := os.Stat(path)
+	if err != nil {
+		return nil, nil, err
+	}
 
-    if fi.IsDir() {
-        return nil, nil, fmt.Errorf("can't obtain a chunk of a directory")
-    }
+	if fi.IsDir() {
+		return nil, nil, fmt.Errorf("can't obtain a chunk of a directory")
+	}
 
-    size := fi.Size()
+	size := fi.Size()
 
-    lastChunkIndex := size / CHUNK_MAX_SIZE - 1
-    if size % CHUNK_MAX_SIZE != 0 {
-        lastChunkIndex++
-    }
-    if lastChunkIndex == -1 {
-        lastChunkIndex = 0
-    }
+	lastChunkIndex := size/CHUNK_MAX_SIZE - 1
+	if size%CHUNK_MAX_SIZE != 0 {
+		lastChunkIndex++
+	}
+	if lastChunkIndex == -1 {
+		lastChunkIndex = 0
+	}
 
-    if chunkIndex > lastChunkIndex {
-        return nil, nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
-    }
+	if chunkIndex > lastChunkIndex {
+		return nil, nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
+	}
 
-    f, err := os.Open(path)
-    if err != nil {
-        return nil, nil, err
-    }
-    defer f.Close()
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer f.Close()
 
-    var buf []byte
-    if chunkIndex == lastChunkIndex {
-        buf = make([]byte, size % CHUNK_MAX_SIZE)
-    } else {
-        buf = make([]byte, CHUNK_MAX_SIZE)
-    }
+	var buf []byte
+	if chunkIndex == lastChunkIndex {
+		buf = make([]byte, size%CHUNK_MAX_SIZE)
+	} else {
+		buf = make([]byte, CHUNK_MAX_SIZE)
+	}
 
-    _, err = f.Seek(chunkIndex * CHUNK_MAX_SIZE, 0)
-    if err != nil {
-        return nil, nil, err
-    }
-    
-    bytesRead, err := f.Read(buf)
-    if err != nil {
-        return nil, nil, err
-    } else if bytesRead != len(buf) {
-        return nil, nil, fmt.Errorf("wrong size read")
-    }
+	_, err = f.Seek(chunkIndex*CHUNK_MAX_SIZE, 0)
+	if err != nil {
+		return nil, nil, err
+	}
 
-    return getHashOfChunk(buf), buf, nil
-}
+	bytesRead, err := f.Read(buf)
+	if err != nil {
+		return nil, nil, err
+	} else if bytesRead != len(buf) {
+		return nil, nil, fmt.Errorf("wrong size read")
+	}
 
-func getHashOfChunk(chunk []byte) []byte {
-	hasher := sha256.New()
-	hasher.Write(chunk)
-	return hasher.Sum(nil)
+	return getHashOfByteSlice(buf), buf, nil
 }
 
 func (node *merkleTreeNode) toString() string {
-    var res string
-    typeStr, _ := byteToDatumTypeAsStr(node.Type)
-    res += fmt.Sprintf("Parent == nil: %v\nHash: %s\nType:%s", node.Parent == nil, fmt.Sprint(node.Hash), typeStr)
-    if node.Type != CHUNK {
-        res += fmt.Sprintf("\nNb children: %d",len(node.ChildrenNodes))
-    } else {
-        res += fmt.Sprintf("\nChunk %d of file %s", node.ChunkContent.Index, node.ChunkContent.Path)
+	res := ""
+	typeStr, _ := byteToDatumTypeAsStr(node.Type)
+	res += fmt.Sprintf("Parent == nil: %v\nHash: %s\nType: %s\nPath: %s", node.Parent == nil, fmt.Sprint(node.Hash), typeStr, node.Path)
+	if node.Type != CHUNK {
+		res += fmt.Sprintf("\nNb of children: %d", len(node.Children))
+	} else {
+		res += fmt.Sprintf("\nChunk %d", node.ChunkIndex)
+	}
+	
+	return res
+}
+
+func (node *merkleTreeNode) printMerkleTreeRecursively() {
+    fmt.Println(node.toString())
+    fmt.Println()
+
+    for _, child := range node.Children {
+        child.printMerkleTreeRecursively()
     }
-    if node.Type == DIRECTORY {
-        res += "\nDir children: "
-        for _, ch := range node.DirectoryChildrenNames {
-            res += fmt.Sprintf("\n%s", zeroPaddedByteSliceToString(ch))
-        }
-    }
-    return res
 }
 
 /*func createChunkMsg(id uint32) udpMsg {

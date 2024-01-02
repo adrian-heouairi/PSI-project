@@ -44,7 +44,7 @@ const NUMBER_OF_REEMISSIONS = 4
 
 const NAT_TRAVERSAL_RETRIES = 3 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
 
-const MSG_QUEUE_SIZE = 1024
+const MSG_QUEUE_SIZE = 8192
 
 const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
