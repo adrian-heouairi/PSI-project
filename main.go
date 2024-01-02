@@ -12,9 +12,8 @@ func main() {
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
 
-	ourTree, err = pathToMerkleTreeWithoutNonChunkHashes(SHARED_FILES_DIR, nil)
+	err = createMerkleTree(SHARED_FILES_DIR)
 	checkErr(err)
-	//fmt.Println("our tree", ourTree.toString())
 	ourTree.printMerkleTreeRecursively()
 
 	checkErrPanic(initUdp())

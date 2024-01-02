@@ -157,6 +157,70 @@ func (node *merkleTreeNode) printMerkleTreeRecursively() {
     }
 }
 
+func (node *merkleTreeNode) computeHash() {
+    if node.Hash != nil {
+        return
+    }
+    // HERE WE HAVE CHILDREN BECAUSE ALL LEAVES HAVE A HASH BEFORE CALLING THIS
+    if node.Type == DIRECTORY {
+        value := []byte{DIRECTORY}  
+        for _, child := range node.Children {
+            child.computeHash()
+            value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
+            value = append(value, child.Hash...)
+        }
+        node.Hash = getHashOfByteSlice(value)
+    }
+}
+
+func createMerkleTree(rootPath string) error{
+    var err error
+    ourTree, err = pathToMerkleTreeWithoutNonChunkHashes(rootPath,nil)
+    if err != nil {
+        return err
+    }
+    ourTree.computeHash()
+    return nil
+}
+
+/*
+ourMap = map[[]byte]*merkleTreeNode
+found,val := ourMap[hash]
+if !found {
+    replyMsg = NODATUM hash
+}
+replyMsg = val.toDatum
+*/
+
+func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
+    body := node.Hash
+    body = append(body, node.Type)
+    switch node.Type {
+    case CHUNK:
+        _,chunk,err := chunkFile(node.Path, int64(node.ChunkIndex))
+        if err != nil {
+           return udpMsg{}, err 
+        }
+        body = append(body, chunk...)
+    case DIRECTORY:
+        // TODO : factorize directory value creation
+        for _, child := range node.Children {
+           body = append(body, stringToZeroPaddedByteSlice(child.basename())...) 
+           body = append(body, child.Hash...)
+        }
+    case TREE:
+        panic("big file not implemented yet")
+    }
+    return createMsgWithId(id, DATUM, body), nil
+}
+
+func (node *merkleTreeNode) toMap(currentMap map[string]*merkleTreeNode) map[string]*merkleTreeNode {
+    currentMap[string(node.Hash)] = node
+    for _, child := range node.Children {
+        child.toMap(currentMap)
+    } 
+    return currentMap
+}
 /*func createChunkMsg(id uint32) udpMsg {
     body := []byte{CHUNK, 65, 66, 67}
     body = append(getHashOfChunk(body),body...)
