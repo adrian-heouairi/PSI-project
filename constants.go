@@ -19,6 +19,8 @@ const KEEP_ALIVE_PERIOD = 30 * time.Second
 var OUR_PEER_NAME string
 var OUR_OTHER_PEER_NAME string
 
+var DEBUG bool = false
+
 func initOurPeerName() {
 	hostname, _ := os.Hostname()
 	if hostname == "aetu2" {

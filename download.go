@@ -89,7 +89,7 @@ func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, cu
 
 func getPeerAllDataHashes(peerName string) (map[string][]byte, error) {
 	res := make(map[string][]byte)
-	root, err := restGetRootOfPeer(peerName)
+	root, err := GetRootOfPeerUDPThenREST(peerName)
 	if err != nil {
 		return nil, err
 	}

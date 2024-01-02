@@ -13,12 +13,11 @@ var connIPv6 *net.UDPConn // TODO Implement IPv6 e.g. use the right conn accordi
 
 // TODO Send ErrorReply
 // TODO Vérifier qu'on peut envoyer des messages à AS
-// TODO Enlever une IP à laquelle on ne peut pas parler lors des réémissions
 
 // Protected by a RWMutex
 // If we received a Hello we send HelloReply and we assume the address is valid and add it to this map
 // If we have sent a Hello and received a HelloReply we consider the address valid and add it to this map
-// TODO If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map (and the key if the slice becomes empty)
+// If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map (and the key if the slice becomes empty)
 // We don't remove an address from this map after 180 s with nothing sent or received
 var peers map[string][]*net.UDPAddr
 var peersMutex *sync.RWMutex
@@ -175,7 +174,9 @@ func handleMsg(receivedMsg addrUdpMsg) {
 
 	var replyMsg udpMsg
 	switch receivedMsg.Msg.Type {
-	case HELLO: // TODO Implement others
+	case NOOP:
+		return
+	case HELLO:
 		hello, _ := parseHello(receivedMsg.Msg.Body)
 		peersAddAddr(hello.PeerName, receivedMsg.Addr)
 		replyMsg, _ = createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
@@ -217,6 +218,12 @@ func handleMsg(receivedMsg addrUdpMsg) {
 	default:
 		LOGGING_FUNC("received request that we don't handle: " + udpMsgToString(receivedMsg.Msg))
 		return
+	}
+
+	if DEBUG {
+		t, _ := byteToMsgTypeAsStr(receivedMsg.Msg.Type)
+		t2, _ := byteToMsgTypeAsStr(replyMsg.Type)
+		fmt.Printf("Received ID %d, sent ID %d, received type %s, sent type %s\n", receivedMsg.Msg.Id, replyMsg.Id, t, t2)
 	}
 
 	// Note that we reply to peers even if they have never sent Hello
@@ -287,6 +294,12 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
 		return udpMsg{}, retrieveErr
 	}
 
+	if DEBUG {
+		t, _ := byteToMsgTypeAsStr(toSend.Type)
+		t2, _ := byteToMsgTypeAsStr(replyMsg.Msg.Type)
+		fmt.Printf("Sent ID %d, received ID %d, sent type %s, received type %s\n", toSend.Id, replyMsg.Msg.Id, t, t2)
+	}
+
 	err := checkMsgIntegrity(replyMsg.Msg)
 	if err != nil {
 		return udpMsg{}, err
@@ -294,7 +307,7 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
 
 	// TODO Reemit if ErrorReply?
 	if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
-		return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
+		return udpMsg{}, fmt.Errorf("reply doesn't match type of pair: " + udpMsgToString(replyMsg.Msg))
 	}
 
 	return replyMsg.Msg, nil
@@ -367,7 +380,8 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 
 		for _, a := range addressesInPeersCopy {
 			replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
-			if err != nil {
+			if err != nil { // May have an error if NO_DATUM
+				fmt.Println("ICI :", err)
 				peersRemoveAddr(peerName, a)
 			} else {
 				return replyMsg, nil
@@ -413,4 +427,13 @@ func DownloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 	}
 
 	return parseDatum(datumReply.Body)
+}
+
+func GetRootOfPeerUDPThenREST(peerName string) ([]byte, error) {
+	rootMsg := createMsg(ROOT, ourTree.Hash)
+	rootReplyMsg, err := ConnectAndSendAndReceive(peerName, rootMsg)
+	if err != nil {
+		return restGetRootOfPeer(peerName)
+	}
+	return rootReplyMsg.Body, nil
 }
