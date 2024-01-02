@@ -12,7 +12,7 @@ func main() {
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
 
-	err = createMerkleTree(SHARED_FILES_DIR)
+	err = exportMerkleTree()
 	checkErr(err)
 	ourTree.printMerkleTreeRecursively()
 

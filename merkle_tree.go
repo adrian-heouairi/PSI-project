@@ -5,6 +5,8 @@ import (
 	"os"
 )
 
+// TODO Organize order of functions/methods
+
 type merkleTreeNode struct {
 	// Depends on Type:
 	//  - CHUNK: ChunkIndex starting at 0
@@ -32,13 +34,15 @@ type merkleTreeNode struct {
 }
 
 var ourTree *merkleTreeNode
+var ourTreeMap map[string]*merkleTreeNode
 
 func (node *merkleTreeNode) basename() string {
 	return replaceAllRegexBy(node.Path, ".*/", "")
 }
 
 // First call is supposed to be done on the directory representing the root, its Parent will be nil
-func pathToMerkleTreeWithoutNonChunkHashes(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
+// Computes hashes for all leaf nodes (DIRECTORY or CHUNK)
+func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -54,12 +58,12 @@ func pathToMerkleTreeWithoutNonChunkHashes(path string, parent *merkleTreeNode) 
 			return nil, err
 		}
 
-        if len(entries) == 0 {
-            ret.Hash = getHashOfByteSlice([]byte{DIRECTORY})
-        }
+		if len(entries) == 0 {
+			ret.Hash = getHashOfByteSlice([]byte{DIRECTORY})
+		}
 
 		for _, entry := range entries {
-			recursiveCall, err := pathToMerkleTreeWithoutNonChunkHashes(path + "/" + entry.Name(), ret)
+			recursiveCall, err := recursivePathToMerkleTreeWithoutInternalHashes(path+"/"+entry.Name(), ret)
 			if err != nil {
 				return nil, err
 			}
@@ -70,11 +74,11 @@ func pathToMerkleTreeWithoutNonChunkHashes(path string, parent *merkleTreeNode) 
 			ret.Type = CHUNK
 			ret.ChunkIndex = 0
 
-            hashOfChunk, _, _ := chunkFile(path, 0)
-            ret.Hash = hashOfChunk
+			hashOfChunk, _, _ := getChunkHashAndContents(path, 0)
+			ret.Hash = hashOfChunk
 		} else {
 			// TODO BIG_FILE
-            ret.Type = TREE
+			ret.Type = TREE
 			return nil, fmt.Errorf("BIG_FILE not implemented")
 		}
 	}
@@ -83,7 +87,7 @@ func pathToMerkleTreeWithoutNonChunkHashes(path string, parent *merkleTreeNode) 
 }
 
 // Returns the hash and the content of the chunk at index chunkIndex in the file at path
-func chunkFile(path string, chunkIndex int64) ([]byte, []byte, error) {
+func getChunkHashAndContents(path string, chunkIndex int64) ([]byte, []byte, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return nil, nil, err
@@ -144,43 +148,82 @@ func (node *merkleTreeNode) toString() string {
 	} else {
 		res += fmt.Sprintf("\nChunk %d", node.ChunkIndex)
 	}
-	
+
 	return res
 }
 
 func (node *merkleTreeNode) printMerkleTreeRecursively() {
-    fmt.Println(node.toString())
-    fmt.Println()
+	fmt.Println(node.toString())
+	fmt.Println()
 
-    for _, child := range node.Children {
-        child.printMerkleTreeRecursively()
-    }
+	for _, child := range node.Children {
+		child.printMerkleTreeRecursively()
+	}
 }
 
-func (node *merkleTreeNode) computeHash() {
-    if node.Hash != nil {
-        return
-    }
-    // HERE WE HAVE CHILDREN BECAUSE ALL LEAVES HAVE A HASH BEFORE CALLING THIS
-    if node.Type == DIRECTORY {
-        value := []byte{DIRECTORY}  
-        for _, child := range node.Children {
-            child.computeHash()
-            value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
-            value = append(value, child.Hash...)
-        }
-        node.Hash = getHashOfByteSlice(value)
-    }
+func (node *merkleTreeNode) computeHashesRecursively() {
+	if node.Hash != nil {
+		return
+	}
+
+	// We don't have a hash, so we are not a leaf, thus we have children
+	value := []byte{node.Type}
+	if node.Type == DIRECTORY {
+		for _, child := range node.Children {
+			child.computeHashesRecursively()
+			value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
+			value = append(value, child.Hash...)
+		}
+		node.Hash = getHashOfByteSlice(value)
+	} else {
+		panic("Big file not supported")
+	}
 }
 
-func createMerkleTree(rootPath string) error{
-    var err error
-    ourTree, err = pathToMerkleTreeWithoutNonChunkHashes(rootPath,nil)
-    if err != nil {
-        return err
-    }
-    ourTree.computeHash()
-    return nil
+func exportMerkleTree() error {
+	var err error
+	ourTree, err = recursivePathToMerkleTreeWithoutInternalHashes(SHARED_FILES_DIR, nil)
+	if err != nil {
+		return err
+	}
+	ourTree.computeHashesRecursively()
+
+    ourTreeMap = ourTree.toMap()
+	return nil
+}
+
+func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
+	body := node.Hash
+	body = append(body, node.Type)
+	switch node.Type {
+	case CHUNK:
+		_, chunk, err := getChunkHashAndContents(node.Path, int64(node.ChunkIndex))
+		if err != nil {
+			return udpMsg{}, err
+		}
+		body = append(body, chunk...)
+	case DIRECTORY:
+		for _, child := range node.Children {
+			body = append(body, stringToZeroPaddedByteSlice(child.basename())...)
+			body = append(body, child.Hash...)
+		}
+	case TREE:
+		panic("big file not implemented yet")
+	}
+	return createMsgWithId(id, DATUM, body), nil
+}
+
+func (node *merkleTreeNode) toMapRecursively(currentMap map[string]*merkleTreeNode) {
+	currentMap[string(node.Hash)] = node
+	for _, child := range node.Children {
+		child.toMapRecursively(currentMap)
+	}
+}
+
+func (node *merkleTreeNode) toMap() map[string]*merkleTreeNode {
+	currentMap := make(map[string]*merkleTreeNode)
+	node.toMapRecursively(currentMap)
+	return currentMap
 }
 
 /*
@@ -192,35 +235,6 @@ if !found {
 replyMsg = val.toDatum
 */
 
-func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
-    body := node.Hash
-    body = append(body, node.Type)
-    switch node.Type {
-    case CHUNK:
-        _,chunk,err := chunkFile(node.Path, int64(node.ChunkIndex))
-        if err != nil {
-           return udpMsg{}, err 
-        }
-        body = append(body, chunk...)
-    case DIRECTORY:
-        // TODO : factorize directory value creation
-        for _, child := range node.Children {
-           body = append(body, stringToZeroPaddedByteSlice(child.basename())...) 
-           body = append(body, child.Hash...)
-        }
-    case TREE:
-        panic("big file not implemented yet")
-    }
-    return createMsgWithId(id, DATUM, body), nil
-}
-
-func (node *merkleTreeNode) toMap(currentMap map[string]*merkleTreeNode) map[string]*merkleTreeNode {
-    currentMap[string(node.Hash)] = node
-    for _, child := range node.Children {
-        child.toMap(currentMap)
-    } 
-    return currentMap
-}
 /*func createChunkMsg(id uint32) udpMsg {
     body := []byte{CHUNK, 65, 66, 67}
     body = append(getHashOfChunk(body),body...)
