@@ -48,7 +48,8 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 				return err
 			}
 			i++
-			fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
+			//fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
+			fmt.Printf("\r%s", showProgressBar((i + 1)/len(datum.Children)))
 		}
 		fmt.Println()
 	} else if datumType == CHUNK {
@@ -98,4 +99,19 @@ func getPeerAllDataHashes(peerName string) (map[string][]byte, error) {
 		return nil, err
 	}
 	return res, nil
+}
+
+func showProgressBar(progress int) string {
+    res := "["
+    i := 0
+    for i < progress {
+       res += "#"
+       i++ 
+    }
+    for i < 100{
+        res += "."
+        i++
+    }
+    res += "]"
+    return res
 }

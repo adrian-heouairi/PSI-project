@@ -17,5 +17,5 @@ func main() {
 
 	go listenAndRespond()
 	go keepAliveMainPeer()
-	mainMenu()
+	mainMenu() 
 }
