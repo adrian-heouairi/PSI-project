@@ -19,7 +19,7 @@ type merkleTreeNode struct {
     //  - DIRECTORY: 0 <= len(ChildrenNodes) <= 16
 
     // The parent node of the current one useful for hash computation
-    // Root parent node is root
+    // Root parent node is nil
     Parent *merkleTreeNode
     // Never nil
     ChildrenNodes []*merkleTreeNode
@@ -32,7 +32,7 @@ type merkleTreeNode struct {
     DirectoryChildrenNames [][]byte
 }
 
-var ourTree merkleTreeNode
+var ourTree *merkleTreeNode
 
 // First call is supposed to be done on the directory represneting root and parent is the same as the current node we try to produce.
 func pathToMerkleTreeWithoutHashComputation(path string, parent *merkleTreeNode) (*merkleTreeNode, error) {
@@ -54,8 +54,9 @@ func pathToMerkleTreeWithoutHashComputation(path string, parent *merkleTreeNode)
 
         for _, entry := range entries {
             ret.DirectoryChildrenNames = append(ret.DirectoryChildrenNames, stringToZeroPaddedByteSlice(entry.Name()))
-            recursiveCall, err := pathToMerkleTreeWithoutHashComputation(path + entry.Name(), ret)
+            recursiveCall, err := pathToMerkleTreeWithoutHashComputation(path + "/" + entry.Name(), ret)
             if err != nil {
+                fmt.Println("err :",err)
                 return nil, err
             }
             ret.ChildrenNodes = append(ret.ChildrenNodes, recursiveCall)
@@ -130,6 +131,24 @@ func getHashOfChunk(chunk []byte) []byte {
 	hasher := sha256.New()
 	hasher.Write(chunk)
 	return hasher.Sum(nil)
+}
+
+func (node *merkleTreeNode) toString() string {
+    var res string
+    typeStr, _ := byteToDatumTypeAsStr(node.Type)
+    res += fmt.Sprintf("Parent == nil: %v\nHash: %s\nType:%s", node.Parent == nil, fmt.Sprint(node.Hash), typeStr)
+    if node.Type != CHUNK {
+        res += fmt.Sprintf("\nNb children: %d",len(node.ChildrenNodes))
+    } else {
+        res += fmt.Sprintf("\nChunk %d of file %s", node.ChunkContent.Index, node.ChunkContent.Path)
+    }
+    if node.Type == DIRECTORY {
+        res += "\nDir children: "
+        for _, ch := range node.DirectoryChildrenNames {
+            res += fmt.Sprintf("\n%s", zeroPaddedByteSliceToString(ch))
+        }
+    }
+    return res
 }
 
 /*func createChunkMsg(id uint32) udpMsg {
