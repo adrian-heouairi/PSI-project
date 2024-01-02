@@ -14,7 +14,7 @@ func main() {
 
 	err = exportMerkleTree()
 	checkErr(err)
-	ourTree.printMerkleTreeRecursively()
+	//ourTree.printMerkleTreeRecursively()
 
 	checkErrPanic(initUdp())
 

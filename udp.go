@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/list"
-	"crypto/sha256"
 	"fmt"
 	"net"
 	"sync"
@@ -183,8 +182,18 @@ func handleMsg(receivedMsg addrUdpMsg) {
 	case PUBLIC_KEY:
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
 	case ROOT:
-		hasher := sha256.New()
-		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
+		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, ourTree.Hash)
+	case GET_DATUM:
+		value, found := ourTreeMap[string(receivedMsg.Msg.Body)]
+		if found {
+			replyMsg, err = value.toDatum(receivedMsg.Msg.Id)
+			if err != nil {
+				LOGGING_FUNC(err)
+				return
+			}
+		} else {
+			replyMsg = createMsgWithId(receivedMsg.Msg.Id, NO_DATUM, receivedMsg.Msg.Body)
+		}
 	case NAT_TRAVERSAL:
 		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
 		if peerAddr.IP.To4() == nil {
