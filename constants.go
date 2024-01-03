@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/chzyer/readline"
 )
 
 // TODO Organize this and rename some and split it by .go file
@@ -139,19 +141,26 @@ const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
 
 const (
-	EXIT_CMD          = "exit"
-	HELP_CMD          = "help"
-	LIST_PEERS_CMD    = "lspeers" // TODO Add --addr option
-	LIST_FILES_CMD    = "findrem"
-	CAT_FILE_CMD      = "curl"
-	DOWNLOAD_FILE_CMD = "wget"
-
 	CLI_PROMPT            = "> "
-	EXIT_MESSAGE          = "Exiting gracefully"
+	//EXIT_MESSAGE          = "Exiting gracefully"
 	READLINE_HISTORY_FILE = "/tmp/readline_history"
 )
 
-var CMD_LIST = []string{EXIT_CMD, HELP_CMD, LIST_PEERS_CMD, LIST_FILES_CMD, CAT_FILE_CMD, DOWNLOAD_FILE_CMD}
+type command struct {
+	Name string
+	Help string
+	PcItem readline.PrefixCompleterInterface
+}
+
+// TODO Command name appears twice every time
+var CMD_MAP = map[string]command{
+	"EXIT": {"exit", ": exits the program", readline.PcItem("exit")},
+	"HELP": {"help", ": shows help message", readline.PcItem("help")},
+	"LIST_PEERS": {"lspeers", ": shows the connected peers", readline.PcItem("lspeers")}, // TODO Add --addr option
+	"LIST_FILES": {"findrem", "PEER: shows the files shared by PEER", readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
+	"CAT_FILE": {"curl", "PATH: downloads and shows the file at PATH", readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
+	"DOWNLOAD_FILE": {"wget", "PATH: downloads recursively the directory or file at PATH", readline.PcItem("wget", readline.PcItemDynamic(pathAutoComplete))},
+}
 
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string

@@ -7,16 +7,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
-var helpMessage = fmt.Sprintf(`CMD [OPTION]
-    - %s: quit
-    - %s: shows this message
-    - %s: shows the connected peers
-    - %s PEER: shows the files shared by PEER
-    - %s PATH: cats the remote file at PATH, assumes that the path is absolute
-               i.e contains peer name
-    - %s PATH: downloads recursively the file or directory at PATH, assumes that
-               the path is absolute i.e contains peer name`,
-	stringSliceToAnySlice(CMD_LIST)...)
+var helpMessage = ""
 
 // str is the whole current line e.g. findrem jc
 func peersListAutoComplete(str string) []string {
@@ -65,17 +56,24 @@ func pathAutoComplete(line string) []string {
 }
 
 func mainMenu() error {
-	var completer = readline.NewPrefixCompleter(
-		readline.PcItem(EXIT_CMD),
-		readline.PcItem(HELP_CMD),
-		readline.PcItem(LIST_PEERS_CMD),
-		readline.PcItem(LIST_FILES_CMD, readline.PcItemDynamic(peersListAutoComplete)),
-		readline.PcItem(CAT_FILE_CMD, readline.PcItemDynamic(pathAutoComplete)),
-		readline.PcItem(DOWNLOAD_FILE_CMD, readline.PcItemDynamic(pathAutoComplete)))
+	if helpMessage == "" {
+		helpMessage += "PATH is PEER_NAME[PATH2] with PATH2 = /videos for example\n"
+		for _, v := range CMD_MAP {
+			helpMessage += "\t" + v.Name + " " + v.Help + "\n"
+		}
+		helpMessage = helpMessage[:len(helpMessage) - 1]
+	}
+
+	pcItems := []readline.PrefixCompleterInterface{}
+	for _, v := range CMD_MAP {
+		pcItems = append(pcItems, v.PcItem)
+	}
+
+	var completer = readline.NewPrefixCompleter(pcItems...)
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       CLI_PROMPT,
-		EOFPrompt:    EXIT_MESSAGE,
+		//EOFPrompt:    EXIT_MESSAGE,
 		HistoryFile:  READLINE_HISTORY_FILE,
 		AutoComplete: completer,
 	})
@@ -99,8 +97,11 @@ func mainMenu() error {
 func parseLine(line string) {
 	splittedLine := splitLine(line)
 
-	switch splittedLine[0] {
+	if len(splittedLine) == 0 {
+		return
+	}
 
+	switch splittedLine[0] {
 	case "test":
 		m, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, createHello())
 		if err != nil {
@@ -121,11 +122,11 @@ func parseLine(line string) {
 			fmt.Println(udpMsgToString(datum))
 		}
 
-	case EXIT_CMD:
+	case CMD_MAP["EXIT"].Name:
 		os.Exit(0)
-	case LIST_PEERS_CMD:
+	case CMD_MAP["LIST_PEERS"].Name:
 		restGetPeers(true)
-	case LIST_FILES_CMD:
+	case CMD_MAP["LIST_FILES"].Name:
 		if len(splittedLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
 		} else {
@@ -137,8 +138,7 @@ func parseLine(line string) {
 				fmt.Println(elt)
 			}
 		}
-	//case CAT_FILE_CMD:
-	case DOWNLOAD_FILE_CMD:
+	case CMD_MAP["CAT_FILE"].Name, CMD_MAP["DOWNLOAD_FILE"].Name:
 		if len(splittedLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
 		} else if len(splittedLine) == 2 { // We assume that splitLine[1] is <peer>/<path>
@@ -158,7 +158,14 @@ func parseLine(line string) {
 		}
 	case "":
 		return
-	default: // Includes HELP_CMD
+	default: // Includes HELP
 		fmt.Fprintln(os.Stderr, helpMessage)
+	}
+
+	if len(splittedLine) >= 2 && splittedLine[0] == CMD_MAP["CAT_FILE"].Name {
+		fileContents, err := os.ReadFile(splittedLine[1])
+		if err == nil {
+			fmt.Println(string(fileContents))
+		}
 	}
 }
