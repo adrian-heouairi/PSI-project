@@ -101,6 +101,21 @@ func parseLine(line string) {
 		return
 	}
 
+	var cmd *command
+	for _, v := range CMD_MAP {
+		if v.Name == splittedLine[0] {
+			cmd = &v
+		}
+	}
+
+	if cmd != nil {
+		if len(splittedLine) < cmd.MinArgc {
+			fmt.Fprintln(os.Stderr, helpMessage)
+			fmt.Fprintln(os.Stderr, CMD_TOO_FEW_ARGS)
+			return
+		}
+	}
+
 	switch splittedLine[0] {
 	case "test":
 		m, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, createHello())
@@ -122,39 +137,38 @@ func parseLine(line string) {
 			fmt.Println(udpMsgToString(datum))
 		}
 
+	case CMD_MAP["HELLO"].Name:
+		helloReply, err := ConnectAndSendAndReceive(splittedLine[1], createHello())
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		} else {
+			fmt.Println(udpMsgToString(helloReply))
+		}
 	case CMD_MAP["EXIT"].Name:
 		os.Exit(0)
 	case CMD_MAP["LIST_PEERS"].Name:
 		restGetPeers(true)
 	case CMD_MAP["LIST_FILES"].Name:
-		if len(splittedLine) < 2 {
-			fmt.Fprintln(os.Stderr, helpMessage)
-		} else {
-			pathHashMap, err := getPeerPathHashMap(splittedLine[1])
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-			for _, elt := range getKeys(pathHashMap) {
-				fmt.Println(elt)
-			}
+		pathHashMap, err := getPeerPathHashMap(splittedLine[1])
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		for _, elt := range getKeys(pathHashMap) {
+			fmt.Println(elt)
 		}
 	case CMD_MAP["CAT_FILE"].Name, CMD_MAP["DOWNLOAD_FILE"].Name:
-		if len(splittedLine) < 2 {
-			fmt.Fprintln(os.Stderr, helpMessage)
-		} else if len(splittedLine) == 2 { // We assume that splitLine[1] is <peer>/<path>
-			path := removeTrailingSlash(splittedLine[1])
-			// TODO : support peers whose name contains /
-			peerName := replaceAllRegexBy(path, "/.*", "")
-			filenamesAndHashes, err := getPeerPathHashMap(peerName)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
-			val, found := filenamesAndHashes[path]
-			if found {
-				downloadRecursive(peerName, val, path)
-			} else {
-				fmt.Fprintf(os.Stderr, "File %s not found\n", path)
-			}
+		path := removeTrailingSlash(splittedLine[1])
+		// TODO : support peers whose name contains /
+		peerName := replaceAllRegexBy(path, "/.*", "")
+		filenamesAndHashes, err := getPeerPathHashMap(peerName)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
+		val, found := filenamesAndHashes[path]
+		if found {
+			downloadRecursive(peerName, val, path)
+		} else {
+			fmt.Fprintf(os.Stderr, "File %s not found\n", path)
 		}
 	case "":
 		return
@@ -162,7 +176,7 @@ func parseLine(line string) {
 		fmt.Fprintln(os.Stderr, helpMessage)
 	}
 
-	if len(splittedLine) >= 2 && splittedLine[0] == CMD_MAP["CAT_FILE"].Name {
+	if splittedLine[0] == CMD_MAP["CAT_FILE"].Name {
 		fileContents, err := os.ReadFile(splittedLine[1])
 		if err == nil {
 			fmt.Println(string(fileContents))
