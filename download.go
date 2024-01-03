@@ -6,10 +6,17 @@ import (
 	"strings"
 )
 
-func writeBigFile(peerName string, datum datumTree, path string) error {
+// TODO Handle peers whose root is not a DIRECTORY datum
+
+func writeBigFile(peerName string, datum datumTree, path string, depth int) error {
 	for i, hash := range datum.ChildrenHashes {
+		if depth == 0 {
+			LOGGING_FUNC_F("Downloading big file %s whose root has %d children\n", path, len(datum.ChildrenHashes))
+			progressPercentage := int(float32(i) / float32(len(datum.ChildrenHashes)) * float32(100))
+			fmt.Printf("\rDownloading big file %s: %d %%", path, progressPercentage)
+		}
+
 		datumType, datumToCast, err := DownloadDatum(peerName, hash)
-		fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.ChildrenHashes), path)
 		if err != nil {
 			return err
 		}
@@ -19,10 +26,14 @@ func writeBigFile(peerName string, datum datumTree, path string) error {
 			writeChunk(path, newDatum.Contents)
 		} else if datumType == TREE {
 			newDatum := datumToCast.(datumTree)
-			writeBigFile(peerName, newDatum, path)
+			writeBigFile(peerName, newDatum, path, depth + 1)
 		} else {
 			return fmt.Errorf("children of big file should be big file or chunk")
 		}
+	}
+
+	if depth == 0 {
+		fmt.Printf("\rDownloading big file %s: 100 %%\n", path)
 	}
 
 	return nil
@@ -32,7 +43,6 @@ func writeBigFile(peerName string, datum datumTree, path string) error {
 
 // TODO handle case where an file becomes a directory
 func downloadRecursive(peerName string, hash []byte, path string) error {
-	fmt.Println("Downloading", path)
 	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
 		return err
@@ -41,6 +51,8 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
+
+		fmt.Println("Creating directory", path)
 
 		mkdirP(path)
 
@@ -51,11 +63,14 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 				return err
 			}
 			i++
-			fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
+			//fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
 		}
-		fmt.Println()
+		//fmt.Println()
 	} else if datumType == CHUNK {
 		datum := datumToCast.(datumChunk)
+
+		fmt.Println("Downloading single-chunk file", path)
+
 		os.Remove(path)
 		writeChunk(path, datum.Contents)
 	} else { // Tree/big file
@@ -63,11 +78,11 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 
 		os.Remove(path)
 
-		err = writeBigFile(peerName, datum, path)
+		err = writeBigFile(peerName, datum, path, 0)
 		if err != nil {
 			return err
 		}
-		fmt.Println()
+		//fmt.Println()
 	}
 
 	return nil
