@@ -186,13 +186,13 @@ func handleMsg(receivedMsg addrUdpMsg) {
 		helloReply, _ := createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
 		simpleSendMsgToAddr(receivedMsg.Addr, helloReply)
 		parsedHello, _ := parseHello(receivedMsg.Msg.Body)
-		if parsedHello.PeerName != OUR_PEER_NAME {
-			_, err = sendToAddrAndReceiveMsgWithReemissions(receivedMsg.Addr, createHello())
-			if err == nil {
+		//if parsedHello.PeerName != OUR_PEER_NAME {
+			//_, err = sendToAddrAndReceiveMsgWithReemissions(receivedMsg.Addr, createHello())
+			//if err == nil {
 				// We don't add even if SOFT error
 				peersAddAddr(parsedHello.PeerName, receivedMsg.Addr)
-			}
-		}
+			//}
+		//}
 		return
 	case PUBLIC_KEY:
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
