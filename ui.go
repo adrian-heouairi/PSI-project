@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/chzyer/readline"
 )
@@ -19,6 +18,7 @@ var helpMessage = fmt.Sprintf(`CMD [OPTION]
                the path is absolute i.e contains peer name`,
 	stringSliceToAnySlice(CMD_LIST)...)
 
+// str is the whole current line e.g. findrem jc
 func peersListAutoComplete(str string) []string {
 	peers, err := restGetPeers(false)
 	if err != nil {
@@ -27,14 +27,51 @@ func peersListAutoComplete(str string) []string {
 	return peers
 }
 
+func pathAutoComplete(line string) []string {
+	res := []string{}
+
+	restPeers, err := restGetPeers(false)
+	if err != nil {
+		return []string{}
+	}
+
+	for _, p := range restPeers {
+		res = append(res, p)
+		res = append(res, p + "/")
+	}
+
+	splittedLine := splitLine(line)
+
+	if len(splittedLine) < 2 {
+		return res
+	}
+
+	if grep("^[^/]+", splittedLine[1]) {
+		peerName := replaceAllRegexBy(splittedLine[1], "/.*", "")
+		_, found := peersGet(peerName)
+		if found {
+			pathHashMap, err := getPeerPathHashMap(peerName)
+			if err == nil {
+				for _, k := range getKeys(pathHashMap) {
+					if k != peerName {
+						res = append(res, k)
+					}
+				}
+			}
+		}
+	}
+
+	return res
+}
+
 func mainMenu() error {
 	var completer = readline.NewPrefixCompleter(
 		readline.PcItem(EXIT_CMD),
 		readline.PcItem(HELP_CMD),
 		readline.PcItem(LIST_PEERS_CMD),
 		readline.PcItem(LIST_FILES_CMD, readline.PcItemDynamic(peersListAutoComplete)),
-		readline.PcItem(CAT_FILE_CMD, readline.PcItemDynamic(peersListAutoComplete)),
-		readline.PcItem(DOWNLOAD_FILE_CMD, readline.PcItemDynamic(peersListAutoComplete)))
+		readline.PcItem(CAT_FILE_CMD, readline.PcItemDynamic(pathAutoComplete)),
+		readline.PcItem(DOWNLOAD_FILE_CMD, readline.PcItemDynamic(pathAutoComplete)))
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:       CLI_PROMPT,
@@ -54,17 +91,15 @@ func mainMenu() error {
 			return err
 		}
 
+		// TODO Support quotes in line
 		parseLine(line) // The line passed doesn't have \n at the end
 	}
 }
 
 func parseLine(line string) {
-	line = strings.TrimSpace(line)
-	line = replaceAllRegexBy(line, " +", " ")
-	// Because of bad behavior, strings.Split("", " ") will return []string{""} instead of []string{}
-	splitLine := strings.Split(line, " ")
+	splittedLine := splitLine(line)
 
-	switch splitLine[0] {
+	switch splittedLine[0] {
 
 	case "test":
 		m, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, createHello())
@@ -91,10 +126,10 @@ func parseLine(line string) {
 	case LIST_PEERS_CMD:
 		restGetPeers(true)
 	case LIST_FILES_CMD:
-		if len(splitLine) < 2 {
+		if len(splittedLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
 		} else {
-			pathHashMap, err := getPeerPathHashMap(splitLine[1])
+			pathHashMap, err := getPeerPathHashMap(splittedLine[1])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
@@ -104,10 +139,10 @@ func parseLine(line string) {
 		}
 	//case CAT_FILE_CMD:
 	case DOWNLOAD_FILE_CMD:
-		if len(splitLine) < 2 {
+		if len(splittedLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
-		} else if len(splitLine) == 2 { // We assume that splitLine[1] is <peer>/<path>
-			path := removeTrailingSlash(splitLine[1])
+		} else if len(splittedLine) == 2 { // We assume that splitLine[1] is <peer>/<path>
+			path := removeTrailingSlash(splittedLine[1])
 			// TODO : support peers whose name contains /
 			peerName := replaceAllRegexBy(path, "/.*", "")
 			filenamesAndHashes, err := getPeerPathHashMap(peerName)

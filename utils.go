@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -196,4 +197,11 @@ func getHashOfByteSlice(slice []byte) []byte {
 func grep(pattern string, content string) bool {
 	res, _ := regexp.MatchString(pattern, content)
 	return res
+}
+
+func splitLine(line string) []string {
+	line = strings.TrimSpace(line)
+	line = replaceAllRegexBy(line, " +", " ")
+	// strings.Split("", " ") will return []string{""} instead of []string{}
+	return strings.Split(line, " ")
 }
