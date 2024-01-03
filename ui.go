@@ -100,11 +100,13 @@ func runLine(line string) {
 	if len(splittedLine) == 0 {
 		return
 	}
-
+	
+	var v command
 	var cmd *command
-	for _, v := range CMD_MAP {
+	for _, v = range CMD_MAP {
 		if v.Name == splittedLine[0] {
 			cmd = &v
+			break
 		}
 	}
 

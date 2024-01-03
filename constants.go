@@ -149,7 +149,7 @@ const (
 type command struct {
 	Name string
 	Help string
-	MinArgc int
+	MinArgc int // Including the command
 	PcItem readline.PrefixCompleterInterface
 }
 
