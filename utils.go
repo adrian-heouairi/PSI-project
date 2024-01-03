@@ -14,9 +14,9 @@ import (
 )
 
 // Wraps Mkdir func call
-// -path: path of the directory to be created
+// - path: path of the directory to be created
 // Returns: error if the user has not writing right in working directory
-func mkdir(path string) error {
+func mkdirP(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(path, 0755)
@@ -191,4 +191,9 @@ func getHashOfByteSlice(slice []byte) []byte {
 	hasher := sha256.New()
 	hasher.Write(slice)
 	return hasher.Sum(nil)
+}
+
+func grep(pattern string, content string) bool {
+	res, _ := regexp.MatchString(pattern, content)
+	return res
 }

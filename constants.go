@@ -44,13 +44,23 @@ const MSG_QUEUE_CHECK_NUMBER = 250
 
 const NUMBER_OF_REEMISSIONS = 4
 
-const NAT_TRAVERSAL_RETRIES = 3 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
+const NAT_TRAVERSAL_RETRIES = 10 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
 
 const MSG_QUEUE_SIZE = 8192
 
 const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
-var LOGGING_FUNC = log.Println
+func LOGGING_FUNC(v ...any) {
+	if DEBUG {
+		log.Println(v...)
+	}
+}
+
+func LOGGING_FUNC_F(fmt string, v ...any) {
+	if DEBUG {
+		log.Printf(fmt, v...)
+	}
+}
 
 func checkErr(err error) {
 	if err != nil {

@@ -12,7 +12,7 @@ func main() {
 
 	initOurPeerName()
 
-	err := mkdir(DOWNLOAD_DIR)
+	err := mkdirP(DOWNLOAD_DIR)
 	checkErr(err)
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)

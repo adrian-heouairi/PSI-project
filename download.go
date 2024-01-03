@@ -37,10 +37,13 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 	if err != nil {
 		return err
 	}
-	mkdir(replaceAllRegexBy(path, "/[^/]+$", ""))
+	mkdirP(replaceAllRegexBy(path, "/[^/]+$", ""))
 
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
+
+		mkdirP(path)
+
 		i := 0
 		for key, value := range datum.Children {
 			err := downloadRecursive(peerName, value, path+"/"+key)
@@ -70,7 +73,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 	return nil
 }
 
-func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error {
+func getPeerPathHashMapRecursive(peerName string, hash []byte, path string, currentMap map[string][]byte) error {
 	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
 		return err
@@ -81,19 +84,22 @@ func getPeerAllDataHashesRecursive(peerName string, hash []byte, path string, cu
 		datum := datumToCast.(datumDirectory)
 
 		for key, value := range datum.Children { // TODO Sort keys by alphabetical order
-			getPeerAllDataHashesRecursive(peerName, value, path+"/"+key, currentMap)
+			err = getPeerPathHashMapRecursive(peerName, value, path+"/"+key, currentMap)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func getPeerAllDataHashes(peerName string) (map[string][]byte, error) {
+func getPeerPathHashMap(peerName string) (map[string][]byte, error) {
 	res := make(map[string][]byte)
 	root, err := GetRootOfPeerUDPThenREST(peerName)
 	if err != nil {
 		return nil, err
 	}
-	err = getPeerAllDataHashesRecursive(peerName, root, strings.Replace(peerName, "/", "_", -1), res)
+	err = getPeerPathHashMapRecursive(peerName, root, strings.Replace(peerName, "/", "_", -1), res)
 	if err != nil {
 		return nil, err
 	}

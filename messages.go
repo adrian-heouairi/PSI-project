@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"math/rand"
@@ -140,7 +139,8 @@ func udpMsgToString(msg udpMsg) string {
 	return "Id: " + fmt.Sprint(msg.Id) + "\n" +
 		"Type: " + typeAsString + "\n" +
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
-		"Body: " + string(msg.Body[:lengthToTake]) +
+		"Abbreviated raw body: " + string(msg.Body[:lengthToTake]) + "\n" +
+		"Abbreviated readable body: " + fmt.Sprint(msg.Body[:lengthToTake]) +
 		childrenNames
 }
 
@@ -290,7 +290,8 @@ func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
-	return received-sent == MSG_VALID_PAIR
+	//return (received == NO_DATUM && sent == GET_DATUM)
+	return received - sent == MSG_VALID_PAIR
 }
 
 // Checks datum integrity.
@@ -301,9 +302,7 @@ func checkMsgTypePair(sent uint8, received uint8) bool {
 func checkDatumIntegrity(body []byte) error {
 	statedHash := body[:HASH_SIZE]
 
-	hasher := sha256.New()
-	hasher.Write(body[DATUM_TYPE_INDEX:])
-	computedHash := hasher.Sum(nil)
+	computedHash := getHashOfByteSlice(body[DATUM_TYPE_INDEX:])
 
 	if !bytes.Equal(statedHash, computedHash) {
 		return fmt.Errorf("corrupted datum")

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"os"
 	"strings"
@@ -55,19 +54,15 @@ func mainMenu() error {
 			return err
 		}
 
-		parseLine(line)
+		parseLine(line) // The line passed doesn't have \n at the end
 	}
 }
 
 func parseLine(line string) {
 	line = strings.TrimSpace(line)
 	line = replaceAllRegexBy(line, " +", " ")
+	// Because of bad behavior, strings.Split("", " ") will return []string{""} instead of []string{}
 	splitLine := strings.Split(line, " ")
-
-	if len(splitLine) == 0 {
-		fmt.Fprintln(os.Stderr, helpMessage)
-		return
-	}
 
 	switch splitLine[0] {
 
@@ -78,8 +73,7 @@ func parseLine(line string) {
 		} else {
 			fmt.Println("Received HelloReply from teammate:", udpMsgToString(m))
 		}
-		hasher := sha256.New()
-		rootMsg := createMsg(ROOT, hasher.Sum(nil))
+		rootMsg := createMsg(ROOT, ourTree.Hash)
 		rootReply, err := ConnectAndSendAndReceive(OUR_OTHER_PEER_NAME, rootMsg)
 		checkErr(err)
 		if err == nil {
@@ -100,16 +94,15 @@ func parseLine(line string) {
 		if len(splitLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
 		} else {
-			filenamesAndHashes, err := getPeerAllDataHashes(splitLine[1])
+			pathHashMap, err := getPeerPathHashMap(splitLine[1])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
-			availableFiles := getKeys(filenamesAndHashes)
-			for _, elt := range availableFiles {
+			for _, elt := range getKeys(pathHashMap) {
 				fmt.Println(elt)
 			}
 		}
-		//case CAT_FILE_CMD:
+	//case CAT_FILE_CMD:
 	case DOWNLOAD_FILE_CMD:
 		if len(splitLine) < 2 {
 			fmt.Fprintln(os.Stderr, helpMessage)
@@ -117,7 +110,7 @@ func parseLine(line string) {
 			path := removeTrailingSlash(splitLine[1])
 			// TODO : support peers whose name contains /
 			peerName := replaceAllRegexBy(path, "/.*", "")
-			filenamesAndHashes, err := getPeerAllDataHashes(peerName)
+			filenamesAndHashes, err := getPeerPathHashMap(peerName)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
@@ -128,6 +121,8 @@ func parseLine(line string) {
 				fmt.Fprintf(os.Stderr, "File %s not found\n", path)
 			}
 		}
+	case "":
+		return
 	default: // Includes HELP_CMD
 		fmt.Fprintln(os.Stderr, helpMessage)
 	}

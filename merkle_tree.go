@@ -34,6 +34,7 @@ type merkleTreeNode struct {
 }
 
 var ourTree *merkleTreeNode
+// Maps a hash as string(h), with h being the hash in []byte to a pointer of the merkleTreeNode that represents it
 var ourTreeMap map[string]*merkleTreeNode
 
 func (node *merkleTreeNode) basename() string {
@@ -74,8 +75,8 @@ func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleT
 			ret.Type = CHUNK
 			ret.ChunkIndex = 0
 
-			hashOfChunk, _, _ := getChunkHashAndContents(path, 0)
-			ret.Hash = hashOfChunk
+			chunkWithoutType, _ := getChunkContents(path, 0)
+			ret.Hash = getChunkHash(chunkWithoutType)
 		} else {
 			// TODO BIG_FILE
 			ret.Type = TREE
@@ -86,15 +87,15 @@ func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleT
 	return ret, nil
 }
 
-// Returns the hash and the content of the chunk at index chunkIndex in the file at path
-func getChunkHashAndContents(path string, chunkIndex int64) ([]byte, []byte, error) {
+// Returns the content of the chunk at index chunkIndex in the file at path (without CHUNK type byte as first byte)
+func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 	fi, err := os.Stat(path)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if fi.IsDir() {
-		return nil, nil, fmt.Errorf("can't obtain a chunk of a directory")
+		return nil, fmt.Errorf("can't obtain a chunk of a directory")
 	}
 
 	size := fi.Size()
@@ -108,12 +109,12 @@ func getChunkHashAndContents(path string, chunkIndex int64) ([]byte, []byte, err
 	}
 
 	if chunkIndex > lastChunkIndex {
-		return nil, nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
+		return nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 	defer f.Close()
 
@@ -126,17 +127,23 @@ func getChunkHashAndContents(path string, chunkIndex int64) ([]byte, []byte, err
 
 	_, err = f.Seek(chunkIndex*CHUNK_MAX_SIZE, 0)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	bytesRead, err := f.Read(buf)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	} else if bytesRead != len(buf) {
-		return nil, nil, fmt.Errorf("wrong size read")
+		return nil, fmt.Errorf("wrong size read")
 	}
 
-	return getHashOfByteSlice(buf), buf, nil
+	return buf, nil
+}
+
+func getChunkHash(chunkWithoutType []byte) []byte {
+	chunkWithType := []byte{CHUNK}
+	chunkWithType = append(chunkWithType, chunkWithoutType...)
+	return getHashOfByteSlice(chunkWithType)
 }
 
 func (node *merkleTreeNode) toString() string {
@@ -197,7 +204,7 @@ func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
 	body = append(body, node.Type)
 	switch node.Type {
 	case CHUNK:
-		_, chunk, err := getChunkHashAndContents(node.Path, int64(node.ChunkIndex))
+		chunk, err := getChunkContents(node.Path, int64(node.ChunkIndex))
 		if err != nil {
 			return udpMsg{}, err
 		}
@@ -225,31 +232,3 @@ func (node *merkleTreeNode) toMap() map[string]*merkleTreeNode {
 	node.toMapRecursively(currentMap)
 	return currentMap
 }
-
-/*
-ourMap = map[[]byte]*merkleTreeNode
-found,val := ourMap[hash]
-if !found {
-    replyMsg = NODATUM hash
-}
-replyMsg = val.toDatum
-*/
-
-/*func createChunkMsg(id uint32) udpMsg {
-    body := []byte{CHUNK, 65, 66, 67}
-    body = append(getHashOfChunk(body),body...)
-    return  createMsgWithId(id,DATUM,body)
-}
-
-func createRootDatum(id uint32) udpMsg {
-    body := []byte{DIRECTORY}
-    body = append(body,[]byte("READMEAS891111111111111111111111")...)
-    body = append(getHashOfChunk(body),body...)
-    res := createMsgWithId(id,DATUM,body)
-    return res
-}
-
-func createRoot(id uint32) udpMsg {
-    body := getHashOfChunk(createRootDatum(id).Body[32:])
-    return createMsgWithId(id,ROOT_REPLY,body)
-}*/
