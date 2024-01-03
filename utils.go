@@ -207,13 +207,23 @@ func splitLine(line string) []string {
 }
 
 func getNbOfChunks(path string) (int, error) {
-    fi, err := os.Stat(path)
-    if err != nil {
-        return -1, err
-    }
-    res := int(fi.Size()) / CHUNK_MAX_SIZE
-    if fi.Size() % CHUNK_MAX_SIZE != 0 {
-        res++
-    }
-    return res, nil
+	fi, err := os.Stat(path)
+	if err != nil {
+		return -1, err
+	}
+	res := int(fi.Size()) / CHUNK_MAX_SIZE
+	if fi.Size()%CHUNK_MAX_SIZE != 0 {
+		res++
+	}
+	return res, nil
+}
+
+// Stack
+func push(q []*merkleTreeNode, elt *merkleTreeNode) []*merkleTreeNode {
+	return append(q, elt)
+}
+
+// Stack
+func pop(q []*merkleTreeNode) ([]*merkleTreeNode, *merkleTreeNode) {
+	return q[:len(q)-1], q[len(q)-1]
 }

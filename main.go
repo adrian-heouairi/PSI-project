@@ -25,6 +25,5 @@ func main() {
 
 	go listenAndRespond()
 	go keepAliveMainPeer()
-    //mainMenu()
-    pathToBigFile("../roc2.png")
+    mainMenu()
 }
