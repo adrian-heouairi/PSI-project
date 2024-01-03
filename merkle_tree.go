@@ -29,11 +29,12 @@ type merkleTreeNode struct {
 	// CHUNK, TREE, DIRECTORY
 	Type byte
 
-	// nil if not CHUNK
+	// -1 if not CHUNK
 	ChunkIndex int
 }
 
 var ourTree *merkleTreeNode
+
 // Maps a hash as string(h), with h being the hash in []byte to a pointer of the merkleTreeNode that represents it
 var ourTreeMap map[string]*merkleTreeNode
 
@@ -49,7 +50,7 @@ func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleT
 		return nil, err
 	}
 
-	ret := &merkleTreeNode{Children: []*merkleTreeNode{}, Parent: parent, Path: path, ChunkIndex: -1}
+	ret := newMerkleTreeNode(parent, path)
 
 	if fileInfo.IsDir() {
 		ret.Type = DIRECTORY
@@ -78,13 +79,30 @@ func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleT
 			chunkWithoutType, _ := getChunkContents(path, 0)
 			ret.Hash = getChunkHash(chunkWithoutType)
 		} else {
-			// TODO BIG_FILE
-			ret.Type = TREE
-			return nil, fmt.Errorf("BIG_FILE not implemented")
+            fillBigFile(ret)
 		}
 	}
 
 	return ret, nil
+}
+
+func newMerkleTreeNode(parent *merkleTreeNode, path string) *merkleTreeNode {
+    return &merkleTreeNode{parent, path, []*merkleTreeNode{}, ChunkIndex: -1}
+}
+
+// Fills the Children field of node.
+// node is assumed of type TREE and correct (i.e. Type and Path already initialized)
+func fillBigFile(node *merkleTreeNode) {
+	chunkCapacity := MAX_TREE_CHILDREN
+    currentBigFile := node
+    nbChunk, _ := getNbOfChunks(node.Path)
+	for chunkCapacity < nbChunk {
+        if len(currentBigFile.Children) == MAX_TREE_CHILDREN {
+            currentBigFile = 
+        }
+        node.Children = append(node.Children, &merkleTreeNode{}
+        chunkCapacity += MAX_TREE_CHILDREN - 1 
+	}
 }
 
 // Returns the content of the chunk at index chunkIndex in the file at path (without CHUNK type byte as first byte)
@@ -195,7 +213,7 @@ func exportMerkleTree() error {
 	}
 	ourTree.computeHashesRecursively()
 
-    ourTreeMap = ourTree.toMap()
+	ourTreeMap = ourTree.toMap()
 	return nil
 }
 

@@ -205,3 +205,15 @@ func splitLine(line string) []string {
 	// strings.Split("", " ") will return []string{""} instead of []string{}
 	return strings.Split(line, " ")
 }
+
+func getNbOfChunks(path string) (int, error) {
+    fi, err := os.Stat(path)
+    if err != nil {
+        return -1, err
+    }
+    res := int(fi.Size()) / CHUNK_MAX_SIZE
+    if fi.Size() % CHUNK_MAX_SIZE != 0 {
+        res++
+    }
+    return res, nil
+}
