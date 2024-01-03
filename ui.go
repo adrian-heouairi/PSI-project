@@ -59,7 +59,7 @@ func mainMenu() error {
 	if helpMessage == "" {
 		helpMessage += "PATH is PEER_NAME[PATH2] with PATH2 = /videos for example\n"
 		for _, v := range CMD_MAP {
-			helpMessage += "\t" + v.Name + " " + v.Help + "\n"
+			helpMessage += "\t" + v.Name + v.Help + "\n"
 		}
 		helpMessage = helpMessage[:len(helpMessage) - 1]
 	}
@@ -90,11 +90,11 @@ func mainMenu() error {
 		}
 
 		// TODO Support quotes in line
-		parseLine(line) // The line passed doesn't have \n at the end
+		runLine(line) // The line passed doesn't have \n at the end
 	}
 }
 
-func parseLine(line string) {
+func runLine(line string) {
 	splittedLine := splitLine(line)
 
 	if len(splittedLine) == 0 {
