@@ -39,9 +39,7 @@ func writeBigFile(peerName string, datum datumTree, path string, depth int) erro
 	return nil
 }
 
-// TODO Redo progress indicator
-
-// TODO handle case where an file becomes a directory
+// TODO handle case where a file becomes a directory (peer updated their tree)
 func downloadRecursive(peerName string, hash []byte, path string) error {
 	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
@@ -63,9 +61,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 				return err
 			}
 			i++
-			//fmt.Printf("\rDownloaded %d/%d chlidren of %s", i+1, len(datum.Children), path)
 		}
-		//fmt.Println()
 	} else if datumType == CHUNK {
 		datum := datumToCast.(datumChunk)
 
@@ -82,7 +78,6 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 		if err != nil {
 			return err
 		}
-		//fmt.Println()
 	}
 
 	return nil
