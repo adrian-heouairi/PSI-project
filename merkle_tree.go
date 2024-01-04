@@ -249,10 +249,14 @@ func (node *merkleTreeNode) computeHashesRecursively() {
 			value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
 			value = append(value, child.Hash...)
 		}
-		node.Hash = getHashOfByteSlice(value)
-	} else {
-		panic("Big file not supported")
+	} else { // Big file
+		for _, child := range node.Children {
+			child.computeHashesRecursively()
+			value = append(value, child.Hash...)
+		}
 	}
+
+	node.Hash = getHashOfByteSlice(value)
 }
 
 func exportMerkleTree() error {
@@ -283,7 +287,9 @@ func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
 			body = append(body, child.Hash...)
 		}
 	case TREE:
-		panic("big file not implemented yet")
+		for _, child := range node.Children {
+			body = append(body, child.Hash...)
+		}
 	}
 	return createMsgWithId(id, DATUM, body), nil
 }
