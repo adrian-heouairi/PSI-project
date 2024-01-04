@@ -80,7 +80,7 @@ func restGetRootOfPeer(peerName string) ([]byte, error) {
 		// TODO Return the hash of the empty string?
 		return nil, fmt.Errorf(peerName + " has not declared a root yet")
 	} else if resp.StatusCode == HTTP_NOT_FOUND {
-		return nil, fmt.Errorf(peerName + "is not known by server")
+		return nil, fmt.Errorf(peerName + " is not known by server")
 	}
 
 	if resp.StatusCode != HTTP_OK {

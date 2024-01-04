@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"math/rand"
@@ -131,11 +130,7 @@ func udpMsgToString(msg udpMsg) string {
 			nbEntry := (len(msg.Body) - int(DATUM_CONTENTS_INDEX)) / int(DIRECTORY_ENTRY_SIZE)
 			startOffset := DATUM_CONTENTS_INDEX
 			for i := 0; i < nbEntry; i++ {
-				name, err := byteSliceToStringWithoutTrailingZeroes(msg.Body[startOffset+i*DIRECTORY_ENTRY_SIZE : startOffset+i*DIRECTORY_ENTRY_SIZE+FILENAME_MAX_SIZE])
-				if err != nil {
-					LOGGING_FUNC(err)
-					return ""
-				}
+				name := zeroPaddedByteSliceToString(msg.Body[startOffset+i*DIRECTORY_ENTRY_SIZE : startOffset+i*DIRECTORY_ENTRY_SIZE+FILENAME_MAX_SIZE])
 				childrenNames += name + "\n\t"
 			}
 		}
@@ -144,24 +139,9 @@ func udpMsgToString(msg udpMsg) string {
 	return "Id: " + fmt.Sprint(msg.Id) + "\n" +
 		"Type: " + typeAsString + "\n" +
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
-		"Body: " + string(msg.Body[:lengthToTake]) +
+		"Abbreviated body as string: " + string(msg.Body[:lengthToTake]) + "\n" +
+		"Abbreviated body bytes: " + fmt.Sprint(msg.Body[:lengthToTake]) +
 		childrenNames
-}
-
-// Removes the trailing zeroes from name.
-// - name: from which to remove \0s
-// - Returns: a valid string or error if data is not valid
-func byteSliceToStringWithoutTrailingZeroes(name []byte) (string, error) {
-	i := 0
-	for name[i] != 0 {
-		i++
-	}
-
-	if i == 0 {
-		return "", fmt.Errorf("empty filenames are not allowed")
-	}
-
-	return string(name[:i]), nil
 }
 
 // Parses a byte slice represneting a directory.
@@ -184,11 +164,7 @@ func parseDirectory(body []byte) (map[string][]byte, error) {
 	for i := 0; i < int(nbEntry); i++ {
 		keyStart := int(DATUM_CONTENTS_INDEX) + i*int(DIRECTORY_ENTRY_SIZE)
 		valueStart := keyStart + FILENAME_MAX_SIZE
-		filename, err := byteSliceToStringWithoutTrailingZeroes(body[keyStart:valueStart])
-
-		if err != nil {
-			return nil, err
-		}
+		filename := zeroPaddedByteSliceToString(body[keyStart:valueStart])
 
 		res[filename] = body[valueStart : valueStart+HASH_SIZE]
 	}
@@ -314,6 +290,7 @@ func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
 }
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
+	//return (received == NO_DATUM && sent == GET_DATUM)
 	return received-sent == MSG_VALID_PAIR
 }
 
@@ -325,9 +302,7 @@ func checkMsgTypePair(sent uint8, received uint8) bool {
 func checkDatumIntegrity(body []byte) error {
 	statedHash := body[:HASH_SIZE]
 
-	hasher := sha256.New()
-	hasher.Write(body[DATUM_TYPE_INDEX:])
-	computedHash := hasher.Sum(nil)
+	computedHash := getHashOfByteSlice(body[DATUM_TYPE_INDEX:])
 
 	if !bytes.Equal(statedHash, computedHash) {
 		return fmt.Errorf("corrupted datum")

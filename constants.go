@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/chzyer/readline"
 )
 
 // TODO Organize this and rename some and split it by .go file
@@ -13,11 +15,14 @@ const SERVER_ADDRESS = "https://jch.irif.fr:8443"
 const PEERS_PATH = "/peers/"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
+const SHARED_FILES_DIR = "../PSI-shared-files"
 const UDP_LISTEN_PORT = 8444
 const KEEP_ALIVE_PERIOD = 30 * time.Second
 
 var OUR_PEER_NAME string
 var OUR_OTHER_PEER_NAME string
+
+var DEBUG bool = false
 
 func initOurPeerName() {
 	hostname, _ := os.Hostname()
@@ -42,13 +47,23 @@ const MSG_QUEUE_CHECK_NUMBER = 250
 
 const NUMBER_OF_REEMISSIONS = 4
 
-const NAT_TRAVERSAL_RETRIES = 3 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
+const NAT_TRAVERSAL_RETRIES = 10 // We will send Hello (NUMBER_OF_REEMISSIONS + 1) * NAT_TRAVERSAL_RETRIES during our or their NAT traversal
 
-const MSG_QUEUE_SIZE = 1024
+const MSG_QUEUE_SIZE = 8192
 
 const PRINT_MSG_BODY_TRUNCATE_SIZE = 100
 
-var LOGGING_FUNC = log.Println
+func LOGGING_FUNC(v ...any) {
+	if DEBUG {
+		log.Println(v...)
+	}
+}
+
+func LOGGING_FUNC_F(fmt string, v ...any) {
+	if DEBUG {
+		log.Printf(fmt, v...)
+	}
+}
 
 func checkErr(err error) {
 	if err != nil {
@@ -127,19 +142,31 @@ const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
 
 const (
-	EXIT_CMD          = "exit"
-	HELP_CMD          = "help"
-	LIST_PEERS_CMD    = "lspeers" // TODO Add --addr option
-	LIST_FILES_CMD    = "findrem"
-	CAT_FILE_CMD      = "curl"
-	DOWNLOAD_FILE_CMD = "wget"
-
-	CLI_PROMPT            = "> "
-	EXIT_MESSAGE          = "Exiting gracefully"
+	CLI_PROMPT = "> "
+	//EXIT_MESSAGE          = "Exiting gracefully"
 	READLINE_HISTORY_FILE = "/tmp/readline_history"
 )
 
-var CMD_LIST = []string{EXIT_CMD, HELP_CMD, LIST_PEERS_CMD, LIST_FILES_CMD, CAT_FILE_CMD, DOWNLOAD_FILE_CMD}
+type command struct {
+	Name    string
+	Help    string
+	MinArgc int // Including the command
+	PcItem  readline.PrefixCompleterInterface
+}
+
+// TODO Command name appears twice every time
+// To add a new command: add it here and in the switch case of runLine(line string)
+var CMD_MAP = map[string]command{
+	"EXIT":          {"exit", ": exits the program", 1, readline.PcItem("exit")},
+	"HELP":          {"help", ": shows help message", 1, readline.PcItem("help")},
+	"LIST_PEERS":    {"lspeers", ": shows the connected peers", 1, readline.PcItem("lspeers")}, // TODO Add --addr option
+	"LIST_FILES":    {"findrem", " PEER: shows the files shared by PEER", 2, readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
+	"CAT_FILE":      {"curl", " PATH: downloads and shows the file at PATH", 2, readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
+	"DOWNLOAD_FILE": {"wget", " PATH: downloads recursively the directory or file at PATH", 2, readline.PcItem("wget", readline.PcItemDynamic(pathAutoComplete))},
+	"HELLO":         {"hello", " PEER: sends at least two Hellos to PEER", 2, readline.PcItem("hello", readline.PcItemDynamic(peersListAutoComplete))},
+}
+
+const CMD_TOO_FEW_ARGS = "Invalid line: too few arguments"
 
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string

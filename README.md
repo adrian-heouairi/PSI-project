@@ -19,6 +19,9 @@
 
 ========================================
 
++ compute hashes in all the tree TODO
++ handle GET_DATUM TODO
++ handle root that is not DIRECTORY TODO
 + implement IPv6 TODO
 + ask Root with UDP and try REST if it fails TODO
 + handle msg :

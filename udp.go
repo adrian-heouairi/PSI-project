@@ -2,7 +2,6 @@ package main
 
 import (
 	"container/list"
-	"crypto/sha256"
 	"fmt"
 	"net"
 	"sync"
@@ -14,12 +13,11 @@ var connIPv6 *net.UDPConn // TODO Implement IPv6 e.g. use the right conn accordi
 
 // TODO Send ErrorReply
 // TODO Vérifier qu'on peut envoyer des messages à AS
-// TODO Enlever une IP à laquelle on ne peut pas parler lors des réémissions
 
 // Protected by a RWMutex
 // If we received a Hello we send HelloReply and we assume the address is valid and add it to this map
 // If we have sent a Hello and received a HelloReply we consider the address valid and add it to this map
-// TODO If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map (and the key if the slice becomes empty)
+// If we don't receive a reply to a request after NUMBER_OF_REEMISSIONS we consider the address invalid and remove it from this map (and the key if the slice becomes empty)
 // We don't remove an address from this map after 180 s with nothing sent or received
 var peers map[string][]*net.UDPAddr
 var peersMutex *sync.RWMutex
@@ -112,11 +110,16 @@ func initUdp() error {
 	if err != nil {
 		return err
 	}
+	LOGGING_FUNC("Binding", v4ListenAddr.String())
+
+	// TODO Works, but check that there is never a NAT traversal
+	peersAddAddr(OUR_PEER_NAME, &net.UDPAddr{IP: []byte{127, 0, 0, 1}, Port: UDP_LISTEN_PORT})
 
 	v6ListenAddr, err := net.ResolveUDPAddr("udp6", ":"+fmt.Sprint(UDP_LISTEN_PORT))
 	if err != nil {
 		return err
 	}
+	LOGGING_FUNC("Binding", v6ListenAddr.String())
 
 	connIPv4, err = net.ListenUDP("udp4", v4ListenAddr)
 	if err != nil {
@@ -176,15 +179,36 @@ func handleMsg(receivedMsg addrUdpMsg) {
 
 	var replyMsg udpMsg
 	switch receivedMsg.Msg.Type {
-	case HELLO: // TODO Implement others
-		hello, _ := parseHello(receivedMsg.Msg.Body)
-		peersAddAddr(hello.PeerName, receivedMsg.Addr)
-		replyMsg, _ = createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
+	case NOOP:
+		return
+	case HELLO:
+		// TODO Try NAT traversal to send Hello?
+		helloReply, _ := createComplexHello(receivedMsg.Msg.Id, HELLO_REPLY)
+		simpleSendMsgToAddr(receivedMsg.Addr, helloReply)
+		parsedHello, _ := parseHello(receivedMsg.Msg.Body)
+		//if parsedHello.PeerName != OUR_PEER_NAME {
+		//_, err = sendToAddrAndReceiveMsgWithReemissions(receivedMsg.Addr, createHello())
+		//if err == nil {
+		// We don't add even if SOFT error
+		peersAddAddr(parsedHello.PeerName, receivedMsg.Addr)
+		//}
+		//}
+		return
 	case PUBLIC_KEY:
 		replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, []byte{})
 	case ROOT:
-		hasher := sha256.New()
-		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, hasher.Sum(nil))
+		replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, ourTree.Hash)
+	case GET_DATUM:
+		value, found := ourTreeMap[string(receivedMsg.Msg.Body)]
+		if found {
+			replyMsg, err = value.toDatum(receivedMsg.Msg.Id)
+			if err != nil {
+				LOGGING_FUNC(err)
+				return
+			}
+		} else {
+			replyMsg = createMsgWithId(receivedMsg.Msg.Id, NO_DATUM, receivedMsg.Msg.Body)
+		}
 	case NAT_TRAVERSAL:
 		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
 		if peerAddr.IP.To4() == nil {
@@ -192,9 +216,12 @@ func handleMsg(receivedMsg addrUdpMsg) {
 			return
 		}
 
+		LOGGING_FUNC("NAT traversal started by peer", peerAddr.String())
+
 		var theirNatTraversalErr error
 		for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
 			_, theirNatTraversalErr = sendToAddrAndReceiveMsgWithReemissions(peerAddr, createHello())
+			// A SOFT error is not tolerated
 			if theirNatTraversalErr == nil {
 				break
 			}
@@ -208,6 +235,12 @@ func handleMsg(receivedMsg addrUdpMsg) {
 	default:
 		LOGGING_FUNC("received request that we don't handle: " + udpMsgToString(receivedMsg.Msg))
 		return
+	}
+
+	if DEBUG {
+		t, _ := byteToMsgTypeAsStr(receivedMsg.Msg.Type)
+		t2, _ := byteToMsgTypeAsStr(replyMsg.Type)
+		fmt.Printf("From %s: received ID %d, sent ID %d, received type %s, sent type %s\n", receivedMsg.Addr.String(), receivedMsg.Msg.Id, replyMsg.Id, t, t2)
 	}
 
 	// Note that we reply to peers even if they have never sent Hello
@@ -252,14 +285,14 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
 }
 
 // TODO Check that we don't send replies or requests without a reply e.g. NoOp
-// TODO The error returned should allow the caller to tell if NoDatum or ErrorReply
 // This is not supposed to modify peers
+// This function has errors that start by "SOFT ", they mean that a reply was received but it was invalid. If an error is not "SOFT ", assume that a reply was not received.
 func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
 	var retrieveErr error
 	var replyMsg addrUdpMsg
 	for i := 0; i < NUMBER_OF_REEMISSIONS+1; i++ {
 		if i != 0 {
-			fmt.Printf("Reemission %d of ID %d\n", i, toSend.Id)
+			LOGGING_FUNC_F("Reemission %d of ID %d\n", i, toSend.Id)
 		}
 
 		err := simpleSendMsgToAddr(peerAddr, toSend)
@@ -278,14 +311,20 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
 		return udpMsg{}, retrieveErr
 	}
 
+	if DEBUG {
+		t, _ := byteToMsgTypeAsStr(toSend.Type)
+		t2, _ := byteToMsgTypeAsStr(replyMsg.Msg.Type)
+		fmt.Printf("To %s: sent ID %d, received ID %d, sent type %s, received type %s\n", peerAddr.String(), toSend.Id, replyMsg.Msg.Id, t, t2)
+	}
+
 	err := checkMsgIntegrity(replyMsg.Msg)
 	if err != nil {
-		return udpMsg{}, err
+		return udpMsg{}, fmt.Errorf("SOFT " + err.Error())
 	}
 
 	// TODO Reemit if ErrorReply?
 	if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
-		return udpMsg{}, fmt.Errorf("invalid reply: " + udpMsgToString(replyMsg.Msg))
+		return udpMsg{}, fmt.Errorf("SOFT reply doesn't match type of pair: " + udpMsgToString(replyMsg.Msg))
 	}
 
 	return replyMsg.Msg, nil
@@ -293,7 +332,6 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
 
 // Must not stop e.g. internet connection stops and comes back 10 minutes after...
 // Keeps alive existing server addresses and new addresses obtained from REST
-// TODO Redo this
 // This maintains SERVER_PEER_NAME in peers, no other function should modify key SERVER_PEER_NAME in peers
 func keepAliveMainPeer() {
 	for {
@@ -313,7 +351,7 @@ func keepAliveMainPeer() {
 				_, err := sendToAddrAndReceiveMsgWithReemissions(a, createHello())
 				if err != nil {
 					peersRemoveAddr(SERVER_PEER_NAME, a)
-					LOGGING_FUNC("Main peer doesn't reply: ", err)
+					LOGGING_FUNC("Main peer doesn't reply or replies incorrectly: ", err)
 				} else {
 					peersAddAddr(SERVER_PEER_NAME, a)
 				}
@@ -325,6 +363,8 @@ func keepAliveMainPeer() {
 }
 
 func natTraversal(addr *net.UDPAddr) error {
+	LOGGING_FUNC("Starting NAT traversal with peer", addr.String())
+
 	natTraversalRequest := createNatTraversalRequestMsg(addr)
 
 	mainPeerAddresses, found := peersGet(SERVER_PEER_NAME)
@@ -332,21 +372,23 @@ func natTraversal(addr *net.UDPAddr) error {
 		return fmt.Errorf("no connection with main peer found during our NAT traversal")
 	}
 
+	var err2 error
 	for i := 0; i < NAT_TRAVERSAL_RETRIES; i++ {
 		simpleSendMsgToAddr(mainPeerAddresses[0], natTraversalRequest)
-		_, err := sendToAddrAndReceiveMsgWithReemissions(addr, createHello())
-		if err == nil {
+		_, err2 = sendToAddrAndReceiveMsgWithReemissions(addr, createHello())
+		if err2 == nil {
 			return nil
 		}
 	}
 
-	return fmt.Errorf("our NAT traversal failed")
+	return fmt.Errorf("our NAT traversal failed (%s)", err2.Error())
 }
 
 ////////////////////////////////////////////////// Below is API used by other files
 
-// Can safely be used for SERVER_PEER_NAME (it should already be in peers, and anyways sending more Hellos is OK)
+// Can safely be used for SERVER_PEER_NAME or OUR_PEER_NAME (they should already be in peers, and anyways sending more Hellos is OK)
 // TODO Check that we send a request that requires a reply
+// Returns an error starting by "SOFT " if a reply was received but it was invalid e.g. NoDatum
 func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 	addressesInPeers, found := peersGet(peerName)
 
@@ -358,8 +400,12 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 
 		for _, a := range addressesInPeersCopy {
 			replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
-			if err != nil {
+			if err != nil && !grep("^SOFT ", err.Error()) {
+				LOGGING_FUNC("Removing address", a, "from peers because of HARD error", err)
 				peersRemoveAddr(peerName, a)
+			} else if err != nil && grep("^SOFT ", err.Error()) {
+				LOGGING_FUNC("SOFT error, not removing address from peers:", err)
+				return replyMsg, err
 			} else {
 				return replyMsg, nil
 			}
@@ -379,13 +425,19 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 			if helloWithoutNatErr != nil {
 				natTraversalErr = natTraversal(a)
 				if natTraversalErr == nil {
-					LOGGING_FUNC("NAT traversal started by us succeeded")
+					LOGGING_FUNC("NAT traversal started by us succeeded for", a.String())
+				} else {
+					LOGGING_FUNC("NAT traversal started by us failed for", a.String())
 				}
 			}
 
 			if helloWithoutNatErr == nil || natTraversalErr == nil {
 				replyMsg, err := sendToAddrAndReceiveMsgWithReemissions(a, toSend)
-				if err == nil {
+				// If HARD error do nothing
+				if err != nil && grep("^SOFT ", err.Error()) {
+					peersAddAddr(peerName, a)
+					return replyMsg, err
+				} else if err == nil {
 					peersAddAddr(peerName, a)
 					return replyMsg, nil
 				}
@@ -393,7 +445,7 @@ func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
 		}
 	}
 
-	return udpMsg{}, fmt.Errorf("can't resolve peer named %s", peerName)
+	return udpMsg{}, fmt.Errorf("can't resolve or communicate with peer %s", peerName)
 }
 
 func DownloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
@@ -404,4 +456,14 @@ func DownloadDatum(peerName string, hash []byte) (byte, interface{}, error) {
 	}
 
 	return parseDatum(datumReply.Body)
+}
+
+func GetRootOfPeerUDPThenREST(peerName string) ([]byte, error) {
+	rootMsg := createMsg(ROOT, ourTree.Hash)
+	rootReplyMsg, err := ConnectAndSendAndReceive(peerName, rootMsg)
+	if err != nil {
+		LOGGING_FUNC(err)
+		return restGetRootOfPeer(peerName)
+	}
+	return rootReplyMsg.Body, nil
 }

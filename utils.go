@@ -2,6 +2,7 @@ package main
 
 import (
 	"container/list"
+	"crypto/sha256"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -9,13 +10,14 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 )
 
 // Wraps Mkdir func call
-// -path: path of the directory to be created
+// - path: path of the directory to be created
 // Returns: error if the user has not writing right in working directory
-func mkdir(path string) error {
+func mkdirP(path string) error {
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
 		err = os.MkdirAll(path, 0755)
@@ -160,4 +162,66 @@ func udpAddrToByteSlice(addr *net.UDPAddr) []byte {
 	binary.BigEndian.PutUint16(portAsByteSlice, uint16(addr.Port))
 
 	return append(slice, portAsByteSlice...)
+}
+
+// Assumes that str is no more than 32 bytes
+func stringToZeroPaddedByteSlice(str string) []byte {
+	res := []byte(str)
+	res = append(res, make([]byte, FILENAME_MAX_SIZE-len(res))...)
+	return res
+}
+
+// Removes the trailing zeroes from name.
+// - name: from which to remove \0s
+// - Returns: a valid string or error if data is not valid
+func zeroPaddedByteSliceToString(name []byte) string {
+	i := 0
+	for name[i] != 0 {
+		i++
+	}
+
+	if i == 0 {
+		LOGGING_FUNC("empty filenames are not allowed")
+		return ""
+	}
+
+	return string(name[:i])
+}
+
+func getHashOfByteSlice(slice []byte) []byte {
+	hasher := sha256.New()
+	hasher.Write(slice)
+	return hasher.Sum(nil)
+}
+
+func grep(pattern string, content string) bool {
+	res, _ := regexp.MatchString(pattern, content)
+	return res
+}
+
+func splitLine(line string) []string {
+	line = strings.TrimSpace(line)
+	line = replaceAllRegexBy(line, " +", " ")
+	// strings.Split("", " ") will return []string{""} instead of []string{}
+	return strings.Split(line, " ")
+}
+
+func getNbOfChunks(path string) (int, error) {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return -1, err
+	}
+	res := int(fi.Size()) / CHUNK_MAX_SIZE
+	if fi.Size()%CHUNK_MAX_SIZE != 0 {
+		res++
+	}
+	return res, nil
+}
+
+func stackPush(q []*merkleTreeNode, elt ...*merkleTreeNode) []*merkleTreeNode {
+	return append(q, elt...)
+}
+
+func stackPop(q []*merkleTreeNode) ([]*merkleTreeNode, *merkleTreeNode) {
+	return q[:len(q)-1], q[len(q)-1]
 }
