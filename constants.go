@@ -16,7 +16,7 @@ const PEERS_PATH = "/peers/"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const SHARED_FILES_DIR = "../PSI-shared-files"
-const UDP_LISTEN_PORT = 8449
+const UDP_LISTEN_PORT = 8450
 const KEEP_ALIVE_PERIOD = 30 * time.Second
 
 var OUR_PEER_NAME string

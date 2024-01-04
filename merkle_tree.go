@@ -220,6 +220,10 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 
 	size := fi.Size()
 
+	if size == 0 {
+		return []byte{}, nil
+	}
+
 	nbOfChunks, err := getNbOfChunks(path)
 	if err != nil {
 		return nil, err
