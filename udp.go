@@ -162,6 +162,7 @@ func simpleSendMsgToAddr(peerAddr *net.UDPAddr, toSend udpMsg) error {
 // Internal to udp.go
 func handleMsg(receivedMsg addrUdpMsg) {
 	if receivedMsg.Msg.Type >= FIRST_RESPONSE_MSG_TYPE {
+		LOGGING_FUNC("Appending to msgQueue", udpMsgToStringShort(receivedMsg.Msg))
 		threadSafeAppendToList(msgQueue, msgQueueMutex, receivedMsg)
 		return
 	}
@@ -197,11 +198,11 @@ func handleMsg(receivedMsg addrUdpMsg) {
 			replyMsg = createMsgWithId(receivedMsg.Msg.Id, NO_DATUM, receivedMsg.Msg.Body)
 		}
 	case NAT_TRAVERSAL:
-		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
-		if peerAddr.IP.To4() == nil {
+		if receivedMsg.Msg.Length != 6 { // TODO IPv6
 			LOGGING_FUNC("Received a NAT traversal request with an IPv6, ignoring")
 			return
 		}
+		peerAddr, _ := byteSliceToUDPAddr(receivedMsg.Msg.Body)
 
 		LOGGING_FUNC("NAT traversal started by peer", peerAddr.String())
 

@@ -145,6 +145,22 @@ func udpMsgToString(msg udpMsg) string {
 		childrenNames
 }
 
+func udpMsgToStringShort(msg udpMsg) string {
+	lengthToTake := len(msg.Body)
+	if lengthToTake > PRINT_MSG_BODY_TRUNCATE_SIZE {
+		lengthToTake = PRINT_MSG_BODY_TRUNCATE_SIZE
+	}
+
+	typeAsString, _ := byteToMsgTypeAsStr(msg.Type)
+
+	return "Id: " + fmt.Sprint(msg.Id) + " " +
+		"Type: " + typeAsString + " " +
+		"Length: " + fmt.Sprint(msg.Length) + " " +
+		"len(Body): " + fmt.Sprint(len(msg.Body)) + " " +
+		"Abbreviated body as string: " + string(msg.Body[:lengthToTake]) + " " +
+		"Abbreviated body bytes: " + fmt.Sprint(msg.Body[:lengthToTake])
+}
+
 // Parses a byte slice represneting a directory.
 // - body: directory to be parsed
 // - Returns: - a map containing the names and the hashes of the directory datum message
