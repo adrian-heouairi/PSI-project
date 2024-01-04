@@ -90,13 +90,11 @@ func mainMenu() error {
 		}
 
 		// TODOSEVI Support quotes in line
-		runLine(line) // The line passed doesn't have \n at the end
+		runLine(splitLine(line)) // The line passed doesn't have \n at the end
 	}
 }
 
-func runLine(line string) {
-	splittedLine := splitLine(line)
-
+func runLine(splittedLine []string) {
 	if len(splittedLine) == 0 {
 		return
 	}
@@ -149,16 +147,15 @@ func runLine(line string) {
 	case CMD_MAP["EXIT"].Name:
 		os.Exit(0)
 	case CMD_MAP["LIST_PEERS"].Name:
-        if len(splittedLine) == 2 {
-            if grep("--addr", splittedLine[1]) {
-            fmt.Println("Display addresses")
-            restDisplayAllpeersWithTheirAddresses()
-        } else {
-            fmt.Fprintln(os.Stderr, "Invalid argument")
-        }
-    } else {
-        restGetPeers(true) 
-    }
+		if len(splittedLine) == 2 {
+			if grep("--addr", splittedLine[1]) {
+				restDisplayAllPeersWithTheirAddresses()
+			} else {
+				fmt.Fprintln(os.Stderr, "Invalid argument")
+			}
+		} else {
+			restGetPeers(true)
+		}
 	case CMD_MAP["LIST_FILES"].Name:
 		pathHashMap, err := getPeerPathHashMap(splittedLine[1])
 		if err != nil {

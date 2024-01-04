@@ -300,4 +300,3 @@ func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
 	}
 	return createMsgWithId(id, DATUM, body), nil
 }
-

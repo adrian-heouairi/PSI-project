@@ -5,9 +5,13 @@ import (
 )
 
 func main() {
-	if len(os.Args) > 1 {
+	var cmdToRun []string
+	if len(os.Args) > 1 && os.Args[1] == "--debug" {
 		DEBUG = true
 		LOGGING_FUNC("Debugging")
+		cmdToRun = os.Args[2:]
+	} else {
+		cmdToRun = os.Args[1:]
 	}
 
 	initOurPeerName()
@@ -27,5 +31,10 @@ func main() {
 
 	go listenAndRespond()
 	go keepAliveMainPeer()
-	mainMenu()
+
+	if len(cmdToRun) > 0 {
+		runLine(cmdToRun)
+	} else {
+		mainMenu()
+	}
 }

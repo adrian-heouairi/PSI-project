@@ -47,7 +47,11 @@ func restGetAddressesOfPeer(peerName string, display bool) ([]*net.UDPAddr, erro
 	if display {
 		fmt.Println(string(bodyAsByteSlice))
 	}
-	addrAsStrings := strings.Split(string(bodyAsByteSlice[:len(bodyAsByteSlice)-1]), "\n")
+	if len(bodyAsByteSlice) > 0 {
+		bodyAsByteSlice = bodyAsByteSlice[:len(bodyAsByteSlice)-1]
+	}
+
+	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n")
 
 	if len(addrAsStrings) == 0 {
 		return nil, fmt.Errorf("REST API: peer exists but has no addresses")
@@ -87,23 +91,23 @@ func restGetRootOfPeer(peerName string) ([]byte, error) {
 	return bodyAsByteSlice, nil
 }
 
-func restDisplayAllpeersWithTheirAddresses () {
-    var res string
-    var addrOfPeer string
-    peers, err := restGetPeers(false)
-    if err != nil {
-       return 
-    }
-    for _, peerName := range peers {
-        addrOfPeer = ""
-        addrs, err := restGetAddressesOfPeer(peerName, false)
-        if err != nil {
-            return 
-        }
-        for _, a := range addrs {
-           addrOfPeer += a.String() + " "
-        }
-        res += peerName + ": " + addrOfPeer + "\n"
-    }
-    fmt.Println(res)
+func restDisplayAllPeersWithTheirAddresses() {
+	var res string
+	var addrOfPeer string
+	peers, err := restGetPeers(false)
+	if err != nil {
+		return
+	}
+	for _, peerName := range peers {
+		addrOfPeer = ""
+		addrs, err := restGetAddressesOfPeer(peerName, false)
+		if err != nil {
+			return
+		}
+		for _, a := range addrs {
+			addrOfPeer += a.String() + " "
+		}
+		res += peerName + ": " + addrOfPeer + "\n"
+	}
+	fmt.Println(res)
 }

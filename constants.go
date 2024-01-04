@@ -16,7 +16,7 @@ const PEERS_PATH = "/peers/"
 const SERVER_PEER_NAME = "jch.irif.fr"
 const DOWNLOAD_DIR = "PSI-download"
 const SHARED_FILES_DIR = "../PSI-shared-files"
-const UDP_LISTEN_PORT = 8445
+const UDP_LISTEN_PORT = 8449
 const KEEP_ALIVE_PERIOD = 30 * time.Second
 
 var OUR_PEER_NAME string
@@ -158,7 +158,7 @@ type command struct {
 var CMD_MAP = map[string]command{
 	"EXIT":          {"exit", ": exits the program", 1, readline.PcItem("exit")},
 	"HELP":          {"help", ": shows help message", 1, readline.PcItem("help")},
-	"LIST_PEERS":    {"lspeers", ": shows the connected peers if --addr specified shows also addresses", 1, readline.PcItem("lspeers",readline.PcItem("--addr")), },
+	"LIST_PEERS":    {"lspeers", ": shows the connected peers if --addr specified shows also addresses", 1, readline.PcItem("lspeers", readline.PcItem("--addr"))},
 	"LIST_FILES":    {"findrem", " PEER: shows the files shared by PEER", 2, readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
 	"CAT_FILE":      {"curl", " PATH: downloads and shows the file at PATH", 2, readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
 	"DOWNLOAD_FILE": {"wget", " PATH: downloads recursively the directory or file at PATH", 2, readline.PcItem("wget", readline.PcItemDynamic(pathAutoComplete))},
