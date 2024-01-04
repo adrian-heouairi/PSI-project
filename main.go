@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -23,6 +24,9 @@ func main() {
 	checkErr(err)
 	err = os.Chdir(DOWNLOAD_DIR)
 	checkErr(err)
+    if !checkNbChildrenExportedFilTree(SHARED_FILES_DIR, MAX_DIRECTORY_CHILDREN) {
+        fmt.Fprintf(os.Stderr, "Your tree is not valid")
+    }
 
 	err = exportMerkleTree()
 	checkErr(err)

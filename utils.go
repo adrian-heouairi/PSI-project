@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -207,4 +208,32 @@ func getNbOfChunks(path string) (int, error) {
 		res++
 	}
 	return res, nil
+}
+
+func checkNbChildrenExportedFilTree(path string, nbChildrenAllowed int) bool {
+    finfo, err := os.Stat(path)
+    if err != nil {
+        return false
+    }
+    
+    var res bool
+    if finfo.IsDir(){
+        entries, err := os.ReadDir(path)
+        if len(entries) > nbChildrenAllowed || err != nil {
+           return false 
+        }
+        for _,e := range entries {
+            absPath, err := filepath.Abs(e.Name())
+            if err != nil {
+                return false
+            }
+            res = checkNbChildrenExportedFilTree(absPath, nbChildrenAllowed)
+            if !res {
+                return false
+            }
+        }
+    } else {
+        return true
+    }         
+    return res
 }
