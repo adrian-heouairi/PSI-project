@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 )
 
 // TODO Organize order of functions/methods
@@ -79,6 +80,7 @@ func recursivePathToMerkleTreeWithoutInternalHashes(path string, parent *merkleT
 			chunkWithoutType, _ := getChunkContents(path, 0)
 			ret.Hash = getChunkHash(chunkWithoutType)
 		} else {
+			ret.Type = TREE
 			fillBigFile(ret)
 		}
 	}
@@ -112,34 +114,45 @@ func searchNextBigFile(root *merkleTreeNode) *merkleTreeNode {
 	return nil // Unreachable code because leaves are TREEs
 }
 
-
-
 // Does an iterative DFS on root
-func addChunkLeaves(root *merkleTreeNode) {
-	chunkIndex := 0
+func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
+	nextChunkIndex := 0
 	stack := []*merkleTreeNode{root}
-	for len(stack) != 0 {
-		stack, poppedElm := pop(stack)
-		stack = append(stack, poppedElm.Children...)
+	for len(stack) != 0 && nextChunkIndex < nbChunk {
+		stack, poppedElt := stackPop(stack)
+		
+		slices.Reverse(poppedElt.Children)
+		stack = stackPush(stack, poppedElt.Children...)
+		slices.Reverse(poppedElt.Children)
+
+		for len(poppedElt.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunk {
+			newChunk := newMerkleTreeNode(poppedElt, root.Path)
+			newChunk.Type = CHUNK
+			newChunk.ChunkIndex = nextChunkIndex
+			chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
+			newChunk.Hash = getChunkHash(chunkWithoutType)
+
+			nextChunkIndex++
+		}
 	}
 }
 
 // Fills the Children field of node recursively.
 // node is assumed of type TREE and correct (i.e. Type and Path already initialized)
-func fillBigFile(node *merkleTreeNode) {
+func fillBigFile(root *merkleTreeNode) {
 	currentChunkCapacity := MAX_TREE_CHILDREN
-	currentBigFile := node // The big file to which we add big file children
-	nbChunk, _ := getNbOfChunks(node.Path)
+	currentBigFile := root // The big file to which we add big file children
+	nbChunk, _ := getNbOfChunks(root.Path)
 	for currentChunkCapacity < nbChunk {
-		currentBigFile = searchNextBigFile(node)
-		newChild := newMerkleTreeNode(currentBigFile, node.Path)
+		currentBigFile = searchNextBigFile(root) // searchNextBigFile needs the root of the big file tree
+		newChild := newMerkleTreeNode(currentBigFile, root.Path)
 		newChild.Type = TREE
 		currentBigFile.Children = append(currentBigFile.Children, newChild)
 
 		currentChunkCapacity += MAX_TREE_CHILDREN - 1
 	}
 
-	addChunkLeaves(node)
+	addChunkLeaves(root, nbChunk)
 }
 
 // Returns the content of the chunk at index chunkIndex in the file at path (without CHUNK type byte as first byte)

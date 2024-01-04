@@ -218,12 +218,10 @@ func getNbOfChunks(path string) (int, error) {
 	return res, nil
 }
 
-// Stack
-func push(q []*merkleTreeNode, elt *merkleTreeNode) []*merkleTreeNode {
-	return append(q, elt)
+func stackPush(q []*merkleTreeNode, elt ...*merkleTreeNode) []*merkleTreeNode {
+	return append(q, elt...)
 }
 
-// Stack
-func pop(q []*merkleTreeNode) ([]*merkleTreeNode, *merkleTreeNode) {
+func stackPop(q []*merkleTreeNode) ([]*merkleTreeNode, *merkleTreeNode) {
 	return q[:len(q)-1], q[len(q)-1]
 }
