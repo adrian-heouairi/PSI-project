@@ -89,7 +89,7 @@ func mainMenu() error {
 			return err
 		}
 
-		// TODO Support quotes in line
+		// TODOSEVI Support quotes in line
 		runLine(line) // The line passed doesn't have \n at the end
 	}
 }
@@ -160,7 +160,7 @@ func runLine(line string) {
 		}
 	case CMD_MAP["CAT_FILE"].Name, CMD_MAP["DOWNLOAD_FILE"].Name:
 		path := removeTrailingSlash(splittedLine[1])
-		// TODO : support peers whose name contains /
+		// TODO Support peers whose name contains /
 		peerName := replaceAllRegexBy(path, "/.*", "")
 		filenamesAndHashes, err := getPeerPathHashMap(peerName)
 		if err != nil {

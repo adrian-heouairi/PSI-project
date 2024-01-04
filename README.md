@@ -19,15 +19,16 @@
 
 ========================================
 
-+ compute hashes in all the tree TODO
-+ handle GET_DATUM TODO
++ compute hashes in all the tree DONE
++ handle GET_DATUM DONE
 + handle root that is not DIRECTORY TODO
 + implement IPv6 TODO
-+ ask Root with UDP and try REST if it fails TODO
++ ask Root with UDP and try REST if it fails DONE
 + handle msg :
-    1. ROOT REPLY TODO (Merkle tree export)
+    1. ROOT REPLY DONE (Merkle tree export)
     3. ERROR / ERROR REPLY TODO
-+ Merkle Tree struct and export TODO
++ Merkle Tree struct and export DONE
++ Faire un vrai README.md TODOSEVI
 
 
 

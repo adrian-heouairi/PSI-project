@@ -49,7 +49,6 @@ func writeChunk(path string, chunk []byte) error {
 	return nil
 }
 
-// TODO Remove this
 // Appends elem to list concurrency safe.
 // -list: the list in which to add
 // -mutex: to protect critical section
@@ -125,14 +124,6 @@ func appendAddressesIfNotPresent(slice []*net.UDPAddr, addresses []*net.UDPAddr)
 	}
 
 	return slice
-}
-
-func stringSliceToAnySlice(slc []string) []any {
-	var res []any = make([]any, 0)
-	for _, elt := range slc {
-		res = append(res, elt)
-	}
-	return res
 }
 
 // We assume that slice will never be modified after calling this
@@ -216,12 +207,4 @@ func getNbOfChunks(path string) (int, error) {
 		res++
 	}
 	return res, nil
-}
-
-func stackPush(q []*merkleTreeNode, elt ...*merkleTreeNode) []*merkleTreeNode {
-	return append(q, elt...)
-}
-
-func stackPop(q []*merkleTreeNode) ([]*merkleTreeNode, *merkleTreeNode) {
-	return q[:len(q)-1], q[len(q)-1]
 }

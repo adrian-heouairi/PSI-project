@@ -9,7 +9,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
-// TODO Organize this and rename some and split it by .go file
+// TODO Organize this and rename some
 
 const SERVER_ADDRESS = "https://jch.irif.fr:8443"
 const PEERS_PATH = "/peers/"
@@ -118,6 +118,7 @@ const ( // Message and datum constants
 	LENGTH_SIZE = 2
 
 	HELLO_EXTENSIONS_SIZE = 4
+	OUR_EXTENSIONS        = 0
 
 	DATUM_TYPE_SIZE = 1
 	CHUNK_MAX_SIZE  = 1024
@@ -154,12 +155,11 @@ type command struct {
 	PcItem  readline.PrefixCompleterInterface
 }
 
-// TODO Command name appears twice every time
 // To add a new command: add it here and in the switch case of runLine(line string)
 var CMD_MAP = map[string]command{
 	"EXIT":          {"exit", ": exits the program", 1, readline.PcItem("exit")},
 	"HELP":          {"help", ": shows help message", 1, readline.PcItem("help")},
-	"LIST_PEERS":    {"lspeers", ": shows the connected peers", 1, readline.PcItem("lspeers")}, // TODO Add --addr option
+	"LIST_PEERS":    {"lspeers", ": shows the connected peers", 1, readline.PcItem("lspeers")}, // TODOSEVI Add --addr option
 	"LIST_FILES":    {"findrem", " PEER: shows the files shared by PEER", 2, readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
 	"CAT_FILE":      {"curl", " PATH: downloads and shows the file at PATH", 2, readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
 	"DOWNLOAD_FILE": {"wget", " PATH: downloads recursively the directory or file at PATH", 2, readline.PcItem("wget", readline.PcItemDynamic(pathAutoComplete))},

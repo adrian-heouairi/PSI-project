@@ -275,13 +275,12 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 		return udpMsg{}, fmt.Errorf("invalid message type %s (%d) when creating Hello/HelloReply", msgTypeStr, msgType)
 	}
 
-	// TODO 0 is our extensions, replace it with constant
-	ourHelloBody := hello{0, OUR_PEER_NAME}
+	ourHelloBody := hello{OUR_EXTENSIONS, OUR_PEER_NAME}
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }
 
-// TODO Use htons/htonl
+// TODO Use htons/htonl instead of BigEndian
 
 // We never send NatTraversal, it is the main server who does it
 func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
@@ -297,8 +296,7 @@ func checkMsgTypePair(sent uint8, received uint8) bool {
 // Checks datum integrity.
 // - body: message to be checked
 // - Returns: error if data is not valid
-// TODO Check that filenames in directory are UTF-8
-// TODO Call parseDatum
+// TODO Check that filenames in directory are valid UTF-8
 func checkDatumIntegrity(body []byte) error {
 	statedHash := body[:HASH_SIZE]
 
@@ -308,7 +306,9 @@ func checkDatumIntegrity(body []byte) error {
 		return fmt.Errorf("corrupted datum")
 	}
 
-	return nil
+	_, _, err := parseDatum(body)
+
+	return err
 }
 
 func checkMsgIntegrity(msg udpMsg) error {

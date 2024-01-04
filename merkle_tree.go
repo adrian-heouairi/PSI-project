@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// TODO Organize order of functions/methods
+// TODOSEVI Organize order of functions/methods
 
 type merkleTreeNode struct {
 	// Depends on Type:
