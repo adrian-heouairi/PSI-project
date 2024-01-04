@@ -42,8 +42,7 @@ const IPV6_SIZE = 16
 const PORT_SIZE = 2
 
 // To achieve 500 ms of waiting for a reply before reemitting the request
-const MSG_QUEUE_CHECK_PERIOD = 2 * time.Millisecond
-const MSG_QUEUE_CHECK_NUMBER = 250
+const MSG_QUEUE_MAX_WAIT = 500 * time.Millisecond
 
 const NUMBER_OF_REEMISSIONS = 4
 

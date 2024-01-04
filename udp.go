@@ -245,7 +245,10 @@ func listenAndRespond() {
 
 func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
 	var foundMsg *list.Element
-	for i := 0; i < MSG_QUEUE_CHECK_NUMBER; i++ {
+
+	startTime := time.Now()
+
+	for time.Since(startTime) < MSG_QUEUE_MAX_WAIT {
 		msgQueueMutex.RLock()
 		for m := msgQueue.Front(); m != nil; m = m.Next() {
 			mCasted := m.Value.(addrUdpMsg)
@@ -258,7 +261,6 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
 		if foundMsg != nil {
 			break
 		}
-		time.Sleep(MSG_QUEUE_CHECK_PERIOD)
 	}
 
 	if foundMsg != nil {
