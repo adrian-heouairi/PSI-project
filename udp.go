@@ -187,11 +187,11 @@ func handleMsg(receivedMsg addrUdpMsg) {
 		simpleSendMsgToAddr(receivedMsg.Addr, helloReply)
 		parsedHello, _ := parseHello(receivedMsg.Msg.Body)
 		//if parsedHello.PeerName != OUR_PEER_NAME {
-			//_, err = sendToAddrAndReceiveMsgWithReemissions(receivedMsg.Addr, createHello())
-			//if err == nil {
-				// We don't add even if SOFT error
-				peersAddAddr(parsedHello.PeerName, receivedMsg.Addr)
-			//}
+		//_, err = sendToAddrAndReceiveMsgWithReemissions(receivedMsg.Addr, createHello())
+		//if err == nil {
+		// We don't add even if SOFT error
+		peersAddAddr(parsedHello.PeerName, receivedMsg.Addr)
+		//}
 		//}
 		return
 	case PUBLIC_KEY:

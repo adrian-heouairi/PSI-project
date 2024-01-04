@@ -291,7 +291,7 @@ func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
 
 func checkMsgTypePair(sent uint8, received uint8) bool {
 	//return (received == NO_DATUM && sent == GET_DATUM)
-	return received - sent == MSG_VALID_PAIR
+	return received-sent == MSG_VALID_PAIR
 }
 
 // Checks datum integrity.

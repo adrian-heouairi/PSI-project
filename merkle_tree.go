@@ -119,15 +119,15 @@ func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkInde
 	}
 
 	for len(bigFile.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
-			newChunk := newMerkleTreeNode(bigFile, bigFile.Path)
-			newChunk.Type = CHUNK
-			newChunk.ChunkIndex = nextChunkIndex
-			chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
-			newChunk.Hash = getChunkHash(chunkWithoutType)
+		newChunk := newMerkleTreeNode(bigFile, bigFile.Path)
+		newChunk.Type = CHUNK
+		newChunk.ChunkIndex = nextChunkIndex
+		chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
+		newChunk.Hash = getChunkHash(chunkWithoutType)
 
-			bigFile.Children = append(bigFile.Children, newChunk)
+		bigFile.Children = append(bigFile.Children, newChunk)
 
-			nextChunkIndex++
+		nextChunkIndex++
 	}
 
 	return nextChunkIndex
@@ -136,7 +136,7 @@ func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkInde
 	for len(stack) != 0 && nextChunkIndex < nbChunkToCreate {
 		var poppedElt *merkleTreeNode
 		stack, poppedElt = stackPop(stack)
-		
+
 		slices.Reverse(poppedElt.Children)
 		stack = stackPush(stack, poppedElt.Children...)
 		slices.Reverse(poppedElt.Children)

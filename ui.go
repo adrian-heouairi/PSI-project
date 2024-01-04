@@ -28,7 +28,7 @@ func pathAutoComplete(line string) []string {
 
 	for _, p := range restPeers {
 		res = append(res, p)
-		res = append(res, p + "/")
+		res = append(res, p+"/")
 	}
 
 	splittedLine := splitLine(line)
@@ -61,7 +61,7 @@ func mainMenu() error {
 		for _, v := range CMD_MAP {
 			helpMessage += "\t" + v.Name + v.Help + "\n"
 		}
-		helpMessage = helpMessage[:len(helpMessage) - 1]
+		helpMessage = helpMessage[:len(helpMessage)-1]
 	}
 
 	pcItems := []readline.PrefixCompleterInterface{}
@@ -72,7 +72,7 @@ func mainMenu() error {
 	var completer = readline.NewPrefixCompleter(pcItems...)
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:       CLI_PROMPT,
+		Prompt: CLI_PROMPT,
 		//EOFPrompt:    EXIT_MESSAGE,
 		HistoryFile:  READLINE_HISTORY_FILE,
 		AutoComplete: completer,
@@ -100,7 +100,7 @@ func runLine(line string) {
 	if len(splittedLine) == 0 {
 		return
 	}
-	
+
 	var v command
 	var cmd *command
 	for _, v = range CMD_MAP {

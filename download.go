@@ -26,7 +26,7 @@ func writeBigFile(peerName string, datum datumTree, path string, depth int) erro
 			writeChunk(path, newDatum.Contents)
 		} else if datumType == TREE {
 			newDatum := datumToCast.(datumTree)
-			writeBigFile(peerName, newDatum, path, depth + 1)
+			writeBigFile(peerName, newDatum, path, depth+1)
 		} else {
 			return fmt.Errorf("children of big file should be big file or chunk")
 		}

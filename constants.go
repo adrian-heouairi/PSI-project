@@ -18,6 +18,7 @@ const DOWNLOAD_DIR = "PSI-download"
 const SHARED_FILES_DIR = "../PSI-shared-files"
 const UDP_LISTEN_PORT = 8444
 const KEEP_ALIVE_PERIOD = 30 * time.Second
+
 var OUR_PEER_NAME string
 var OUR_OTHER_PEER_NAME string
 
@@ -141,28 +142,28 @@ const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE)
 
 const (
-	CLI_PROMPT            = "> "
+	CLI_PROMPT = "> "
 	//EXIT_MESSAGE          = "Exiting gracefully"
 	READLINE_HISTORY_FILE = "/tmp/readline_history"
 )
 
 type command struct {
-	Name string
-	Help string
+	Name    string
+	Help    string
 	MinArgc int // Including the command
-	PcItem readline.PrefixCompleterInterface
+	PcItem  readline.PrefixCompleterInterface
 }
 
 // TODO Command name appears twice every time
 // To add a new command: add it here and in the switch case of runLine(line string)
 var CMD_MAP = map[string]command{
-	"EXIT": {"exit", ": exits the program", 1, readline.PcItem("exit")},
-	"HELP": {"help", ": shows help message", 1, readline.PcItem("help")},
-	"LIST_PEERS": {"lspeers", ": shows the connected peers", 1, readline.PcItem("lspeers")}, // TODO Add --addr option
-	"LIST_FILES": {"findrem", " PEER: shows the files shared by PEER", 2, readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
-	"CAT_FILE": {"curl", " PATH: downloads and shows the file at PATH", 2, readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
+	"EXIT":          {"exit", ": exits the program", 1, readline.PcItem("exit")},
+	"HELP":          {"help", ": shows help message", 1, readline.PcItem("help")},
+	"LIST_PEERS":    {"lspeers", ": shows the connected peers", 1, readline.PcItem("lspeers")}, // TODO Add --addr option
+	"LIST_FILES":    {"findrem", " PEER: shows the files shared by PEER", 2, readline.PcItem("findrem", readline.PcItemDynamic(peersListAutoComplete))},
+	"CAT_FILE":      {"curl", " PATH: downloads and shows the file at PATH", 2, readline.PcItem("curl", readline.PcItemDynamic(pathAutoComplete))},
 	"DOWNLOAD_FILE": {"wget", " PATH: downloads recursively the directory or file at PATH", 2, readline.PcItem("wget", readline.PcItemDynamic(pathAutoComplete))},
-	"HELLO": {"hello", " PEER: sends at least two Hellos to PEER", 2, readline.PcItem("hello", readline.PcItemDynamic(peersListAutoComplete))},
+	"HELLO":         {"hello", " PEER: sends at least two Hellos to PEER", 2, readline.PcItem("hello", readline.PcItemDynamic(peersListAutoComplete))},
 }
 
 const CMD_TOO_FEW_ARGS = "Invalid line: too few arguments"
