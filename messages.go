@@ -139,6 +139,7 @@ func udpMsgToString(msg udpMsg) string {
 	return "Id: " + fmt.Sprint(msg.Id) + "\n" +
 		"Type: " + typeAsString + "\n" +
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
+		"len(Body): " + fmt.Sprint(len(msg.Body)) + "\n" +
 		"Abbreviated body as string: " + string(msg.Body[:lengthToTake]) + "\n" +
 		"Abbreviated body bytes: " + fmt.Sprint(msg.Body[:lengthToTake]) +
 		childrenNames

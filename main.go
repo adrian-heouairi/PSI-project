@@ -5,6 +5,8 @@ import (
 )
 
 func main() {
+	// TODO Here check that current dir is the root of the project
+
 	var cmdToRun []string
 	if len(os.Args) > 1 && os.Args[1] == "--debug" {
 		DEBUG = true
@@ -16,6 +18,7 @@ func main() {
 
 	initOurPeerName()
 
+	// TODOSEVI Check at start that any subdirectory of SHARED_FILES_DIR has at most 16 children
 	err := mkdirP(SHARED_FILES_DIR)
 	checkErr(err)
 

@@ -239,6 +239,8 @@ func listenAndRespond() {
 		addrMsg, err := receiveAnyMsg()
 		if err == nil {
 			go handleMsg(addrMsg)
+		} else {
+			LOGGING_FUNC(err)
 		}
 	}
 }
