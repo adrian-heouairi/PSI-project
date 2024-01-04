@@ -149,7 +149,16 @@ func runLine(line string) {
 	case CMD_MAP["EXIT"].Name:
 		os.Exit(0)
 	case CMD_MAP["LIST_PEERS"].Name:
-		restGetPeers(true)
+        if len(splittedLine) == 2 {
+            if grep("--addr", splittedLine[1]) {
+            fmt.Println("Display addresses")
+            restDisplayAllpeersWithTheirAddresses()
+        } else {
+            fmt.Fprintln(os.Stderr, "Invalid argument")
+        }
+    } else {
+        restGetPeers(true) 
+    }
 	case CMD_MAP["LIST_FILES"].Name:
 		pathHashMap, err := getPeerPathHashMap(splittedLine[1])
 		if err != nil {

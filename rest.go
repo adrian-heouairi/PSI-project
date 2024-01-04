@@ -86,3 +86,24 @@ func restGetRootOfPeer(peerName string) ([]byte, error) {
 
 	return bodyAsByteSlice, nil
 }
+
+func restDisplayAllpeersWithTheirAddresses () {
+    var res string
+    var addrOfPeer string
+    peers, err := restGetPeers(false)
+    if err != nil {
+       return 
+    }
+    for _, peerName := range peers {
+        addrOfPeer = ""
+        addrs, err := restGetAddressesOfPeer(peerName, false)
+        if err != nil {
+            return 
+        }
+        for _, a := range addrs {
+           addrOfPeer += a.String() + " "
+        }
+        res += peerName + ": " + addrOfPeer + "\n"
+    }
+    fmt.Println(res)
+}
