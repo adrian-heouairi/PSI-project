@@ -119,7 +119,8 @@ func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
 	nextChunkIndex := 0
 	stack := []*merkleTreeNode{root}
 	for len(stack) != 0 && nextChunkIndex < nbChunk {
-		stack, poppedElt := stackPop(stack)
+		var poppedElt *merkleTreeNode
+		stack, poppedElt = stackPop(stack)
 		
 		slices.Reverse(poppedElt.Children)
 		stack = stackPush(stack, poppedElt.Children...)
@@ -131,6 +132,8 @@ func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
 			newChunk.ChunkIndex = nextChunkIndex
 			chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
 			newChunk.Hash = getChunkHash(chunkWithoutType)
+
+			poppedElt.Children = append(poppedElt.Children, newChunk)
 
 			nextChunkIndex++
 		}
