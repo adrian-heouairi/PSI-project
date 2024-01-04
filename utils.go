@@ -9,7 +9,6 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -223,11 +222,10 @@ func checkNbChildrenExportedFilTree(path string, nbChildrenAllowed int) bool {
            return false 
         }
         for _,e := range entries {
-            absPath, err := filepath.Abs(e.Name())
             if err != nil {
                 return false
             }
-            res = checkNbChildrenExportedFilTree(absPath, nbChildrenAllowed)
+            res = checkNbChildrenExportedFilTree(finfo.Name() + "/" + e.Name(), nbChildrenAllowed)
             if !res {
                 return false
             }
