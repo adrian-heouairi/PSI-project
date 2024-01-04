@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
 )
 
 // TODO Organize order of functions/methods
@@ -114,11 +113,27 @@ func searchNextBigFile(root *merkleTreeNode) *merkleTreeNode {
 	return nil // Unreachable code because leaves are TREEs
 }
 
-// Does an iterative DFS on root
-func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
-	nextChunkIndex := 0
-	stack := []*merkleTreeNode{root}
-	for len(stack) != 0 && nextChunkIndex < nbChunk {
+func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkIndex int) int {
+	for _, child := range bigFile.Children {
+		nextChunkIndex = child.addChunkLeaves(nbChunkToCreate, nextChunkIndex)
+	}
+
+	for len(bigFile.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
+			newChunk := newMerkleTreeNode(bigFile, bigFile.Path)
+			newChunk.Type = CHUNK
+			newChunk.ChunkIndex = nextChunkIndex
+			chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
+			newChunk.Hash = getChunkHash(chunkWithoutType)
+
+			bigFile.Children = append(bigFile.Children, newChunk)
+
+			nextChunkIndex++
+	}
+
+	return nextChunkIndex
+
+	/*stack := []*merkleTreeNode{root}
+	for len(stack) != 0 && nextChunkIndex < nbChunkToCreate {
 		var poppedElt *merkleTreeNode
 		stack, poppedElt = stackPop(stack)
 		
@@ -126,7 +141,7 @@ func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
 		stack = stackPush(stack, poppedElt.Children...)
 		slices.Reverse(poppedElt.Children)
 
-		for len(poppedElt.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunk {
+		for len(poppedElt.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
 			newChunk := newMerkleTreeNode(poppedElt, root.Path)
 			newChunk.Type = CHUNK
 			newChunk.ChunkIndex = nextChunkIndex
@@ -137,7 +152,7 @@ func addChunkLeaves(root *merkleTreeNode, nbChunk int) {
 
 			nextChunkIndex++
 		}
-	}
+	}*/
 }
 
 // Fills the Children field of node recursively.
@@ -155,7 +170,7 @@ func fillBigFile(root *merkleTreeNode) {
 		currentChunkCapacity += MAX_TREE_CHILDREN - 1
 	}
 
-	addChunkLeaves(root, nbChunk)
+	root.addChunkLeaves(nbChunk, 0)
 }
 
 // Returns the content of the chunk at index chunkIndex in the file at path (without CHUNK type byte as first byte)
