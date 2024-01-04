@@ -1,0 +1,36 @@
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{amssymb}
+%\usepackage[colorlinks]{hyperref}
+\usepackage{subcaption}
+\usepackage{minted}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{fourier}
+\usepackage{fancyhdr}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{decorations.pathmorphing}
+\newcommand{\rmz}{(R,M_0)}
+
+\usetikzlibrary{automata,positioning,fit,petri}
+\tikzset{snake it/.style={decorate, decoration=snake}}
+
+% Set up the page style using fancyhdr
+\pagestyle{fancy}
+
+% Clear the default header and footer
+\fancyhead{}
+\fancyfoot{}
+
+\title{Rapport}
+\author{DERVISHI Sevi, HEOUAIRI Adrian}
+\newcommand{\myauthor}{\author}
+% Set the header on the right side of even pages and left side of odd pages
+\fancyhead[RO, LE]{DERVISHI Sevi, HEOUAIRI Adrian}
+
+% Set the header in the center of even pages and right of odd pages
+\fancyhead[RE, LO]{Rapport}
+
+% Set the page number on the right side of even pages and left side of odd pages
+\fancyfoot[RO,LE]{\thepage}

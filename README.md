@@ -1,13 +1,13 @@
-# PEER TO PEER CLIENT
-Go implementation of a nat traversal peer to peer client using `jch.irif.fr` as handshake point.
-## FEATURES
-+ Discover connected peers.
-+ Show addresses of connected peers.
-+ Download a file at a given path(`<PEERNAME>/PATH`) in `PSI-download/PEERNAME/PATH`
-+ Export data put in `PSI-shared-files`
-+ Readline CLI
-## EXECUTION
-In the project root run `go run .`
+# PEER TO PEER FILE SHARING CLIENT AND SERVER
+Go implementation of a peer to peer client and server using `jch.irif.fr` as REST server and main peer. 
+## Usage
+In the project root, run `go run . [--debug] [command to run]...` or `go run . help`.
+## Features
++ NAT traversal
++ List connected peers and their addresses (IP + port)
++ Download a file at a given path (`<PEERNAME>/PATH`) in `PSI-download/PEERNAME/PATH`
++ Share data put in `PSI-shared-files/` to other peers
++ Readline CLI with tab completion
 ## Contributors
-DERVISHI Sevi
+DERVISHI Sevi  
 HEOUAIRI Adrian
