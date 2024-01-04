@@ -202,7 +202,11 @@ func getNbOfChunks(path string) (int, error) {
 	if err != nil {
 		return -1, err
 	}
-	res := int(fi.Size()) / CHUNK_MAX_SIZE
+	size := int(fi.Size())
+	if size == 0 {
+		return 1, nil
+	}
+	res := size / CHUNK_MAX_SIZE
 	if fi.Size()%CHUNK_MAX_SIZE != 0 {
 		res++
 	}

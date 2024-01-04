@@ -18,13 +18,13 @@ func main() {
 
 	initOurPeerName()
 
-	// TODOSEVI Check at start that any subdirectory of SHARED_FILES_DIR has at most 16 children
-	err := mkdirP(SHARED_FILES_DIR)
-	checkErr(err)
-
-	err = mkdirP(DOWNLOAD_DIR)
+	err := mkdirP(DOWNLOAD_DIR)
 	checkErr(err)
 	err = os.Chdir(DOWNLOAD_DIR)
+	checkErr(err)
+
+	// TODOSEVI Check at start that any subdirectory of SHARED_FILES_DIR has at most 16 children
+	err = mkdirP(SHARED_FILES_DIR)
 	checkErr(err)
 
 	err = exportMerkleTree()

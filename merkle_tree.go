@@ -220,13 +220,12 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 
 	size := fi.Size()
 
-	lastChunkIndex := size/CHUNK_MAX_SIZE - 1
-	if size%CHUNK_MAX_SIZE != 0 {
-		lastChunkIndex++
+	nbOfChunks, err := getNbOfChunks(path)
+	if err != nil {
+		return nil, err
 	}
-	if lastChunkIndex == -1 {
-		lastChunkIndex = 0
-	}
+
+	lastChunkIndex := int64(nbOfChunks - 1)
 
 	if chunkIndex > lastChunkIndex {
 		return nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
@@ -239,7 +238,7 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 	defer f.Close()
 
 	var buf []byte
-	if chunkIndex == lastChunkIndex {
+	if chunkIndex == lastChunkIndex && size % CHUNK_MAX_SIZE != 0 {
 		buf = make([]byte, size%CHUNK_MAX_SIZE)
 	} else {
 		buf = make([]byte, CHUNK_MAX_SIZE)
