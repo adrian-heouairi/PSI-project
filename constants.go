@@ -136,10 +136,12 @@ const ( // Message and datum constants
 
 	// Biggest message is datum chunk or bigfile with 32 children or full directory
 	BODY_MAX_SIZE int = int(HASH_SIZE) + int(DATUM_TYPE_SIZE) + CHUNK_MAX_SIZE
+
+    SIGNATURE_SIZE = 64
 )
 
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
-	int(BODY_MAX_SIZE)
+	int(BODY_MAX_SIZE) + SIGNATURE_SIZE
 
 const (
 	CLI_PROMPT = "> "

@@ -15,6 +15,7 @@ type udpMsg struct {
 	Type   uint8
 	Length uint16
 	Body   []byte
+    Signature []byte // may be nil if peer does not sign messages
 }
 
 // Represent a datum message containing a chunk.
@@ -59,6 +60,9 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 	var res = append(idToByteSlice, typeToByteSlice...)
 	res = append(res, lengthToByteSlice...)
 	res = append(res, toCast.Body...)
+    if toCast.Signature != nil {
+        res = append(res, toCast.Signature...)
+    }
 	return res
 }
 
@@ -84,6 +88,12 @@ func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
 	}
 
 	m.Body = append([]byte{}, toCast[BODY_START_INDEX:BODY_START_INDEX+m.Length]...)
+    if bytesRead - SIGNATURE_SIZE  == int(m.Length) + ID_SIZE + TYPE_SIZE + LENGTH_SIZE {
+        fmt.Println("MSG CONTAINS SIGNATURE")
+        m.Signature = append(m.Signature, toCast[ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length+1:ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length+1 + SIGNATURE_SIZE]...)
+    } else if bytesRead - SIGNATURE_SIZE != 0 {
+       return udpMsg{}, fmt.Errorf("Bytes read more than a non signed msg size but less that a signed one") 
+    }
 	return m, nil
 }
 
@@ -105,9 +115,9 @@ func createMsgWithId(msgId uint32, msgType byte, msgBody []byte) udpMsg {
 	msg.Id = msgId
 	msg.Type = msgType
 	msg.Body = msgBody
-	msg.Length = uint16(len(msgBody))
-
-	return msg
+	
+    msg.Length = uint16(len(msgBody))
+	return signMsg(msg)
 }
 
 // Human readable representation of a udp message.
@@ -276,13 +286,10 @@ func parseHello(body []byte) (hello, error) {
 // - Returns: a valid hello udpMsg
 func createHello() udpMsg {
 	var helloMsg udpMsg
-	helloMsg.Id = rand.Uint32()
-	helloMsg.Type = HELLO
 	extensions := make([]byte, HELLO_EXTENSIONS_SIZE)
 	nameAsBytes := []byte(OUR_PEER_NAME)
 	var res = append(extensions, nameAsBytes...)
-	helloMsg.Body = res
-	helloMsg.Length = uint16(len(res))
+    helloMsg = createMsg(HELLO,res)
 	return helloMsg
 }
 
@@ -294,7 +301,8 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 	ourHelloBody := hello{OUR_EXTENSIONS, OUR_PEER_NAME}
 
-	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
+    ourHello := createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody))
+    return ourHello, nil
 }
 
 // TODO Use htons/htonl instead of BigEndian
