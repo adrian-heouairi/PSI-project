@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 )
 
@@ -110,4 +111,17 @@ func restDisplayAllPeersWithTheirAddresses() {
 		res += peerName + ": " + addrOfPeer + "\n"
 	}
 	fmt.Println(res)
+}
+
+func restGetKey(peerName string) []byte {
+    req, body, err := httpGet(SERVER_ADDRESS + "/peers/" + peerName + "/key")
+    if err != nil {
+       LOGGING_FUNC("HTTP REQUEST ERROR")
+       os.Exit(1)
+    }
+
+    if req.StatusCode == HTTP_NO_CONTENT {
+        return []byte{}
+    }
+    return body
 }
