@@ -39,7 +39,7 @@ func writeBigFile(peerName string, datum datumTree, path string, depth int) erro
 	return nil
 }
 
-// TODO handle case where a file becomes a directory (peer updated their tree)
+// TODO Handle case where a file becomes a directory (peer updated their tree)
 func downloadRecursive(peerName string, hash []byte, path string) error {
 	datumType, datumToCast, err := DownloadDatum(peerName, hash)
 	if err != nil {
@@ -93,7 +93,7 @@ func getPeerPathHashMapRecursive(peerName string, hash []byte, path string, curr
 	if datumType == DIRECTORY {
 		datum := datumToCast.(datumDirectory)
 
-		for key, value := range datum.Children { // TODO Sort keys by alphabetical order
+		for key, value := range datum.Children {
 			err = getPeerPathHashMapRecursive(peerName, value, path+"/"+key, currentMap)
 			if err != nil {
 				return err

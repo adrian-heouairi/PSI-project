@@ -5,8 +5,6 @@ import (
 	"os"
 )
 
-// TODO Organize order of functions/methods
-
 type merkleTreeNode struct {
 	// Depends on Type:
 	//  - CHUNK: ChunkIndex starting at 0
@@ -40,6 +38,84 @@ var ourTreeMap map[string]*merkleTreeNode
 
 func (node *merkleTreeNode) basename() string {
 	return replaceAllRegexBy(node.Path, ".*/", "")
+}
+
+func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkIndex int) int {
+	for _, child := range bigFile.Children {
+		nextChunkIndex = child.addChunkLeaves(nbChunkToCreate, nextChunkIndex)
+	}
+
+	for len(bigFile.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
+		newChunk := newMerkleTreeNode(bigFile, bigFile.Path)
+		newChunk.Type = CHUNK
+		newChunk.ChunkIndex = nextChunkIndex
+		chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
+		newChunk.Hash = getChunkHash(chunkWithoutType)
+
+		bigFile.Children = append(bigFile.Children, newChunk)
+
+		nextChunkIndex++
+	}
+
+	return nextChunkIndex
+}
+
+func (node *merkleTreeNode) toString() string {
+	res := ""
+	typeStr, _ := byteToDatumTypeAsStr(node.Type)
+	res += fmt.Sprintf("Parent == nil: %v\nHash: %s\nType: %s\nPath: %s", node.Parent == nil, fmt.Sprint(node.Hash), typeStr, node.Path)
+	if node.Type != CHUNK {
+		res += fmt.Sprintf("\nNb of children: %d", len(node.Children))
+	} else {
+		res += fmt.Sprintf("\nChunk %d", node.ChunkIndex)
+	}
+
+	return res
+}
+
+func (node *merkleTreeNode) printMerkleTreeRecursively() {
+	fmt.Println(node.toString())
+	fmt.Println()
+
+	for _, child := range node.Children {
+		child.printMerkleTreeRecursively()
+	}
+}
+
+func (node *merkleTreeNode) computeHashesRecursively() {
+	if node.Hash != nil {
+		return
+	}
+
+	// We don't have a hash, so we are not a leaf, thus we have children
+	value := []byte{node.Type}
+	if node.Type == DIRECTORY {
+		for _, child := range node.Children {
+			child.computeHashesRecursively()
+			value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
+			value = append(value, child.Hash...)
+		}
+	} else { // Big file
+		for _, child := range node.Children {
+			child.computeHashesRecursively()
+			value = append(value, child.Hash...)
+		}
+	}
+
+	node.Hash = getHashOfByteSlice(value)
+}
+
+func (node *merkleTreeNode) toMapRecursively(currentMap map[string]*merkleTreeNode) {
+	currentMap[string(node.Hash)] = node
+	for _, child := range node.Children {
+		child.toMapRecursively(currentMap)
+	}
+}
+
+func (node *merkleTreeNode) toMap() map[string]*merkleTreeNode {
+	currentMap := make(map[string]*merkleTreeNode)
+	node.toMapRecursively(currentMap)
+	return currentMap
 }
 
 // First call is supposed to be done on the directory representing the root, its Parent will be nil
@@ -113,48 +189,6 @@ func searchNextBigFile(root *merkleTreeNode) *merkleTreeNode {
 	return nil // Unreachable code because leaves are TREEs
 }
 
-func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkIndex int) int {
-	for _, child := range bigFile.Children {
-		nextChunkIndex = child.addChunkLeaves(nbChunkToCreate, nextChunkIndex)
-	}
-
-	for len(bigFile.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
-		newChunk := newMerkleTreeNode(bigFile, bigFile.Path)
-		newChunk.Type = CHUNK
-		newChunk.ChunkIndex = nextChunkIndex
-		chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
-		newChunk.Hash = getChunkHash(chunkWithoutType)
-
-		bigFile.Children = append(bigFile.Children, newChunk)
-
-		nextChunkIndex++
-	}
-
-	return nextChunkIndex
-
-	/*stack := []*merkleTreeNode{root}
-	for len(stack) != 0 && nextChunkIndex < nbChunkToCreate {
-		var poppedElt *merkleTreeNode
-		stack, poppedElt = stackPop(stack)
-
-		slices.Reverse(poppedElt.Children)
-		stack = stackPush(stack, poppedElt.Children...)
-		slices.Reverse(poppedElt.Children)
-
-		for len(poppedElt.Children) < MAX_TREE_CHILDREN && nextChunkIndex < nbChunkToCreate {
-			newChunk := newMerkleTreeNode(poppedElt, root.Path)
-			newChunk.Type = CHUNK
-			newChunk.ChunkIndex = nextChunkIndex
-			chunkWithoutType, _ := getChunkContents(newChunk.Path, int64(newChunk.ChunkIndex))
-			newChunk.Hash = getChunkHash(chunkWithoutType)
-
-			poppedElt.Children = append(poppedElt.Children, newChunk)
-
-			nextChunkIndex++
-		}
-	}*/
-}
-
 // Fills the Children field of node recursively.
 // node is assumed of type TREE and correct (i.e. Type and Path already initialized)
 func fillBigFile(root *merkleTreeNode) {
@@ -186,13 +220,16 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 
 	size := fi.Size()
 
-	lastChunkIndex := size/CHUNK_MAX_SIZE - 1
-	if size%CHUNK_MAX_SIZE != 0 {
-		lastChunkIndex++
+	if size == 0 {
+		return []byte{}, nil
 	}
-	if lastChunkIndex == -1 {
-		lastChunkIndex = 0
+
+	nbOfChunks, err := getNbOfChunks(path)
+	if err != nil {
+		return nil, err
 	}
+
+	lastChunkIndex := int64(nbOfChunks - 1)
 
 	if chunkIndex > lastChunkIndex {
 		return nil, fmt.Errorf("chunkIndex %d out of bounds", chunkIndex)
@@ -205,7 +242,7 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 	defer f.Close()
 
 	var buf []byte
-	if chunkIndex == lastChunkIndex {
+	if chunkIndex == lastChunkIndex && size % CHUNK_MAX_SIZE != 0 {
 		buf = make([]byte, size%CHUNK_MAX_SIZE)
 	} else {
 		buf = make([]byte, CHUNK_MAX_SIZE)
@@ -230,51 +267,6 @@ func getChunkHash(chunkWithoutType []byte) []byte {
 	chunkWithType := []byte{CHUNK}
 	chunkWithType = append(chunkWithType, chunkWithoutType...)
 	return getHashOfByteSlice(chunkWithType)
-}
-
-func (node *merkleTreeNode) toString() string {
-	res := ""
-	typeStr, _ := byteToDatumTypeAsStr(node.Type)
-	res += fmt.Sprintf("Parent == nil: %v\nHash: %s\nType: %s\nPath: %s", node.Parent == nil, fmt.Sprint(node.Hash), typeStr, node.Path)
-	if node.Type != CHUNK {
-		res += fmt.Sprintf("\nNb of children: %d", len(node.Children))
-	} else {
-		res += fmt.Sprintf("\nChunk %d", node.ChunkIndex)
-	}
-
-	return res
-}
-
-func (node *merkleTreeNode) printMerkleTreeRecursively() {
-	fmt.Println(node.toString())
-	fmt.Println()
-
-	for _, child := range node.Children {
-		child.printMerkleTreeRecursively()
-	}
-}
-
-func (node *merkleTreeNode) computeHashesRecursively() {
-	if node.Hash != nil {
-		return
-	}
-
-	// We don't have a hash, so we are not a leaf, thus we have children
-	value := []byte{node.Type}
-	if node.Type == DIRECTORY {
-		for _, child := range node.Children {
-			child.computeHashesRecursively()
-			value = append(value, stringToZeroPaddedByteSlice(child.basename())...)
-			value = append(value, child.Hash...)
-		}
-	} else { // Big file
-		for _, child := range node.Children {
-			child.computeHashesRecursively()
-			value = append(value, child.Hash...)
-		}
-	}
-
-	node.Hash = getHashOfByteSlice(value)
 }
 
 func exportMerkleTree() error {
@@ -310,17 +302,4 @@ func (node *merkleTreeNode) toDatum(id uint32) (udpMsg, error) {
 		}
 	}
 	return createMsgWithId(id, DATUM, body), nil
-}
-
-func (node *merkleTreeNode) toMapRecursively(currentMap map[string]*merkleTreeNode) {
-	currentMap[string(node.Hash)] = node
-	for _, child := range node.Children {
-		child.toMapRecursively(currentMap)
-	}
-}
-
-func (node *merkleTreeNode) toMap() map[string]*merkleTreeNode {
-	currentMap := make(map[string]*merkleTreeNode)
-	node.toMapRecursively(currentMap)
-	return currentMap
 }

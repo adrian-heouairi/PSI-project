@@ -9,7 +9,6 @@ import (
 // Displays connected peers.
 // Returns: -error if server is not available
 func restGetPeers(show bool) ([]string, error) {
-	// TODO Return something
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH)
 	if err != nil {
 		return nil, err
@@ -48,7 +47,11 @@ func restGetAddressesOfPeer(peerName string, display bool) ([]*net.UDPAddr, erro
 	if display {
 		fmt.Println(string(bodyAsByteSlice))
 	}
-	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n") // TODO Check that this doesn't have an empty string at the end
+	if len(bodyAsByteSlice) > 0 {
+		bodyAsByteSlice = bodyAsByteSlice[:len(bodyAsByteSlice)-1]
+	}
+
+	addrAsStrings := strings.Split(string(bodyAsByteSlice), "\n")
 
 	if len(addrAsStrings) == 0 {
 		return nil, fmt.Errorf("REST API: peer exists but has no addresses")
@@ -70,14 +73,12 @@ func restGetAddressesOfPeer(peerName string, display bool) ([]*net.UDPAddr, erro
 // Returns: - the root hash
 //   - error if peer does not exist or the main server is not available
 func restGetRootOfPeer(peerName string) ([]byte, error) {
-	//TODO : replace /root by constant
 	resp, bodyAsByteSlice, err := httpGet(SERVER_ADDRESS + PEERS_PATH + "/" + peerName + "/root")
 	if err != nil {
 		return nil, err
 	}
 
 	if resp.StatusCode == HTTP_NO_CONTENT {
-		// TODO Return the hash of the empty string?
 		return nil, fmt.Errorf(peerName + " has not declared a root yet")
 	} else if resp.StatusCode == HTTP_NOT_FOUND {
 		return nil, fmt.Errorf(peerName + " is not known by server")
@@ -88,4 +89,25 @@ func restGetRootOfPeer(peerName string) ([]byte, error) {
 	}
 
 	return bodyAsByteSlice, nil
+}
+
+func restDisplayAllPeersWithTheirAddresses() {
+	var res string
+	var addrOfPeer string
+	peers, err := restGetPeers(false)
+	if err != nil {
+		return
+	}
+	for _, peerName := range peers {
+		addrOfPeer = ""
+		addrs, err := restGetAddressesOfPeer(peerName, false)
+		if err != nil {
+			return
+		}
+		for _, a := range addrs {
+			addrOfPeer += a.String() + " "
+		}
+		res += peerName + ": " + addrOfPeer + "\n"
+	}
+	fmt.Println(res)
 }

@@ -89,14 +89,12 @@ func mainMenu() error {
 			return err
 		}
 
-		// TODO Support quotes in line
-		runLine(line) // The line passed doesn't have \n at the end
+		// TODOSEVI Support quotes in line
+		runLine(splitLine(line)) // The line passed doesn't have \n at the end
 	}
 }
 
-func runLine(line string) {
-	splittedLine := splitLine(line)
-
+func runLine(splittedLine []string) {
 	if len(splittedLine) == 0 {
 		return
 	}
@@ -149,7 +147,15 @@ func runLine(line string) {
 	case CMD_MAP["EXIT"].Name:
 		os.Exit(0)
 	case CMD_MAP["LIST_PEERS"].Name:
-		restGetPeers(true)
+		if len(splittedLine) == 2 {
+			if grep("--addr", splittedLine[1]) {
+				restDisplayAllPeersWithTheirAddresses()
+			} else {
+				fmt.Fprintln(os.Stderr, "Invalid argument")
+			}
+		} else {
+			restGetPeers(true)
+		}
 	case CMD_MAP["LIST_FILES"].Name:
 		pathHashMap, err := getPeerPathHashMap(splittedLine[1])
 		if err != nil {
@@ -160,7 +166,7 @@ func runLine(line string) {
 		}
 	case CMD_MAP["CAT_FILE"].Name, CMD_MAP["DOWNLOAD_FILE"].Name:
 		path := removeTrailingSlash(splittedLine[1])
-		// TODO : support peers whose name contains /
+		// TODO Support peers whose name contains /
 		peerName := replaceAllRegexBy(path, "/.*", "")
 		filenamesAndHashes, err := getPeerPathHashMap(peerName)
 		if err != nil {

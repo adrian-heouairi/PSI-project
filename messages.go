@@ -139,9 +139,26 @@ func udpMsgToString(msg udpMsg) string {
 	return "Id: " + fmt.Sprint(msg.Id) + "\n" +
 		"Type: " + typeAsString + "\n" +
 		"Length: " + fmt.Sprint(msg.Length) + "\n" +
+		"len(Body): " + fmt.Sprint(len(msg.Body)) + "\n" +
 		"Abbreviated body as string: " + string(msg.Body[:lengthToTake]) + "\n" +
 		"Abbreviated body bytes: " + fmt.Sprint(msg.Body[:lengthToTake]) +
 		childrenNames
+}
+
+func udpMsgToStringShort(msg udpMsg) string {
+	lengthToTake := len(msg.Body)
+	if lengthToTake > PRINT_MSG_BODY_TRUNCATE_SIZE {
+		lengthToTake = PRINT_MSG_BODY_TRUNCATE_SIZE
+	}
+
+	typeAsString, _ := byteToMsgTypeAsStr(msg.Type)
+
+	return "Id: " + fmt.Sprint(msg.Id) + " " +
+		"Type: " + typeAsString + " " +
+		"Length: " + fmt.Sprint(msg.Length) + " " +
+		"len(Body): " + fmt.Sprint(len(msg.Body)) + " " +
+		"Abbreviated body as string: " + string(msg.Body[:lengthToTake]) + " " +
+		"Abbreviated body bytes: " + fmt.Sprint(msg.Body[:lengthToTake])
 }
 
 // Parses a byte slice represneting a directory.
@@ -275,13 +292,12 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 		return udpMsg{}, fmt.Errorf("invalid message type %s (%d) when creating Hello/HelloReply", msgTypeStr, msgType)
 	}
 
-	// TODO 0 is our extensions, replace it with constant
-	ourHelloBody := hello{0, OUR_PEER_NAME}
+	ourHelloBody := hello{OUR_EXTENSIONS, OUR_PEER_NAME}
 
 	return createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody)), nil
 }
 
-// TODO Use htons/htonl
+// TODO Use htons/htonl instead of BigEndian
 
 // We never send NatTraversal, it is the main server who does it
 func createNatTraversalRequestMsg(addr *net.UDPAddr) udpMsg {
@@ -297,8 +313,7 @@ func checkMsgTypePair(sent uint8, received uint8) bool {
 // Checks datum integrity.
 // - body: message to be checked
 // - Returns: error if data is not valid
-// TODO Check that filenames in directory are UTF-8
-// TODO Call parseDatum
+// TODO Check that filenames in directory are valid UTF-8
 func checkDatumIntegrity(body []byte) error {
 	statedHash := body[:HASH_SIZE]
 
@@ -308,7 +323,9 @@ func checkDatumIntegrity(body []byte) error {
 		return fmt.Errorf("corrupted datum")
 	}
 
-	return nil
+	_, _, err := parseDatum(body)
+
+	return err
 }
 
 func checkMsgIntegrity(msg udpMsg) error {
