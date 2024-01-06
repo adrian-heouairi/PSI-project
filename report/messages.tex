@@ -8,6 +8,7 @@ Tous les messages sont représentés par la structure \mintinline{go}{udpMsg} :
         Body   []byte
     }  
 \end{minted}
+\newpage
 De plus, on \textit{parse} le \mintinline{go}{Body} de certains messages avec d'autres structures :
 \begin{itemize}
     \item \textit{Hello, HelloReply} $\rightarrow$ \mintinline{go}{struct hello}
