@@ -169,8 +169,9 @@ var CMD_MAP = map[string]command{
 
 const CMD_TOO_FEW_ARGS = "Invalid line: too few arguments"
 
-const PUB_KEY_FILE_PATH "/home/sese/pubkey"
-const KEY_FILE_PATH "/home/sese/key"
+const PUB_KEY_FILE_PATH = "/home/sese/pubkey"
+const KEY_FILE_PATH = "/home/sese/key"
+
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string
 

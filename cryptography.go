@@ -9,17 +9,41 @@ import (
 	"fmt"
 	"os"
 	"encoding/binary"
+	"encoding/pem"
+    "crypto/x509"
 )
 
 var privateKey *ecdsa.PrivateKey = nil
+var publicKey *ecdsa.PublicKey = nil
 func getPrivateKey() *ecdsa.PrivateKey {
-    var err error
     if privateKey == nil {
-
-        privateKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+        finfo1s, err := os.Stat(KEY_FILE_PATH)
+        finfo1, err := os.Open(KEY_FILE_PATH)
+        _, err = os.Stat(PUB_KEY_FILE_PATH)
+        _, err = os.Open(PUB_KEY_FILE_PATH)
         if err != nil {
-            fmt.Fprintf(os.Stderr, "Could not generate private key, stopping...")
-            os.Exit(1)
+
+            f, err := os.Create(KEY_FILE_PATH)
+            f1, err := os.Create(PUB_KEY_FILE_PATH)
+            if err != nil {
+                fmt.Fprint(os.Stderr, "Could not create file to store private key")
+                os.Exit(1) 
+            }
+            privateKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+            private, public:= encode(privateKey,&privateKey.PublicKey)
+            if err != nil {
+                fmt.Fprintf(os.Stderr, "Could not generate private key, stopping...")
+                os.Exit(1)
+            }
+            f.WriteString(private)
+            f1.WriteString(public)
+        } else {
+
+            privateKeyAsBytesSlice := make([]byte,finfo1s.Size())
+            _, err = finfo1.Read(privateKeyAsBytesSlice)
+            if err != nil {
+                privateKey, _ = decode(string(privateKeyAsBytesSlice),"")
+            }
         }
     }
     return privateKey
@@ -27,10 +51,30 @@ func getPrivateKey() *ecdsa.PrivateKey {
 
 func getPublicKey() *ecdsa.PublicKey {
     privateKey = getPrivateKey()
-    publicKey, ok := privateKey.Public().(*ecdsa.PublicKey)
-    if !ok {
-        fmt.Fprintf(os.Stderr, "Could not get public key, stopping...")
-        os.Exit(1)
+    finfo1, err := os.Stat(PUB_KEY_FILE_PATH)
+    finfo, err := os.Open(PUB_KEY_FILE_PATH)
+    if err != nil {
+        var ok bool
+        publicKey, ok = privateKey.Public().(*ecdsa.PublicKey)
+        if !ok {
+            fmt.Fprintf(os.Stderr, "Could not get public key, stopping...")
+            os.Exit(1)
+        }
+        f, err := os.Create(PUB_KEY_FILE_PATH)
+        if err != nil {
+           os.Exit(1) 
+        }
+        _, publicstr := encode(privateKey,publicKey)
+        f.WriteString(publicstr)
+    } else {
+
+        publicKeyAsByteSlice := make([]byte, finfo1.Size())
+        _, err = finfo.Read(publicKeyAsByteSlice)
+        if err != nil {
+        } else {
+            _,pk :=decode("",string(publicKeyAsByteSlice))
+            publicKey = pk
+        }
     }
     return publicKey
 }
@@ -72,7 +116,7 @@ func signMsg(msg udpMsg) udpMsg {
     toHash = append(toHash, lengthToByteSlice...)
     toHash = append(toHash, msg.Body...)
     hashed := sha256.Sum256(toHash)
-    r, s, err := ecdsa.Sign(rand.Reader, privateKey, hashed[:])
+    r, s, err := ecdsa.Sign(rand.Reader,getPrivateKey(), hashed[:])
     if err != nil {
        fmt.Fprint(os.Stderr, "Could not sign msg") 
        os.Exit(0)
