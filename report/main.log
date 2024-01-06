@@ -1,72 +1,80 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2023.11.11)  4 JAN 2024 22:40
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex 2023.11.11)  6 JAN 2024 14:31
 entering extended mode
  \write18 enabled.
- file:line:error style messages enabled.
  %&-line parsing enabled.
 **main.tex
 (./main.tex
 LaTeX2e <2023-06-01>
 L3 programming layer <2023-06-05>
-(/usr/share/texlive/texmf-dist/tex/latex/base/report.cls
-Document Class: report 2023/05/17 v1.4n Standard LaTeX document class
+(/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo
 File: size12.clo 2023/05/17 v1.4n Standard LaTeX file (size option)
 )
 \c@part=\count185
-\c@chapter=\count186
-\c@section=\count187
-\c@subsection=\count188
-\c@subsubsection=\count189
-\c@paragraph=\count190
-\c@subparagraph=\count191
-\c@figure=\count192
-\c@table=\count193
+\c@section=\count186
+\c@subsection=\count187
+\c@subsubsection=\count188
+\c@paragraph=\count189
+\c@subparagraph=\count190
+\c@figure=\count191
+\c@table=\count192
 \abovecaptionskip=\skip48
 \belowcaptionskip=\skip49
 \bibindent=\dimen140
-) (./preambule.tex (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
+) (./preambule.tex
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 2021/09/16 v1.2d Enhanced LaTeX Graphics (DPC,SPQR)
- (/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/keyval.sty
 Package: keyval 2022/05/29 v1.15 key=value parser (DPC)
 \KV@toks@=\toks17
-) (/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/graphics.sty
 Package: graphics 2022/03/10 v1.4e Standard LaTeX Graphics (DPC,SPQR)
- (/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/trig.sty
 Package: trig 2021/08/11 v1.11 sin cos tan (DPC)
-) (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
+)
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/graphics.cfg
 File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 )
 Package graphics Info: Driver file: pdftex.def on input line 107.
- (/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-def/pdftex.def
 File: pdftex.def 2022/09/22 v1.2b Graphics/color driver for pdftex
 ))
 \Gin@req@height=\dimen141
 \Gin@req@width=\dimen142
-) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
 Package: amsmath 2023/05/13 v2.17o AMS math features
 \@mathmargin=\skip50
 
 For additional information on amsmath, use the `?' option.
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amstext.sty
 Package: amstext 2021/08/26 v2.01 AMS text
- (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsgen.sty
 File: amsgen.sty 1999/11/30 v2.0 generic functions
 \@emptytoks=\toks18
 \ex@=\dimen143
-)) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
+))
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsbsy.sty
 Package: amsbsy 1999/11/29 v1.2d Bold Symbols
 \pmbraise@=\dimen144
-) (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsopn.sty
 Package: amsopn 2022/04/08 v2.04 operator names
 )
-\inf@bad=\count194
+\inf@bad=\count193
 LaTeX Info: Redefining \frac on input line 234.
-\uproot@=\count195
-\leftroot@=\count196
+\uproot@=\count194
+\leftroot@=\count195
 LaTeX Info: Redefining \overline on input line 399.
 LaTeX Info: Redefining \colon on input line 410.
-\classnum@=\count197
-\DOTSCASE@=\count198
+\classnum@=\count196
+\DOTSCASE@=\count197
 LaTeX Info: Redefining \ldots on input line 496.
 LaTeX Info: Redefining \dots on input line 499.
 LaTeX Info: Redefining \cdots on input line 620.
@@ -79,20 +87,20 @@ LaTeX Info: Redefining \Bigg on input line 725.
 \big@size=\dimen145
 LaTeX Font Info:    Redeclaring font encoding OML on input line 743.
 LaTeX Font Info:    Redeclaring font encoding OMS on input line 744.
-\macc@depth=\count199
+\macc@depth=\count198
 LaTeX Info: Redefining \bmod on input line 905.
 LaTeX Info: Redefining \pmod on input line 910.
 LaTeX Info: Redefining \smash on input line 940.
 LaTeX Info: Redefining \relbar on input line 970.
 LaTeX Info: Redefining \Relbar on input line 971.
-\c@MaxMatrixCols=\count266
+\c@MaxMatrixCols=\count199
 \dotsspace@=\muskip16
-\c@parentequation=\count267
-\dspbrk@lvl=\count268
+\c@parentequation=\count266
+\dspbrk@lvl=\count267
 \tag@help=\toks19
-\row@=\count269
-\column@=\count270
-\maxfields@=\count271
+\row@=\count268
+\column@=\count269
+\maxfields@=\count270
 \andhelp@=\toks20
 \eqnshift@=\dimen146
 \alignsep@=\dimen147
@@ -106,27 +114,33 @@ LaTeX Info: Redefining \Relbar on input line 971.
 \mathdisplay@stack=\toks22
 LaTeX Info: Redefining \[ on input line 2953.
 LaTeX Info: Redefining \] on input line 2954.
-) (/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count272
+\c@float@type=\count271
 \float@exts=\toks23
 \float@box=\box53
 \@float@everytoks=\toks24
 \@floatcapt=\box54
-) (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amssymb.sty
 Package: amssymb 2013/01/14 v3.01 AMS font symbols
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/amsfonts.sty
 Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
 \symAMSa=\mathgroup4
 \symAMSb=\mathgroup5
 LaTeX Font Info:    Redeclaring math symbol \hbar on input line 98.
 LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
 (Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
-)) (/usr/share/texlive/texmf-dist/tex/latex/caption/subcaption.sty
+))
+(/usr/share/texlive/texmf-dist/tex/latex/caption/subcaption.sty
 Package: subcaption 2023/02/19 v1.6 Sub-captions (AR)
- (/usr/share/texlive/texmf-dist/tex/latex/caption/caption.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption.sty
 Package: caption 2023/03/12 v3.6j Customizing captions (AR)
- (/usr/share/texlive/texmf-dist/tex/latex/caption/caption3.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/caption/caption3.sty
 Package: caption3 2023/03/12 v2.4 caption3 kernel (AR)
 \caption@tempdima=\dimen152
 \captionmargin=\dimen153
@@ -138,113 +152,134 @@ Package: caption3 2023/03/12 v2.4 caption3 kernel (AR)
 \caption@hangindent=\dimen159
 Package caption Info: Standard document class detected.
 )
-\c@caption@flags=\count273
-\c@continuedfloat=\count274
+\c@caption@flags=\count272
+\c@continuedfloat=\count273
 Package caption Info: float package is loaded.
 )
 Package caption Info: New subtype `subfigure' on input line 239.
-\c@subfigure=\count275
+\c@subfigure=\count274
 Package caption Info: New subtype `subtable' on input line 239.
-\c@subtable=\count276
-) (/usr/share/texlive/texmf-dist/tex/latex/minted/minted.sty
+\c@subtable=\count275
+)
+(/usr/share/texlive/texmf-dist/tex/latex/minted/minted.sty
 Package: minted 2022/12/12 v2.7 Yet another Pygments shim for LaTeX
- (/usr/share/texlive/texmf-dist/tex/latex/kvoptions/kvoptions.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/kvoptions/kvoptions.sty
 Package: kvoptions 2022-06-15 v3.15 Key value format for package options (HO)
- (/usr/share/texlive/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
+
+(/usr/share/texlive/texmf-dist/tex/generic/ltxcmds/ltxcmds.sty
 Package: ltxcmds 2020-05-10 v1.25 LaTeX kernel commands for general use (HO)
-) (/usr/share/texlive/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/kvsetkeys/kvsetkeys.sty
 Package: kvsetkeys 2022-10-05 v1.19 Key value parser (HO)
-)) (/usr/share/texlive/texmf-dist/tex/latex/fvextra/fvextra.sty
+))
+(/usr/share/texlive/texmf-dist/tex/latex/fvextra/fvextra.sty
 Package: fvextra 2022/11/30 v1.5 fvextra - extensions and patches for fancyvrb
- (/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2020/10/05 v2.5k e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count277
-) (/usr/share/texlive/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty
+\etb@tempcnta=\count276
+)
+(/usr/share/texlive/texmf-dist/tex/latex/fancyvrb/fancyvrb.sty
 Package: fancyvrb 2023/01/19 4.5a verbatim text (tvz,hv)
-\FV@CodeLineNo=\count278
+\FV@CodeLineNo=\count277
 \FV@InFile=\read2
 \FV@TabBox=\box55
-\c@FancyVerbLine=\count279
-\FV@StepNumber=\count280
+\c@FancyVerbLine=\count278
+\FV@StepNumber=\count279
 \FV@OutFile=\write3
-) (/usr/share/texlive/texmf-dist/tex/latex/upquote/upquote.sty
-Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verbatim
-) (/usr/share/texlive/texmf-dist/tex/latex/lineno/lineno.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/upquote/upquote.sty
+Package: upquote 2012/04/19 v1.3 upright-quote and grave-accent glyphs in verba
+tim
+)
+(/usr/share/texlive/texmf-dist/tex/latex/lineno/lineno.sty
 Package: lineno 2023/05/20 line numbers on paragraphs v5.3
-\linenopenalty=\count281
+\linenopenalty=\count280
 \output=\toks25
-\linenoprevgraf=\count282
+\linenoprevgraf=\count281
 \linenumbersep=\dimen160
 \linenumberwidth=\dimen161
-\c@linenumber=\count283
-\c@pagewiselinenumber=\count284
-\c@LN@truepage=\count285
-\c@internallinenumber=\count286
-\c@internallinenumbers=\count287
+\c@linenumber=\count282
+\c@pagewiselinenumber=\count283
+\c@LN@truepage=\count284
+\c@internallinenumber=\count285
+\c@internallinenumbers=\count286
 \quotelinenumbersep=\dimen162
 \bframerule=\dimen163
 \bframesep=\dimen164
 \bframebox=\box56
-\linenoamsmath@ams@eqpen=\count288
+\linenoamsmath@ams@eqpen=\count287
 LaTeX Info: Redefining \\ on input line 3180.
 )
-\c@FV@TrueTabGroupLevel=\count289
-\c@FV@TrueTabCounter=\count290
+\c@FV@TrueTabGroupLevel=\count288
+\c@FV@TrueTabCounter=\count289
 \FV@TabBox@Group=\box57
 \FV@TmpLength=\skip53
-\c@FV@HighlightLinesStart=\count291
-\c@FV@HighlightLinesStop=\count292
-\FV@LoopCount=\count293
+\c@FV@HighlightLinesStart=\count290
+\c@FV@HighlightLinesStop=\count291
+\FV@LoopCount=\count292
 \FV@NCharsBox=\box58
 \FV@BreakIndent=\dimen165
-\FV@BreakIndentNChars=\count294
+\FV@BreakIndentNChars=\count293
 \FV@BreakSymbolSepLeft=\dimen166
-\FV@BreakSymbolSepLeftNChars=\count295
+\FV@BreakSymbolSepLeftNChars=\count294
 \FV@BreakSymbolSepRight=\dimen167
-\FV@BreakSymbolSepRightNChars=\count296
+\FV@BreakSymbolSepRightNChars=\count295
 \FV@BreakSymbolIndentLeft=\dimen168
-\FV@BreakSymbolIndentLeftNChars=\count297
+\FV@BreakSymbolIndentLeftNChars=\count296
 \FV@BreakSymbolIndentRight=\dimen169
-\FV@BreakSymbolIndentRightNChars=\count298
-\c@FancyVerbLineBreakLast=\count299
+\FV@BreakSymbolIndentRightNChars=\count297
+\c@FancyVerbLineBreakLast=\count298
 \FV@LineBox=\box59
 \FV@LineIndentBox=\box60
-\c@FV@BreakBufferDepth=\count300
+\c@FV@BreakBufferDepth=\count299
 \FV@LineWidth=\dimen170
-) (/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/base/ifthen.sty
 Package: ifthen 2022/04/13 v1.1d Standard LaTeX ifthen package (DPC)
-) (/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/calc.sty
 Package: calc 2017/05/25 v4.3 Infix arithmetic (KKT,FJ)
-\calc@Acount=\count301
-\calc@Bcount=\count302
+\calc@Acount=\count300
+\calc@Bcount=\count301
 \calc@Adimen=\dimen171
 \calc@Bdimen=\dimen172
 \calc@Askip=\skip54
 \calc@Bskip=\skip55
 LaTeX Info: Redefining \setlength on input line 80.
 LaTeX Info: Redefining \addtolength on input line 81.
-\calc@Ccount=\count303
+\calc@Ccount=\count302
 \calc@Cskip=\skip56
-) (/usr/share/texlive/texmf-dist/tex/latex/tools/shellesc.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/tools/shellesc.sty
 Package: shellesc 2023/04/15 v1.0d unified shell escape interface for LaTeX
 Package shellesc Info: Unrestricted shell escape enabled on input line 75.
-) (/usr/share/texlive/texmf-dist/tex/latex/ifplatform/ifplatform.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/ifplatform/ifplatform.sty
 Package: ifplatform 2017/10/13 v0.4a Testing for the operating system
- (/usr/share/texlive/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
-Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO)
- (/usr/share/texlive/texmf-dist/tex/generic/infwarerr/infwarerr.sty
+
+(/usr/share/texlive/texmf-dist/tex/generic/pdftexcmds/pdftexcmds.sty
+Package: pdftexcmds 2020-06-27 v0.33 Utility functions of pdfTeX for LuaTeX (HO
+)
+
+(/usr/share/texlive/texmf-dist/tex/generic/infwarerr/infwarerr.sty
 Package: infwarerr 2019/12/03 v1.5 Providing info/warning/error messages (HO)
-) (/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
+)
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2022/02/03 v1.0f TeX engine tests
 )
 Package pdftexcmds Info: \pdf@primitive is available.
 Package pdftexcmds Info: \pdf@ifprimitive is available.
 Package pdftexcmds Info: \pdfdraftmode found.
-) (/usr/share/texlive/texmf-dist/tex/generic/catchfile/catchfile.sty
+)
+(/usr/share/texlive/texmf-dist/tex/generic/catchfile/catchfile.sty
 Package: catchfile 2019/12/09 v1.8 Catch the contents of a file (HO)
- (/usr/share/texlive/texmf-dist/tex/generic/etexcmds/etexcmds.sty
+
+(/usr/share/texlive/texmf-dist/tex/generic/etexcmds/etexcmds.sty
 Package: etexcmds 2019/12/15 v1.7 Avoid name clashes with e-TeX commands (HO)
-)) (/usr/share/texlive/texmf-dist/tex/generic/iftex/ifluatex.sty
+))
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/ifluatex.sty
 Package: ifluatex 2019/10/25 v1.5 ifluatex legacy package. Use iftex instead.
 )
 runsystem(uname -s > "main.w18")...executed.
@@ -252,9 +287,11 @@ runsystem(uname -s > "main.w18")...executed.
  (./main.w18)
 runsystem(rm -- "main.w18")...executed.
 
-) (/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.sty (/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.tex
-\integerpart=\count304
-\decimalpart=\count305
+)
+(/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.sty
+(/usr/share/texlive/texmf-dist/tex/generic/xstring/xstring.tex
+\integerpart=\count303
+\decimalpart=\count304
 )
 Package: xstring 2023/01/14 v1.85 String manipulations (CT)
 )
@@ -269,14 +306,15 @@ Package: framed 2011/10/22 v 0.96: framed or shaded text with page breaks
 \minted@appexistsfile=\read3
 \minted@bgbox=\box61
 \minted@code=\write4
-\c@minted@FancyVerbLineTemp=\count306
-\c@minted@pygmentizecounter=\count307
+\c@minted@FancyVerbLineTemp=\count305
+\c@minted@pygmentizecounter=\count306
 \@float@every@listing=\toks26
-\c@listing=\count308
+\c@listing=\count307
 )
 runsystem(mkdir -p _minted-main)...executed.
 
- (/usr/share/texlive/texmf-dist/tex/latex/titlesec/titlesec.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/titlesec/titlesec.sty
 Package: titlesec 2021/07/05 v2.14 Sectioning titles
 \ttl@box=\box62
 \beforetitleunit=\skip58
@@ -287,22 +325,35 @@ Package: titlesec 2021/07/05 v2.14 Sectioning titles
 \titlewidth=\dimen179
 \titlewidthlast=\dimen180
 \titlewidthfirst=\dimen181
-) (/usr/share/texlive/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty (/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex
 \pgfutil@everybye=\toks28
 \pgfutil@tempdima=\dimen182
 \pgfutil@tempdimb=\dimen183
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
 \pgfutil@abb=\box63
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex (/usr/share/texlive/texmf-dist/tex/generic/pgf/pgf.revision.tex)
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/pgf.revision.tex)
 Package: pgfrcs 2023-01-15 v3.1.10 (3.1.10)
 ))
 Package: pgf 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty (/usr/share/texlive/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
 Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
 \pgfkeys@pathtoks=\toks29
 \pgfkeys@temptoks=\toks30
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered
+.code.tex
 \pgfkeys@tmptoks=\toks31
 ))
 \pgf@x=\dimen184
@@ -317,35 +368,43 @@ Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
 \pgf@yd=\dimen193
 \w@pgf@writea=\write5
 \r@pgf@reada=\read4
-\c@pgf@counta=\count309
-\c@pgf@countb=\count310
-\c@pgf@countc=\count311
-\c@pgf@countd=\count312
+\c@pgf@counta=\count308
+\c@pgf@countb=\count309
+\c@pgf@countc=\count310
+\c@pgf@countd=\count311
 \t@pgf@toka=\toks32
 \t@pgf@tokb=\toks33
 \t@pgf@tokc=\toks34
-\pgf@sys@id@count=\count313
+\pgf@sys@id@count=\count312
  (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
 File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
 )
 Driver file for pgf: pgfsys-pdftex.def
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
 File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.de
+f
 File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
-))) (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.
+tex
 File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgfsyssoftpath@smallbuffer@items=\count314
-\pgfsyssoftpath@bigbuffer@items=\count315
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+\pgfsyssoftpath@smallbuffer@items=\count313
+\pgfsyssoftpath@bigbuffer@items=\count314
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.
+tex
 File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )) (/usr/share/texlive/texmf-dist/tex/latex/xcolor/xcolor.sty
 Package: xcolor 2022/06/12 v2.14 LaTeX color extensions (UK)
- (/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics-cfg/color.cfg
 File: color.cfg 2016/01/02 v1.6 sample color configuration
 )
 Package xcolor Info: Driver file: pdftex.def on input line 227.
- (/usr/share/texlive/texmf-dist/tex/latex/graphics/mathcolor.ltx)
+
+(/usr/share/texlive/texmf-dist/tex/latex/graphics/mathcolor.ltx)
 Package xcolor Info: Model `cmy' substituted by `cmy0' on input line 1353.
 Package xcolor Info: Model `hsb' substituted by `rgb' on input line 1357.
 Package xcolor Info: Model `RGB' extended on input line 1369.
@@ -355,19 +414,44 @@ Package xcolor Info: Model `tHsb' substituted by `hsb' on input line 1373.
 Package xcolor Info: Model `HSB' substituted by `hsb' on input line 1374.
 Package xcolor Info: Model `Gray' substituted by `gray' on input line 1375.
 Package xcolor Info: Model `wave' substituted by `hsb' on input line 1376.
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
 Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
 \pgfmath@dimen=\dimen194
-\pgfmath@count=\count316
+\pgfmath@count=\count315
 \pgfmath@box=\box64
 \pgfmath@toks=\toks35
 \pgfmath@stack@operand=\toks36
 \pgfmath@stack@operation=\toks37
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex)
-(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonometric.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerarithmetics.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex
-\c@pgfmathroundto@lastzeros=\count317
-)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfint.code.tex) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code
+.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonomet
+ric.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.cod
+e.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison
+.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.
+tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code
+.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.
+tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerari
+thmetics.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count316
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfint.code.tex)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.te
+x
 File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@picminx=\dimen195
 \pgf@picmaxx=\dimen196
@@ -383,78 +467,118 @@ File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@yy=\dimen262
 \pgf@zx=\dimen263
 \pgf@zy=\dimen264
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.
+code.tex
 File: pgfcorepathconstruct.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@path@lastx=\dimen265
 \pgf@path@lasty=\dimen266
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code
+.tex
 File: pgfcorepathusage.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@shorten@end@additional=\dimen267
 \pgf@shorten@start@additional=\dimen268
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.te
+x
 File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfpic=\box65
 \pgf@hbox=\box66
 \pgf@layerbox@main=\box67
-\pgf@picture@serial@count=\count318
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.tex
+\pgf@picture@serial@count=\count317
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.c
+ode.tex
 File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgflinewidth=\dimen269
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformation
+s.code.tex
 File: pgfcoretransformations.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@pt@x=\dimen270
 \pgf@pt@y=\dimen271
 \pgf@pt@temp=\dimen272
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
 File: pgfcorequick.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.t
+ex
 File: pgfcoreobjects.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing
+.code.tex
 File: pgfcorepathprocessing.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.te
+x
 File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfarrowsep=\dimen273
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
 File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgf@max=\dimen274
-\pgf@sys@shading@range@num=\count319
-\pgf@shadingcount=\count320
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
+\pgf@sys@shading@range@num=\count318
+\pgf@shadingcount=\count319
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
 File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )
-(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.
+tex
 File: pgfcoreexternal.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfexternal@startupbox=\box68
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.te
+x
 File: pgfcorelayers.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.c
+ode.tex
 File: pgfcoretransparency.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.
+tex
 File: pgfcorepatterns.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
 File: pgfcorerdf.code.tex 2023-01-15 v3.1.10 (3.1.10)
-))) (/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
+)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
 File: pgfmoduleshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfnodeparttextbox=\box69
 ) (/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex
 File: pgfmoduleplot.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65
+.sty
 Package: pgfcomp-version-0-65 2023-01-15 v3.1.10 (3.1.10)
 \pgf@nodesepstart=\dimen275
 \pgf@nodesepend=\dimen276
-) (/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18
+.sty
 Package: pgfcomp-version-1-18 2023-01-15 v3.1.10 (3.1.10)
-)) (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgffor.sty (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)) (/usr/share/texlive/texmf-dist/tex/latex/pgf/math/pgfmath.sty (/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
+)) (/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgffor.sty
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex))
+(/usr/share/texlive/texmf-dist/tex/latex/pgf/math/pgfmath.sty
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
 Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
 \pgffor@iter=\dimen277
 \pgffor@skip=\dimen278
 \pgffor@stack=\toks38
 \pgffor@toks=\toks39
-)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
 Package: tikz 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers
+.code.tex
 File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgf@plot@mark@count=\count321
+\pgf@plot@mark@count=\count320
 \pgfplotmarksize=\dimen279
 )
 \tikz@lastx=\dimen280
@@ -469,18 +593,21 @@ File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \tikz@figbox@bg=\box71
 \tikz@tempbox=\box72
 \tikz@tempbox@bg=\box73
-\tikztreelevel=\count322
-\tikznumberofchildren=\count323
-\tikznumberofcurrentchild=\count324
-\tikz@fig@count=\count325
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex
+\tikztreelevel=\count321
+\tikznumberofchildren=\count322
+\tikznumberofcurrentchild=\count323
+\tikz@fig@count=\count324
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex
 File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
-\pgfmatrixcurrentrow=\count326
-\pgfmatrixcurrentcolumn=\count327
-\pgf@matrix@numberofcolumns=\count328
+\pgfmatrixcurrentrow=\count325
+\pgfmatrixcurrentcolumn=\count326
+\pgf@matrix@numberofcolumns=\count327
 )
-\tikz@expandcount=\count329
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
+\tikz@expandcount=\count328
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarytopaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
 ))) (/home/sese/texmf/tex/latex/fourier/fourier.sty
 Package: fourier 2022/02/05 2.3 fourier-GUTenberg package
@@ -490,14 +617,19 @@ Now handling font encoding FMS ...
 ... no UTF-8 mapping file for font encoding FMS
 Now handling font encoding FMX ...
 ... no UTF-8 mapping file for font encoding FMX
- (/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
+
+(/usr/share/texlive/texmf-dist/tex/latex/base/fontenc.sty
 Package: fontenc 2021/04/29 v2.0v Standard LaTeX package
-LaTeX Font Info:    Trying to load font information for T1+futs on input line 112.
- (/home/sese/texmf/tex/latex/fourier/t1futs.fd
+LaTeX Font Info:    Trying to load font information for T1+futs on input line 1
+12.
+
+(/home/sese/texmf/tex/latex/fourier/t1futs.fd
 File: t1futs.fd 2004/03/02 Fontinst v1.926 font definitions for T1/futs.
-)) (/usr/share/texlive/texmf-dist/tex/latex/base/textcomp.sty
+))
+(/usr/share/texlive/texmf-dist/tex/latex/base/textcomp.sty
 Package: textcomp 2020/02/02 v2.0n Standard LaTeX package
-) (/home/sese/texmf/tex/latex/fourier/fourier-orns.sty
+)
+(/home/sese/texmf/tex/latex/fourier/fourier-orns.sty
 Package: fourier-orns 2022/02/05 2.3 fourier-ornaments package
 )
 LaTeX Font Info:    Redeclaring symbol font `operators' on input line 63.
@@ -547,11 +679,13 @@ LaTeX Font Info:    Overwriting symbol font `symbols' in version `bold'
 (Font)                  OMS/cmsy/b/n --> FMS/futm/m/n on input line 126.
 LaTeX Font Info:    Redeclaring symbol font `largesymbols' on input line 127.
 LaTeX Font Info:    Encoding `OMX' has changed to `FMX' for symbol font
-(Font)              `largesymbols' in the math version `normal' on input line 127.
+(Font)              `largesymbols' in the math version `normal' on input line 1
+27.
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `normal'
 (Font)                  OMX/cmex/m/n --> FMX/futm/m/n on input line 127.
 LaTeX Font Info:    Encoding `OMX' has changed to `FMX' for symbol font
-(Font)              `largesymbols' in the math version `bold' on input line 127.
+(Font)              `largesymbols' in the math version `bold' on input line 127
+.
 LaTeX Font Info:    Overwriting symbol font `largesymbols' in version `bold'
 (Font)                  OMX/cmex/m/n --> FMX/futm/m/n on input line 127.
 LaTeX Font Info:    Redeclaring math alphabet \mathbf on input line 128.
@@ -570,8 +704,10 @@ LaTeX Font Info:    Redeclaring math symbol \varkappa on input line 132.
 LaTeX Font Info:    Redeclaring math symbol \leqslant on input line 138.
 LaTeX Font Info:    Redeclaring math symbol \geqslant on input line 139.
 LaTeX Font Info:    Redeclaring math symbol \vDash on input line 142.
-LaTeX Font Info:    Redeclaring math symbol \blacktriangleleft on input line 143.
-LaTeX Font Info:    Redeclaring math symbol \blacktriangleright on input line 144.
+LaTeX Font Info:    Redeclaring math symbol \blacktriangleleft on input line 14
+3.
+LaTeX Font Info:    Redeclaring math symbol \blacktriangleright on input line 1
+44.
 LaTeX Font Info:    Redeclaring math symbol \nleqslant on input line 145.
 LaTeX Font Info:    Redeclaring math symbol \ngeqslant on input line 146.
 LaTeX Font Info:    Redeclaring math symbol \parallel on input line 147.
@@ -585,11 +721,13 @@ LaTeX Font Info:    Redeclaring math symbol \varsubsetneq on input line 155.
 LaTeX Font Info:    Redeclaring math symbol \hbar on input line 161.
 LaTeX Font Info:    Redeclaring math symbol \smallsetminus on input line 162.
 LaTeX Font Info:    Redeclaring math symbol \subsetneqq on input line 163.
-LaTeX Font Info:    Redeclaring math symbol \rightrightarrows on input line 164.
+LaTeX Font Info:    Redeclaring math symbol \rightrightarrows on input line 164
+.
 LaTeX Font Info:    Redeclaring math symbol \leftleftarrows on input line 165.
 LaTeX Font Info:    Redeclaring math symbol \square on input line 166.
 LaTeX Font Info:    Redeclaring math symbol \curvearrowleft on input line 167.
 LaTeX Font Info:    Redeclaring math symbol \curvearrowright on input line 168.
+
 LaTeX Font Info:    Redeclaring math symbol \blacksquare on input line 169.
 LaTeX Font Info:    Redeclaring math symbol \varkappa on input line 199.
 LaTeX Font Info:    Redeclaring math symbol \varvarrho on input line 200.
@@ -620,8 +758,10 @@ LaTeX Font Info:    Redeclaring math accent \hat on input line 267.
 LaTeX Font Info:    Redeclaring math accent \dot on input line 268.
 LaTeX Font Info:    Redeclaring math accent \mathring on input line 269.
 \symUfutm=\mathgroup7
-) (/usr/share/texlive/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
+)
+(/usr/share/texlive/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
 Package: fancyhdr 2022/11/09 v4.1 Extensive control of page headers and footers
+
 \f@nch@headwidth=\skip60
 \f@nch@O@elh=\skip61
 \f@nch@O@erh=\skip62
@@ -631,23 +771,59 @@ Package: fancyhdr 2022/11/09 v4.1 Extensive control of page headers and footers
 \f@nch@O@erf=\skip66
 \f@nch@O@olf=\skip67
 \f@nch@O@orf=\skip68
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarydecorations.pathreplacing.code.tex
-(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarydecorations.code.tex (/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduledecorations.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.pathreplacing.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/modules/pgfmoduledecorations.cod
+e.tex
 \pgfdecoratedcompleteddistance=\dimen288
 \pgfdecoratedremainingdistance=\dimen289
 \pgfdecoratedinputsegmentcompleteddistance=\dimen290
 \pgfdecoratedinputsegmentremainingdistance=\dimen291
 \pgf@decorate@distancetomove=\dimen292
-\pgf@decorate@repeatstate=\count330
+\pgf@decorate@repeatstate=\count329
 \pgfdecorationsegmentamplitude=\dimen293
 \pgfdecorationsegmentlength=\dimen294
 )
 \tikz@lib@dec@box=\box74
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathreplacing.code.tex)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarydecorations.pathmorphing.code.tex (/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrarydecorations.pathmorphing.code.tex)) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryautomata.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrary
+decorations.pathreplacing.code.tex))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarydecorations.pathmorphing.code.tex
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/decorations/pgflibrary
+decorations.pathmorphing.code.tex))
+(/usr/share/texlive/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+
+(/usr/share/texlive/texmf-dist/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+)
+\Gm@cnth=\count330
+\Gm@cntv=\count331
+\c@Gm@tempcnt=\count332
+\Gm@bindingoffset=\dimen295
+\Gm@wd@mp=\dimen296
+\Gm@odd@mp=\dimen297
+\Gm@even@mp=\dimen298
+\Gm@layoutwidth=\dimen299
+\Gm@layoutheight=\dimen300
+\Gm@layouthoffset=\dimen301
+\Gm@layoutvoffset=\dimen302
+\Gm@dimlist=\toks40
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryautomata.code.tex
 File: tikzlibraryautomata.code.tex 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryshapes.multipart.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryshapes.multipart.code.tex
 File: tikzlibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
- (/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.multipart.code.tex
+
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshape
+s.multipart.code.tex
 File: pgflibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfnodepartlowerbox=\box75
 \pgfnodeparttwobox=\box76
@@ -669,24 +845,36 @@ File: pgflibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
 \pgfnodepartsevenbox=\box92
 \pgfnodepartsixbox=\box93
 \pgfnodepartfivebox=\box94
-))) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
+)))
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarypositioning.code.tex
 File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibraryfit.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibraryfit.code.tex
 File: tikzlibraryfit.code.tex 2023-01-15 v3.1.10 (3.1.10)
-) (/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypetri.code.tex
+)
+(/usr/share/texlive/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tik
+zlibrarypetri.code.tex
 File: tikzlibrarypetri.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )
 
-Package fancyhdr Warning: \fancyhead's `E' option without twoside option is useless.
-(fancyhdr)                Please consider using the `twoside' option on input line 30.
+Package fancyhdr Warning: \fancyhead's `E' option without twoside option is use
+less.
+(fancyhdr)                Please consider using the `twoside' option on input l
+ine 31.
 
 
-Package fancyhdr Warning: \fancyhead's `E' option without twoside option is useless.
-(fancyhdr)                Please consider using the `twoside' option on input line 33.
+Package fancyhdr Warning: \fancyhead's `E' option without twoside option is use
+less.
+(fancyhdr)                Please consider using the `twoside' option on input l
+ine 34.
 
 
-Package fancyhdr Warning: \fancyfoot's `E' option without twoside option is useless.
-(fancyhdr)                Please consider using the `twoside' option on input line 36.
+Package fancyhdr Warning: \fancyfoot's `E' option without twoside option is use
+less.
+(fancyhdr)                Please consider using the `twoside' option on input l
+ine 37.
 
 )
 runsystem(which pygmentize && touch main.aex)...executed.
@@ -695,9 +883,10 @@ runsystem(rm main.aex)...executed.
 
  (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2023-04-19 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count331
+\l__color_backend_stack_int=\count333
 \l__pdf_internal_box=\box95
-) (./main.aux)
+)
+(./main.aux)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 3.
@@ -715,48 +904,93 @@ LaTeX Font Info:    ... okay on input line 3.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 3.
 LaTeX Font Info:    ... okay on input line 3.
 LaTeX Font Info:    Checking defaults for FML/futm/m/it on input line 3.
-LaTeX Font Info:    Trying to load font information for FML+futm on input line 3.
+LaTeX Font Info:    Trying to load font information for FML+futm on input line 
+3.
  (/home/sese/texmf/tex/latex/fourier/fmlfutm.fd
 File: fmlfutm.fd 2004/10/30 Fontinst v1.926 font definitions for FML/futm.
 )
 LaTeX Font Info:    ... okay on input line 3.
 LaTeX Font Info:    Checking defaults for FMS/futm/m/n on input line 3.
-LaTeX Font Info:    Trying to load font information for FMS+futm on input line 3.
- (/home/sese/texmf/tex/latex/fourier/fmsfutm.fd
+LaTeX Font Info:    Trying to load font information for FMS+futm on input line 
+3.
+
+(/home/sese/texmf/tex/latex/fourier/fmsfutm.fd
 File: fmsfutm.fd 2004/10/30 Fontinst v1.926 font definitions for FMS/futm.
 )
 LaTeX Font Info:    ... okay on input line 3.
 LaTeX Font Info:    Checking defaults for FMX/futm/m/n on input line 3.
-LaTeX Font Info:    Trying to load font information for FMX+futm on input line 3.
- (/home/sese/texmf/tex/latex/fourier/fmxfutm.fd
+LaTeX Font Info:    Trying to load font information for FMX+futm on input line 
+3.
+
+(/home/sese/texmf/tex/latex/fourier/fmxfutm.fd
 File: fmxfutm.fd futm-extension
 )
 LaTeX Font Info:    ... okay on input line 3.
- (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+
+(/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count332
-\scratchdimen=\dimen295
+\scratchcounter=\count334
+\scratchdimen=\dimen303
 \scratchbox=\box96
-\nofMPsegments=\count333
-\nofMParguments=\count334
-\everyMPshowfont=\toks40
-\MPscratchCnt=\count335
-\MPscratchDim=\dimen296
-\MPnumerator=\count336
-\makeMPintoPDFobject=\count337
-\everyMPtoPDFconversion=\toks41
+\nofMPsegments=\count335
+\nofMParguments=\count336
+\everyMPshowfont=\toks41
+\MPscratchCnt=\count337
+\MPscratchDim=\dimen304
+\MPnumerator=\count338
+\makeMPintoPDFobject=\count339
+\everyMPtoPDFconversion=\toks42
 ) (/usr/share/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
-Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
- (/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
-File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
+85.
+
+(/usr/share/texlive/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
+e
 ))
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
 LaTeX Font Info:    Redeclaring math accent \widehat on input line 3.
 LaTeX Font Info:    Redeclaring math accent \widetilde on input line 3.
-LaTeX Font Info:    Trying to load font information for FML+futmi on input line 4.
- (/home/sese/texmf/tex/latex/fourier/fmlfutmi.fd
+
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(28.45274pt, 540.60239pt, 28.45274pt)
+* v-part:(T,H,B)=(101.40665pt, 591.5302pt, 152.11pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=540.60239pt
+* \textheight=591.5302pt
+* \oddsidemargin=-43.81725pt
+* \evensidemargin=-43.81725pt
+* \topmargin=-7.86334pt
+* \headheight=12.0pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=35.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
+
+LaTeX Font Info:    Trying to load font information for FML+futmi on input line
+ 4.
+(/home/sese/texmf/tex/latex/fourier/fmlfutmi.fd
 File: fmlfutmi.fd 2004/10/30 Fontinst v1.926 font definitions for FML/futmi.
 )
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
@@ -766,11 +1000,13 @@ LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
 LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
 (Font)              scaled to size 7.35999pt on input line 4.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 4.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 LaTeX Font Info:    Trying to load font information for U+msb on input line 4.
- (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
+
+(/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
@@ -779,48 +1015,867 @@ LaTeX Font Info:    Font shape `U/futm/m/n' will be
 (Font)              scaled to size 9.19998pt on input line 4.
 LaTeX Font Info:    Font shape `U/futm/m/n' will be
 (Font)              scaled to size 7.35999pt on input line 4.
- [1
+ (./introduction.tex
+\openout4 = `main.pyg'.
 
-{/home/sese/.texlive2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}] (./section1.tex
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 11.03998pt on input line 2.
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 8.27998pt on input line 2.
-LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
-(Font)              scaled to size 6.43999pt on input line 2.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 11.03998pt on input line 2.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 8.27998pt on input line 2.
-LaTeX Font Info:    Font shape `U/futm/m/n' will be
-(Font)              scaled to size 6.43999pt on input line 2.
+
+(./_minted-main/default.pygstyle)
+(./_minted-main/558EDD9062FC1017F8ACF81729966DA2D3773C8B440B993359565A23D713B17
+A.pygtex
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 3
+.
+ (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
+File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
+))
+\openout3 = `main.pyg'.
+
+
+(./_minted-main/BB24AAEE202859BE3CFAD849A692EFFFD3773C8B440B993359565A23D713B17
+A.pygtex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <12> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 3.
 )
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFCFE31AA2CCE58E98AD34CDF426AFFAD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/10C5CA355117711EBDC8CC19862AD552D3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/F6E7CEA280E28E0219E3D5CECE4D5C4CD3773C8B440B993359565A23D713B17
+A.pygtex)) (./constantes.tex
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 11.03998pt on input line 3.
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 8.27998pt on input line 3.
+LaTeX Font Info:    Font shape `FMX/futm/m/n' will be
+(Font)              scaled to size 6.43999pt on input line 3.
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 11.03998pt on input line 3.
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 8.27998pt on input line 3.
+LaTeX Font Info:    Font shape `U/futm/m/n' will be
+(Font)              scaled to size 6.43999pt on input line 3.
+) (./messages.tex
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/16C16B126A9F12FB105255BB56E0F0AC1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout3 = `main.pyg'.
+
+
+(./_minted-main/C2D3559C21257F4F96E04EBA371BCBDB1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex [1
+
+{/home/sese/.texlive2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/sha
+re/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf/fonts/enc/d
+vips/cm-super/cm-super-t1.enc}])
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/609E753CAA02104784ED32D6CDC926B51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+LaTeX Font Info:    Trying to load font information for TS1+futs on input line 
+13.
+ (/home/sese/texmf/tex/latex/fourier/ts1futs.fd
+File: ts1futs.fd 2003/09/14 Fontinst v1.801 font definitions for TS1/futs.
+)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/C1C6517979343220A2F1D7AC9062403F1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/1E258FD260921B0F60EF4AA40ABB57F21F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/6DBEA1130130BC7F53F098C159A9E3F21F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/6162393C43CFE40D729E85000BE72EF01F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/94A347219A524B6047511364FCC899D11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (7.93303pt too wide) in paragraph at lines 16--17
+\T1/futs/m/n/12 Nous avons des fonc-tions de con-ver-sion [] et [] pour con-ver
+-tir en []
+ []
+
+) (./fichierpair.tex
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A74ABEFC1230ADE5B7B539FC1F8BFFB91F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10.95> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 3.
+)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A3FD893218BC35CAD4BE3DC3D8532062D3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/5D41EC7EEE6563A86D19A2075F61C1FE1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (31.10965pt too wide) in paragraph at lines 4--5
+[]
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/013A9F3B3B31B90B46491AA8AE56AE811F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFD651E1B21E3B91F27B40447DF571E61F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (19.06583pt too wide) in paragraph at lines 5--7
+[]\T1/futs/m/n/12 utilise un principe sim-i-laire : Lorsque
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8F5E6D56A4DCBA0D61C6A656A4E49DF01F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (6.89288pt too wide) in paragraph at lines 7--8
+[]\T1/futs/m/n/12 Il s'agit d'une fonc-tion
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/259B8CFDB74F42451168640787C3CBCCD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/AEA87B76E5F967A14D863213C29E328DD3773C8B440B993359565A23D713B17
+A.pygtex)) (./receptionevnoi.tex
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/693D7E42C6C6EC10C6B7193F8C9EF8A31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/1AE0E8A95A0AD2160DA299E949740AA51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFBC87671814C0EB6EA66E59194BCB521F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/6F81B2010BCE1CA963FC5DC319A6EC661F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/1AE0E8A95A0AD2160DA299E949740AA51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/D73ACA62495E11DEFD2FD7E16E1F70C71F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/B21D15146E17F3DB3D8A8007D76AF8821F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/25484542F0FF152804E789BD24372CAE1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/15029586D5D80214AF6E730C7BB134A61F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/23D3C2468CC9B287F52C6BF8E9F2AAA21F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8E0E98EC1C5E12C5361AD6E3DA9FE1381F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A0C4E8357212956AE0CB93AE420D205E1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
 
 Package fancyhdr Warning: \headheight is too small (12.0pt): 
 (fancyhdr)                Make it at least 14.49998pt, for example:
 (fancyhdr)                \setlength{\headheight}{14.49998pt}.
 (fancyhdr)                You might also make \topmargin smaller to compensate:
+
 (fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
 
-[1] (./main.aux)
+[2]
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/C3DEC1A73D63EF25BBEF77123FD7AC201F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFBC87671814C0EB6EA66E59194BCB521F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8E0E98EC1C5E12C5361AD6E3DA9FE1381F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/9BC8CD2527FA89DDE55BF75DA98FF0D51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A0C4E8357212956AE0CB93AE420D205E1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/9BC8CD2527FA89DDE55BF75DA98FF0D51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/B881387B6396757C3B2920C36F6DA9EA1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/BC81368F2549C6759BB2003AA9DBB5D81F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFBC87671814C0EB6EA66E59194BCB521F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EFEC5F238DD87C998CB5F68D3BF9A8211F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8CD250B740AC8021D9939878E54FE1C11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/2C5B49B55B6BDF9FA1144CD8E54BA3161F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/99713B28355752F60EA999CFAA19A2281F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/C71F0D1DAE5CF7B5D019E91A21E3D6B71F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (319.72545pt too wide) in paragraph at lines 14--15
+[]\T1/futs/m/n/12 exécute une boucle 10 fois : en-voyer un \T1/futs/m/it/12 Nat
+-Traver-sal-Re-quest \T1/futs/m/n/12 à \T1/cmtt/m/n/12 jch.irif.fr\T1/futs/m/n/
+12 , puis []. 
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/AD57C8470052A6A5E85B5C3EF0FC57771F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/87F459F6964FB3DEBD61F34E6AE995841F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8CD250B740AC8021D9939878E54FE1C11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/C4E902AEDD15DABD6A7F68BB8D9988DE1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8CD250B740AC8021D9939878E54FE1C11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/C4E902AEDD15DABD6A7F68BB8D9988DE1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/8CD250B740AC8021D9939878E54FE1C11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A0C4E8357212956AE0CB93AE420D205E1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)) (./partagefichier.tex
+Overfull \hbox (69.44826pt too wide) in paragraph at lines 16--1
+\T1/futs/m/n/12 L'API ex-posée pour en-voyer et re-cevoir des mes-sages : []
+ []
+
+
+Overfull \hbox (45.53595pt too wide) in paragraph at lines 16--1
+\T1/futs/m/n/12 adresse des adresses marche :[] Hello, si ça ne marche pas [],
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EDB64B13B2507248735F4CD69445DFDDD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout3 = `main.pyg'.
+
+
+(./_minted-main/E5B612FCB0F80C5A429D2776DF07E71E1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[3])
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EDB64B13B2507248735F4CD69445DFDDD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EDB64B13B2507248735F4CD69445DFDDD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EDB64B13B2507248735F4CD69445DFDDD3773C8B440B993359565A23D713B17
+A.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/7F49952C4EF4754FBE298E6FF4C43BA31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/40EA2ED487AB41481D08A26079B296A31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 3.
+)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/0D03C05A7503FD709F5673C6F71019961F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/66A317E075ED8B0D7F53473149A351991F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/538BD7F4EAF11C81E8213E2207C750C51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (5.26431pt too wide) in paragraph at lines 3--35
+[] 
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E7FA32CB05BA9DDC8D5F75BDF16947901F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/538BD7F4EAF11C81E8213E2207C750C51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/50AB4E04387497D32DBD87EF5E558B951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E7FA32CB05BA9DDC8D5F75BDF16947901F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E7FA32CB05BA9DDC8D5F75BDF16947901F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/D851F3214F42B4EE573D465A098CFED81F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/9CBE19079ACC9BDF9C3667BF50DB0E301F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E7FA32CB05BA9DDC8D5F75BDF16947901F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/538BD7F4EAF11C81E8213E2207C750C51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/12CBB96ABB3D245719057CCE272F49BA1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/A1D58039EA7DD36872885991D821D4391F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/02E3D5995AEBEE792CE45196C0C847771F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E9CAE81848535FF21A0808A130C3D12A1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/02E3D5995AEBEE792CE45196C0C847771F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E9CAE81848535FF21A0808A130C3D12A1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (19.54347pt too wide) in paragraph at lines 41--42
+\T1/futs/m/it/12 chunk\T1/futs/m/n/12 , on cal-cule son hash et on set []. Les 
+champs [] et [] d'un []
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/E7FA32CB05BA9DDC8D5F75BDF16947901F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/7754AD0459FB68185DBE34156B35C3D31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/538BD7F4EAF11C81E8213E2207C750C51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/538BD7F4EAF11C81E8213E2207C750C51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/4D6B44095D24A54F4734192AB2F030191F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[4]
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/4D6B44095D24A54F4734192AB2F030191F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/89B86E62CA5906BE0C0745C73E07C6601F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/74CC1C60799E0A786AC7094B532F01B11F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/227D549E72F46BD8DF7E31603F335BF21F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/5FDE35DED1B18E34B069E3B98B8329D61F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/F333AE297B4F5B747BAD670B4710B3BC1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/D36AFDF5CD8AF8D6A06AAF97E163BC951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/F333AE297B4F5B747BAD670B4710B3BC1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/9FA2B7D6CC1861C90FF86A6C71C9889A1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/6F66AC531EB146EFE2EC95860432CB851F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/F80B87A66BC91CBAF44700001608236F1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/33883EB9968B30CB78B87BC2D76DA0D81F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/33883EB9968B30CB78B87BC2D76DA0D81F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (7.94278pt too wide) in paragraph at lines 3--58
+[][]
+ []
+
+
+Overfull \hbox (25.8044pt too wide) in paragraph at lines 3--58
+[]\T1/futs/m/n/12 . En-suite, tant que []
+ []
+
+
+Overfull \hbox (36.4595pt too wide) in paragraph at lines 3--58
+\T1/futs/m/n/12 cal-culé et [] et on in-cré-mente []. En-fin, on re-tourne []. 
+
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/52466C646810671540A4F8CEAE1226ED1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/247D425FC9700571BE7AA812A63794481F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/449B092C7CDA6F1D7D1D5A804AC1BFD31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/6F66AC531EB146EFE2EC95860432CB851F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/50AB4E04387497D32DBD87EF5E558B951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/64672A10DE469FBE6988486F9582D37C1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/50AB4E04387497D32DBD87EF5E558B951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/AC2ECE8F951106BD9BF83671636769851F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/449B092C7CDA6F1D7D1D5A804AC1BFD31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/1D0458EDFF1B86B39BA516AACBC545E61F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/50AB4E04387497D32DBD87EF5E558B951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/449B092C7CDA6F1D7D1D5A804AC1BFD31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/756C412732C9E787F483D35D939B8EF21F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (264.29376pt too wide) in paragraph at lines 60--68
+\T1/futs/m/n/12 Une fois que tous les n÷uds de l'arbre on été créés, on cal-cul
+ les hashs des n÷uds in-ternes avec : []
+ []
+
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DA1FC5230F12740604989D6E1C6A7C311F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex
+LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <14.4> not available
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 3.
+)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/845A23BFBED9E43C4C866FA474BE7AE51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+Overfull \hbox (19.65846pt too wide) in paragraph at lines 69--70
+\T1/futs/m/n/12 Pour répon-dre rapi-de-ment aux \T1/cmtt/m/n/12 GetDatum\T1/fut
+s/m/n/12 , nous stock-ons une [] qui as-so-cie chaque hash à son []. 
+ []
+
+) (./crypto.tex) (./ameliorations.tex
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EDB64B13B2507248735F4CD69445DFDDD3773C8B440B993359565A23D713B17
+A.pygtex)
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[5]
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/02E3D5995AEBEE792CE45196C0C847771F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/ADF9C8D902C2F0141FAB10D6AC4CFD611F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/B80FA55B1234F1935CEA559D9EFBC39A1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/50AB4E04387497D32DBD87EF5E558B951F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/D576A23E3B5477C4B492213568B21F241F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/0DF58ACE7DB455DA2610685DAA6784F31F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFBC87671814C0EB6EA66E59194BCB521F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/CEB866AD693261300E93F78EAD8720E01F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/845A23BFBED9E43C4C866FA474BE7AE51F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EC862E5B53E65C83FC8AB9576F87BA9C1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EC862E5B53E65C83FC8AB9576F87BA9C1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/DFBC87671814C0EB6EA66E59194BCB521F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/2C5B49B55B6BDF9FA1144CD8E54BA3161F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/EC862E5B53E65C83FC8AB9576F87BA9C1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/16C16B126A9F12FB105255BB56E0F0AC1F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex)
+\openout4 = `main.pyg'.
+
+
+(./_minted-main/D8ED9F4BC2700B87A15440329B2901101F1D7DAF21D3C988B12C4D95CAA409B
+4.pygtex))
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 14.49998pt, for example:
+(fancyhdr)                \setlength{\headheight}{14.49998pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-2.49998pt}.
+
+[6] (./main.aux)
  ***********
 LaTeX2e <2023-06-01>
 L3 programming layer <2023-06-05>
  ***********
+runsystem(rm main.pyg)...executed.
+
  ) 
 Here is how much of TeX's memory you used:
- 20582 strings out of 475735
- 423958 string characters out of 5784785
- 1854759 words of memory out of 5000000
- 40933 multiletter control sequences out of 15000+600000
- 580549 words of font info for 97 fonts, out of 8000000 for 9000
+ 22019 strings out of 475735
+ 495558 string characters out of 5784785
+ 1863759 words of memory out of 5000000
+ 41955 multiletter control sequences out of 15000+600000
+ 600691 words of font info for 116 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 89i,11n,92p,423b,221s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texlive/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/adobe/utopia/putr8a.pfb>
-Output written on main.pdf (2 pages, 31072 bytes).
+ 89i,11n,92p,1013b,569s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</home/sese/texmf/fonts/type1/public/fourier/fourier-ms.pfb></usr/share/texli
+ve/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb></usr/share/texlive/texmf-dis
+t/fonts/type1/adobe/utopia/putr8a.pfb></usr/share/texlive/texmf-dist/fonts/type
+1/adobe/utopia/putri8a.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfit12
+00.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt1000.pfb></usr/share/t
+exmf/fonts/type1/public/cm-super/sftt1095.pfb></usr/share/texmf/fonts/type1/pub
+lic/cm-super/sftt1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt144
+0.pfb>
+Output written on main.pdf (6 pages, 214374 bytes).
 PDF statistics:
- 25 PDF objects out of 1000 (max. 8388607)
- 16 compressed objects within 1 object stream
+ 73 PDF objects out of 1000 (max. 8388607)
+ 46 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  13 words of extra memory for PDF output out of 10000 (max. 10000000)
 

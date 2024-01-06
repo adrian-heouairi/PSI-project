@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nx}{merkleTreeNode}\PYG{+w}{ }\PYG{n+nx}{avec}\PYG{+w}{ }\PYG{n+nx}{Path}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{PSI}\PYG{o}{\PYGZhy{}}\PYG{n+nx}{shared}\PYG{o}{\PYGZhy{}}\PYG{n+nx}{files}
+\end{Verbatim}

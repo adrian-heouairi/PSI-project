@@ -1,0 +1,15 @@
+\section{Améliorations possibles}
+\begin{itemize}
+    \item Nous aurions dû utiliser des pointeurs vers des structures au lieu de valeurs (évite les copies lors du passage en argument).
+    \item Il faudrait vérifier que \mintinline{bash}{PSI-shared-files} ne contient pas de dossiers ayant plus de 16 entrées au début du programme.
+    \item Le champ \mintinline{go}{Path} de \mintinline{go}{merkleTreeNode} devrait être un pointeur de \mintinline{go}{string} (si cela est possible en Go) afin de ne pas répéter en mémoire le même \textit{path} pour tous les enfants \textit{big file} et \textit{chunk} d'un \textit{big file}.
+    \item Il faudrait gérer les pairs dont la racine n'est pas un \textit{chunk} \mintinline{go}{directory} (\textit{big file} ou \textit{chunk}).
+    \item Il faudrait vérifier que les noms de fichier dans un \mintinline{go}{datum directory} sont de l'\textsc{utf-8} valide.
+    \item Il faudrait implémenter \mintinline{go}{IPv6} (avoir deux threads qui reçoivent des messages au lieu d'un, et utiliser le bon \textit{socket} en fonction de l'adresse à laquelle on envoie un message).
+    \item Il faudrait envoyer \textit{ErrorReply} aux pairs qui nous envoient des messages invalides.
+    \item Il faudrait remplacer \mintinline{go}{msgQueue} par une \mintinline{go}{map[*addrId]*udpMsg} dont la clé est une struct (adresse, port, ID du message) et la valeur est un pointeur vers le message. Ainsi, avant d'envoyer un message, on crée la clé dans la \mintinline{go}{map} avec une valeur \mintinline{go}{nil} pour indiquer qu'on attend le message. Lors de la réception d'un message, on vérifie si la clé est présente avec une valeur \mintinline{go}{nil}. Si la clé n'existe pas, on peut jeter le message car aucun thread ne va jamais le récupérer (actuellement, les réponses envoyées par un pair sans requête de notre part sont stockées dans la \mintinline{go}{msgQueue} pour toujours). Avec cette modification, \mintinline{go}{retrieveInMsgQueue} serait simplement en attente active tant que la valeur de la clé est \mintinline{go}{nil}.
+    \item Il faudrait supporter les guillemets dans l'interface en ligne de commande pour gérer les chemins avec des espaces.
+    \item Il faudrait supporter les noms de pair dont le nom contient "/".
+    \item Le champ Length de \mintinline{go}{udpMsg} est redondant, il suffit d'une méthode qui fait \mintinline{go}{len(Body)}.
+    \item Il faudrait utiliser les mêmes structures de données pour uploader et downloader des arbres.
+    \end{itemize}

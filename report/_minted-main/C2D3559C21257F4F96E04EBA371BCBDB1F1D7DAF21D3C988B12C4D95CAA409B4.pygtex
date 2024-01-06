@@ -1,0 +1,8 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{k+kd}{type}\PYG{+w}{ }\PYG{n+nx}{udpMsg}\PYG{+w}{ }\PYG{k+kd}{struct}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{n+nx}{Id}\PYG{+w}{     }\PYG{k+kt}{uint32}
+\PYG{+w}{        }\PYG{n+nx}{Type}\PYG{+w}{   }\PYG{k+kt}{uint8}
+\PYG{+w}{        }\PYG{n+nx}{Length}\PYG{+w}{ }\PYG{k+kt}{uint16}
+\PYG{+w}{        }\PYG{n+nx}{Body}\PYG{+w}{   }\PYG{p}{[]}\PYG{k+kt}{byte}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}

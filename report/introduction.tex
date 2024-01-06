@@ -1,0 +1,16 @@
+Il s'agit projet réalisé en Go 1.21. Le programme présente une interface en ligne de commande avec TAB completion pour les noms de commande et leurs arguments (voir liste des commandes ci-dessous). On peut également lancer une commande avec par exemple \mintinline{bash}{go run . wget jch.irif.fr/images/horse.jpg} (le programme se termine après l'avoir exécutée).
+
+\begin{minted}{bash}
+> help
+PATH is PEER_NAME[PATH2] with PATH2 = /videos for example
+    hello PEER: sends at least two Hellos to PEER
+    exit: exits the program
+    help: shows help message
+    lspeers: shows the connected peers if --addr specified shows also addresses
+    findrem PEER: shows the files shared by PEER
+    curl PATH: downloads and shows the file at PATH
+    wget PATH: downloads recursively the directory or file at PATH
+\end{minted}
+Le projet est découpé en fichiers \mintinline{bash}{.go} : \mintinline{bash}{constants.go download.go main.go merkle_tree.go}\\
+\mintinline{bash}{messages.go rest.go udp.g ui.go utils.go}.
+
