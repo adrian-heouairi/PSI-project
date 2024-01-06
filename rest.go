@@ -113,14 +113,14 @@ func restDisplayAllPeersWithTheirAddresses() {
 }
 
 func restGetKey(peerName string) []byte {
-    req, body, err := httpGet(SERVER_ADDRESS + PEERS_PATH + peerName + "/key")
-    if err != nil {
-       panic("HTTP REQUEST ERROR")
-    }
+	req, body, err := httpGet(SERVER_ADDRESS + PEERS_PATH + peerName + "/key")
+	if err != nil {
+		panic("HTTP REQUEST ERROR")
+	}
 
-    if req.StatusCode != HTTP_OK {
-        return []byte{}
-    }
+	if req.StatusCode != HTTP_OK {
+		return []byte{}
+	}
 
-    return body
+	return body
 }

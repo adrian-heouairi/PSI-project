@@ -35,7 +35,7 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-	//go keepAliveMainPeer()
+	go keepAliveMainPeer()
 
 	if len(cmdToRun) > 0 {
 		runLine(cmdToRun)

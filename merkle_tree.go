@@ -242,7 +242,7 @@ func getChunkContents(path string, chunkIndex int64) ([]byte, error) {
 	defer f.Close()
 
 	var buf []byte
-	if chunkIndex == lastChunkIndex && size % CHUNK_MAX_SIZE != 0 {
+	if chunkIndex == lastChunkIndex && size%CHUNK_MAX_SIZE != 0 {
 		buf = make([]byte, size%CHUNK_MAX_SIZE)
 	} else {
 		buf = make([]byte, CHUNK_MAX_SIZE)
