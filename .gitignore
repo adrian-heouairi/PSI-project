@@ -23,4 +23,4 @@ go.work
 PSI-download
 PSI-shared-files
 
-/private-key
+/private.key
