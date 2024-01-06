@@ -40,7 +40,6 @@ func publicKeyToHexaString() []byte {
 }
 
 func parsePublicKey(key []byte) *ecdsa.PublicKey {
-	fmt.Println("len of parsing key:", len(key))
 	var x, y big.Int
 	x.SetBytes(key[:32])
 	y.SetBytes(key[32:])
