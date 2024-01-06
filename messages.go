@@ -8,14 +8,16 @@ import (
 	"net"
 )
 
+// TODO Transform some of these functions into methods
+
 // It is assumed that len(Body) == Length
 // Does not support cryptographic footer
 type udpMsg struct {
-	Id     uint32
-	Type   uint8
-	Length uint16
-	Body   []byte
-    Signature []byte // may be nil if peer does not sign messages
+	Id        uint32
+	Type      uint8
+	Length    uint16
+	Body      []byte
+	Signature []byte // May be nil if peer doesn't sign messages
 }
 
 // Represent a datum message containing a chunk.
@@ -60,9 +62,9 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 	var res = append(idToByteSlice, typeToByteSlice...)
 	res = append(res, lengthToByteSlice...)
 	res = append(res, toCast.Body...)
-    if toCast.Signature != nil {
-        res = append(res, toCast.Signature...)
-    }
+	if toCast.Signature != nil {
+		res = append(res, toCast.Signature...)
+	}
 	return res
 }
 
@@ -72,6 +74,10 @@ func udpMsgToByteSlice(toCast udpMsg) []byte {
 //   - bytesRead: the number of bytes that was received for this message
 //   - Returns: a valid udpMsg and nil or an empty udpMsg and err
 func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
+	if len(toCast) < ID_SIZE+TYPE_SIZE+LENGTH_SIZE {
+		return udpMsg{}, fmt.Errorf("Message too small")
+	}
+
 	var m udpMsg
 	m.Id = binary.BigEndian.Uint32(toCast[:ID_SIZE])
 	m.Type = toCast[ID_SIZE]
@@ -82,18 +88,21 @@ func byteSliceToUdpMsg(toCast []byte, bytesRead int) (udpMsg, error) {
 	}
 
 	m.Length = binary.BigEndian.Uint16(toCast[ID_SIZE+1 : ID_SIZE+1+LENGTH_SIZE])
-	expectedSize := ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length
-	if bytesRead < int(expectedSize) {
+
+	expectedSizeWithoutSig := ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length
+	if bytesRead < int(expectedSizeWithoutSig) {
 		return udpMsg{}, fmt.Errorf("UDP message too small: stated length %d but received %d bytes", m.Length, bytesRead)
 	}
 
 	m.Body = append([]byte{}, toCast[BODY_START_INDEX:BODY_START_INDEX+m.Length]...)
-    if bytesRead - SIGNATURE_SIZE  == int(m.Length) + ID_SIZE + TYPE_SIZE + LENGTH_SIZE {
-        fmt.Println("MSG CONTAINS SIGNATURE")
-        m.Signature = append(m.Signature, toCast[ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length+1:ID_SIZE + TYPE_SIZE + LENGTH_SIZE + m.Length+1 + SIGNATURE_SIZE]...)
-    } else if bytesRead - SIGNATURE_SIZE != 0 {
-       return udpMsg{}, fmt.Errorf("Bytes read more than a non signed msg size but less that a signed one") 
-    }
+
+	if bytesRead == int(m.Length)+ID_SIZE+TYPE_SIZE+LENGTH_SIZE+SIGNATURE_SIZE {
+		LOGGING_FUNC("MSG CONTAINS SIGNATURE")
+		m.Signature = append(m.Signature, toCast[ID_SIZE+TYPE_SIZE+LENGTH_SIZE+m.Length:ID_SIZE+TYPE_SIZE+LENGTH_SIZE+m.Length+SIGNATURE_SIZE]...)
+	} else if bytesRead != int(m.Length)+ID_SIZE+TYPE_SIZE+LENGTH_SIZE {
+		return udpMsg{}, fmt.Errorf("Invalid message size")
+	}
+
 	return m, nil
 }
 
@@ -115,8 +124,8 @@ func createMsgWithId(msgId uint32, msgType byte, msgBody []byte) udpMsg {
 	msg.Id = msgId
 	msg.Type = msgType
 	msg.Body = msgBody
-	
-    msg.Length = uint16(len(msgBody))
+
+	msg.Length = uint16(len(msgBody))
 	return signMsg(msg)
 }
 
@@ -289,7 +298,7 @@ func createHello() udpMsg {
 	extensions := make([]byte, HELLO_EXTENSIONS_SIZE)
 	nameAsBytes := []byte(OUR_PEER_NAME)
 	var res = append(extensions, nameAsBytes...)
-    helloMsg = createMsg(HELLO,res)
+	helloMsg = createMsg(HELLO, res)
 	return helloMsg
 }
 
@@ -301,8 +310,8 @@ func createComplexHello(msgId uint32, msgType byte) (udpMsg, error) {
 
 	ourHelloBody := hello{OUR_EXTENSIONS, OUR_PEER_NAME}
 
-    ourHello := createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody))
-    return ourHello, nil
+	ourHello := createMsgWithId(msgId, msgType, helloToByteSlice(ourHelloBody))
+	return ourHello, nil
 }
 
 // TODO Use htons/htonl instead of BigEndian

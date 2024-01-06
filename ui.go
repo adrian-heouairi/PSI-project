@@ -89,7 +89,7 @@ func mainMenu() error {
 			return err
 		}
 
-		// TODOSEVI Support quotes in line
+		// TODO Support quotes in line
 		runLine(splitLine(line)) // The line passed doesn't have \n at the end
 	}
 }

@@ -41,6 +41,8 @@ const IPV4_SIZE = 4
 const IPV6_SIZE = 16
 const PORT_SIZE = 2
 
+var MANDATORILY_SIGNED_MSGS = []byte{HELLO, HELLO_REPLY, ROOT, ROOT_REPLY, PUBLIC_KEY, PUBLIC_KEY_REPLY}
+
 // To achieve 500 ms of waiting for a reply before reemitting the request
 const MSG_QUEUE_MAX_WAIT = 3000 * time.Millisecond
 
@@ -137,11 +139,13 @@ const ( // Message and datum constants
 	// Biggest message is datum chunk or bigfile with 32 children or full directory
 	BODY_MAX_SIZE int = int(HASH_SIZE) + int(DATUM_TYPE_SIZE) + CHUNK_MAX_SIZE
 
-    SIGNATURE_SIZE = 64
+	SIGNATURE_SIZE = 64
 )
 
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE) + SIGNATURE_SIZE
+
+const KEY_SIZE = 64
 
 const (
 	CLI_PROMPT = "> "
@@ -168,6 +172,8 @@ var CMD_MAP = map[string]command{
 }
 
 const CMD_TOO_FEW_ARGS = "Invalid line: too few arguments"
+
+const PRIVATE_KEY_PATH = "../private.key"
 
 func byteToMsgTypeAsStr(msgType byte) (string, error) {
 	var typeAsString string
