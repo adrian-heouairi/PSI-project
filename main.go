@@ -16,6 +16,7 @@ func main() {
 		cmdToRun = os.Args[1:]
 	}
 
+    getPrivateKey()
 	initOurPeerName()
 
 	err := mkdirP(DOWNLOAD_DIR)
@@ -33,7 +34,7 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-	go keepAliveMainPeer()
+    //go keepAliveMainPeer()
 
 	if len(cmdToRun) > 0 {
 		runLine(cmdToRun)
