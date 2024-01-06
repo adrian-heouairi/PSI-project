@@ -145,6 +145,8 @@ const ( // Message and datum constants
 const UDP_BUFFER_SIZE int = int(ID_SIZE) + int(TYPE_SIZE) + int(LENGTH_SIZE) +
 	int(BODY_MAX_SIZE) + SIGNATURE_SIZE
 
+const KEY_SIZE = 64
+
 const (
 	CLI_PROMPT = "> "
 	//EXIT_MESSAGE          = "Exiting gracefully"

@@ -201,7 +201,7 @@ func handleMsg(receivedMsg addrUdpMsg) {
     }
 
     if receivedMsg.Msg.Signature != nil {
-        if len(peerPublicKey) == SIGNATURE_SIZE {
+        if len(peerPublicKey) == KEY_SIZE {
             if !checkMsgSignature(receivedMsg.Msg, peerPublicKey) {
                 LOGGING_FUNC("Bad signature in received request")
                 return
@@ -214,7 +214,7 @@ func handleMsg(receivedMsg addrUdpMsg) {
         }
     }
 
-    if len(peerPublicKey) == SIGNATURE_SIZE && receivedMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, receivedMsg.Msg.Type) {
+    if len(peerPublicKey) == KEY_SIZE && receivedMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, receivedMsg.Msg.Type) {
         LOGGING_FUNC("Peer that implements cryptography sent an unsigned request of a type that must be signed")
         return
     }
@@ -398,7 +398,7 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
     }
 
     if replyMsg.Msg.Signature != nil {
-        if len(peerPublicKey) == SIGNATURE_SIZE {
+        if len(peerPublicKey) == KEY_SIZE {
             if !checkMsgSignature(replyMsg.Msg, peerPublicKey) {
                 return udpMsg{}, fmt.Errorf("bad signature in received reply")
             } else {
@@ -409,7 +409,7 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
         }
     }
 
-    if len(peerPublicKey) == SIGNATURE_SIZE && replyMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, replyMsg.Msg.Type) {
+    if len(peerPublicKey) == KEY_SIZE && replyMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, replyMsg.Msg.Type) {
         return udpMsg{}, fmt.Errorf("peer that implements cryptography sent an unsigned reply of a type that must be signed")
     }
 
