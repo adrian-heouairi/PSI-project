@@ -1,0 +1,70 @@
+\section{Partage de nos fichiers avec les pairs}
+Le téléchargement de l'arbre d'un pair et l'exportation de nos fichiers n'utilisent aucun code en commun.
+Nos fichiers à partager se situent dans \mintinline{bash}{PSI-shared-files} à la racine du projet.
+
+Nous représentons l'arbre de \textit{Merkle} que nous partageons par une structure récursive \mintinline{go}{merkleTreeNode} :
+\begin{minted}{go}
+    type merkleTreeNode struct {
+        // The parent node, useful for hash computation
+        // Never nil except for the root node
+        Parent *merkleTreeNode
+
+        // Path of the file or directory this node represents
+        Path string
+
+        // Never nil (even for CHUNK)
+        Children []*merkleTreeNode
+
+        // Nil if not computed yet
+        Hash []byte
+
+        // CHUNK, TREE, DIRECTORY
+        Type byte
+
+        // -1 if not CHUNK
+        ChunkIndex int
+    }
+\end{minted}
+
+Nous construisons cet arbre une fois pour toutes au début du programme (il faut redémarrer le programme pour prendre en compte les modifications dans \mintinline{bash}{PSI-shared-files}). La construction de notre arbre se produit en deux étapes : un parcours récursif de \mintinline{bash}{PSI-shared-files} qui crée tous les \mintinline{go}{merkleTreeNode} correspondant aux fichiers et dossiers de \mintinline{bash}{PSI-shared-files} et calcule le \mintinline{go}{merkleTreeNode.Hash} pour toutes les feuilles (dossier vide ou \textit{chunk}, que les \textit{chunks} soient dans \textit{big file} ou non). Ensuite, on lance une fonction récursive qui calcule le hash de tous les nœuds internes.
+
+\subsection{Première étape (création de l'arbre)}
+\footnotesize\mintinline{go}{func PathToMerkleTreeWithoutInternalHashes(path string, parent *merkleTreeNode) (*merkleTreeNode, error)}\\ \normalsize
+Le premier appel est effectué avec \mintinline{go}{path = PSI-shared-files} et \mintinline{go}{parent = nil}.
+\\Fonctionnement : on crée \mintinline{go}{ret}, le \mintinline{go}{merkleTreeNode} à retourner.
+\begin{itemize}
+    \item Si \mintinline{go}{path} est un dossier :
+        \mintinline{go}{ret} prend le type \mintinline{go}{directory}.
+        Si \mintinline{go}{path} est un dossier vide, on set son hash au hash du dossier vide.
+        Si \mintinline{go}{path} est un dossier et contient des fichiers ou dossiers : on lance un appel récursif avec arguments (\mintinline{go}{path + "/" + nom de fichier, ret}) et on append le résultat à \mintinline{go}{ret.Children}.
+        \begin{itemize}
+            \item Si \mintinline{go}{path} est un fichier de taille $\leqslant$ 1024, \mintinline{go}{ret} prend le type \textit{chunk}, \mintinline{go}{ret.ChunkIndex = 0}. On lit le \textit{chunk}, on calcule son hash et on set \mintinline{go}{ret.Hash}. Les champs \mintinline{go}{Path} et \mintinline{go}{ChunkIndex} d'un \mintinline{go}{merkleTreeNode} de type \textit{chunk} permettent de retrouver le contenu du fichier en lisant le fichier situé à \mintinline{go}{Path} au bon endroit selon \mintinline{go}{ChunkIndex}. De cette façon, on ne stocke pas les \textit{chunks} en mémoire.
+            \item Si \mintinline{go}{path} est un fichier de taille $>$ 1024, on set \mintinline{go}{type = big file} et on lance fillBigFile sur \mintinline{go}{ret} qui va créer tous les \mintinline{go}{merkleTreeNode} \textit{big file} et \textit{chunk} et les mettre en tant qu'enfant, petits-enfants, etc de \mintinline{go}{ret}.
+        \end{itemize}
+    \item \mintinline{go}{fillBigFile} : cette fonction n'est pas récursive. On part d'une racine \textit{big file} sans enfants.
+        \begin{itemize}
+            \item Première étape qui crée uniquement les nœuds \textit{big file} :
+                La capacité courante est 32, le \textit{big file} auquel on ajoute des enfants \textit{big file} reste le même tant que sa liste de fils n'est pas pleine. On calcule le nombre de \textit{chunks} dans le fichier.
+                Tant que le nombre de \textit{chunks} que l'arbre courant peut accueillir est strictement inférieure à la capacité courante, on ajoute un enfant \textit{big file} et on augmente la capacité courante de 31 (32 nouvelles places moins la place prise par le nouveau \textit{big file}). Lorsque la liste des enfants du \textit{big file} auquel on est en train d'ajouter des enfants devient pleine, on cherche le prochain \textit{big file} auquel on peut ajouter des enfants par \textit{level order traversal} partant de la racine.
+            \item Deuxième étape qui ajoute les feuilles \textit{chunk}
+                La deuxième partie de \mintinline{go}{fillBigFile} ajoute les feuilles \textit{chunk} à l'arbre \textit{big file} par un appel à \mintinline{go}{root.addChunkLeaves(nbChunk, 0)}, \mintinline{go}{root} étant le \textit{big file} racine, \mintinline{go}{nbChunk} étant le nombre de \textit{chunks} dans le fichier et 0 étant l'indice du premier \textit{chunk}.
+        \end{itemize}
+\end{itemize}
+
+\mintinline{go}{func (bigFile *merkleTreeNode) addChunkLeaves(nbChunkToCreate int, nextChunkIndex int)} est une méthode récursive.
+Pour tous les enfants de \mintinline{go}{bigFile}, on fait \\ \mintinline{go}{nextChunkIndex = child.addChunkLeaves(nbChunkToCreate, nextChunkIndex)}.
+Ensuite, tant que \mintinline{go}{bigFile} a de la place dans ses enfants et qu'on ne dépasse pas \mintinline{go}{nbChunkToCreate}, on ajoute un fils \mintinline{go}{chunk} avec le hash calculé et \mintinline{go}{ChunkIndex = nextChunkIndex} et on incrémente \mintinline{go}{nextChunkIndex}.
+Enfin, on retourne \mintinline{go}{nextChunkIndex}.
+
+\subsection{Deuxième étape (calcul des hash des nœuds internes)}
+Une fois que tous les nœuds de l'arbre ont été créés, on calcule les hashs des nœuds internes avec :
+\mintinline{go}{func (node *merkleTreeNode) computeHashesRecursively()} \\
+La méthode est lancée sur la racine (\mintinline{go}{merkleTreeNode avec Path = PSI-shared-files}).\\
+Fonctionnement :\\
+Si le hash existe déjà (\mintinline{go}{node} est une feuille \mintinline{go}{chunk} ou \mintinline{go}{directory}), \mintinline{go}{return}.
+Par la suite, node est donc de type \mintinline{go}{directory} ou \mintinline{go}{big file}.
+Pour chaque enfant de \mintinline{go}{node}, on lance un appel récursif sur l'enfant et on ajoute à la valeur à hasher le hash de l'enfant (et le nom de fichier paddé avec \mintinline{text}{\0} si c'est un \mintinline{go}{directory}).
+En fin de fonction, on set le hash de \mintinline{go}{node} au hash de \mintinline{go}{value}.
+\subsection{\mintinline{go}{map[string]*merkleTreeNode}}
+Pour répondre rapidement aux \texttt{GetDatum}, nous stockons une \mintinline{go}{map} qui associe chaque hash à son \mintinline{go}{merkleTreeNode}.
+

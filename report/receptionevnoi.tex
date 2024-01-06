@@ -1,0 +1,19 @@
+\section{Réception et envoi de messages}
+Nous utilisons deux structures en variable globale :
+\begin{itemize}
+    \item \mintinline{go}{peers map[string][]*net.UDPAddr} protégé par un \mintinline{go}{RWMutex} : associe un nom de pair à la liste de ses adresses supposées valides jusqu'à erreur.
+    \item \mintinline{go}{msgQueue} liste doublement chainée (\mintinline{go}{list.List}) protégée par un \mintinline{go}{RWMutex} : stocke les réponses (type $\geqslant$ 128) qui doivent être récupérées par le thread qui a envoyé une requête.
+\end{itemize}
+Nous bindons \texttt{:8449} (normalement \texttt{0.0.0.0:8449}) en IPv4 avec \mintinline{go}{ListenUDP} (le \mintinline{go}{UDPConn} est stocké dans la variable globale \mintinline{go}{connIPv4}) et on a un thread qui exécute \mintinline{go}{listenAndRespond} qui reçoit tous les messages (il est bloqué sur \mintinline{go}{ReadFromUDP}) et lance \mintinline{go}{handleMsg} sur chaque message. On ajoute manuellement notre adresse \texttt{127.0.0.1:8449} dans \mintinline{go}{peers} pour pouvoir communiquer avec nous-mêmes.
+\begin{description}
+    \item[\mintinline{go}{handleMsg(addr, msg)}]: Les messages qui sont des réponses (type $\geqslant 128$) sont simplement ajoutés à la \mintinline{go}{msgQueue}.
+        Les messages qui sont des requêtes sont traités dans \mintinline{go}{handleMsg} (on y répond si cela est nécessaire avec \mintinline{go}{simpleSendMsgToAddr}). Si on reçoit un Hello d'un pair inconnu, on ajoute son nom et son adresse dans la map \mintinline{go}{peers} des pairs connus.
+    \item[\mintinline{go}{simpleSendMsgToAddr}] exécute simplement \mintinline{go}{connIPv4.WriteToUDP}.
+    \item [\mintinline{go}{retrieveInMsgQueue(addr, msg)}] parcourt la \mintinline{go}{msgQueue} en boucle à la recherche d'une réponse et retourne une erreur au bout de \mintinline{go}{MSG_QUEUE_MAX_WAIT} (3 s) si la réponse n'est pas trouvée.
+    \item[\mintinline{go}{sendToAddrAndReceiveMsgWithReemissions}] exécute une boucle 5 fois : envoyer la requête à une adresse, puis \mintinline{go}{retrieveInMsgQueue}.
+    \item [\mintinline{go}{natTraversal()}] exécute une boucle 10 fois : envoyer un \textit{NatTraversalRequest} à \texttt{jch.irif.fr}, puis \mintinline{go}{sendToAddrAndReceiveMsgWithReemissions(addr, createHello())}.
+\end{description}
+Le thread \mintinline{go}{keepAliveMainPeer} maintient la connexion avec \texttt{jch.irif.fr} en envoyant \textit{Hello} toutes les 30 s.
+L'API exposée pour envoyer et recevoir des messages : \\
+\mintinline{go}{ConnectAndSendAndReceive(peerName string, toSend udpMsg)} :
+Si le pair est connu (son adresse est dans peers), on fait \mintinline{go}{sendToAddrAndReceiveMsgWithReemissions} (pas de \mintinline{go}{natTraversal}). Si aucune ne marche, on obtient les adresses du pair avec \textsc{rest} et jusqu'à ce qu'une adresse des adresses marche : \mintinline{go}{sendToAddrAndReceiveMsgWithReemissions} Hello, si ça ne marche pas \mintinline{go}{natTraversal}, puis si on a reçu HelloReply, on envoie enfin le message avec \mintinline{go}{sendToAddrAndReceiveMsgWithReemissions}, si cela fonctionne on ajoute l'adresse du pair à \mintinline{go}{peers}.

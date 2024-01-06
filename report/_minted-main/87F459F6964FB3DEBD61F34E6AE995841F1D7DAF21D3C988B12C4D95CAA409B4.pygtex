@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nx}{ConnectAndSendAndReceive}\PYG{p}{(}\PYG{n+nx}{peerName}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{toSend}\PYG{+w}{ }\PYG{n+nx}{udpMsg}\PYG{p}{)}
+\end{Verbatim}
