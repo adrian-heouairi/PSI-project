@@ -1,0 +1,16 @@
+\section{Introduction}
+Il s'agit d'un projet réalisé en \textsc{Go} 1.21. Nous avons réussi à transférer un fichier de 698 \texttt{Mio} entre deux instances de notre pair à une vitesse de 120 \texttt{kio/s}. Le téléchargement de \texttt{jch.irif.fr/videos/r.mp4} prend 32 s. Le programme présente une interface en ligne de commande avec \textsc{tab} \textit{completion} pour les noms de commande et leurs arguments (voir la liste des commandes ci-dessous). On peut également lancer une commande avec par exemple \mintinline{bash}{go run . wget jch.irif.fr/images/horse.jpg} (le programme se termine après l'avoir exécutée).
+
+\begin{minted}{text}
+> help
+PATH is PEER_NAME[PATH2] with PATH2 = /videos for example
+    hello PEER: sends at least two Hellos to PEER
+    exit: exits the program
+    help: shows help message
+    lspeers: shows the connected peers if --addr specified shows also addresses
+    findrem PEER: shows the files shared by PEER
+    curl PATH: downloads and shows the file at PATH
+    wget PATH: downloads recursively the directory or file at PATH
+\end{minted}
+Le projet est découpé en fichiers \mintinline{bash}{.go} : \mintinline{bash}{constants.go download.go main.go merkle_tree.go}\\
+\mintinline{bash}{messages.go rest.go udp.go ui.go utils.go}.

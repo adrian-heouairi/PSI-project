@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n+nx}{path}\PYG{+w}{ }\PYG{p}{=}\PYG{+w}{ }\PYG{n+nx}{SHARED\PYGZus{}FILES\PYGZus{}DIR}
+\end{Verbatim}

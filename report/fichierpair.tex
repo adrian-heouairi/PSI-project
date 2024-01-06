@@ -1,0 +1,15 @@
+\section{Lister les fichiers d'un pair ou les télécharger}
+\begin{description}
+    \item [\small\mintinline{go}{getPeerPathHashMap...(peerName string, hash []byte, path string, currentMap map[string][]byte)}\normalsize]
+        Permet de construire une map associant un chemin (\mintinline{bash}{jch.irif.fr/images/horse.jpg}) à son hash de datum. Il faut passer le hash de la racine et une map vide au premier appel. On ajoute la paire (hash, path) à la map, on télécharge le datum décrit par hash, si c'est un dossier, on fait un appel récursif sur chaque fils avec un \textit{path} égal à \mintinline{go}{path + "/" + nom de fichier du fils}.
+    \item [\mintinline{go}{downloadRecursive(peerName string, hash []byte, path string)}] utilise un principe similaire :
+        Lorsque hash donne un \textit{datum directory}, on crée le dossier, si c'est un \textit{chunk} on écrit le fichier \textit{single-chunk}, si c'est un \textit{big file} on lance \mintinline{go}{writeBigFile}.
+    \item [\mintinline{go}{writeBigFile(peerName string, datum datumTree, path string, depth int)}]
+    Il s'agit d'une fonction récursive qui écrit un \textit{big file} sur disque : on itère sur les hashs enfants de \textit{datum} : on télécharge l'enfant, si c'est un \textit{chunk} on l'\textit{append} au fichier sur disque, si c'est un \textit{big file} on fait un appel récursif. Ceci effectue un parcours préfixe de l'arbre \textit{big file} qui va écrire les \textit{chunks} dans l'ordre.
+
+\end{description}
+
+
+On ne stocke jamais l'arbre d'un pair, il est retéléchargé à chaque commande.
+
+Les fichiers téléchargés d'autres pairs sont stockés dans \mintinline{bash}{PSI-download} à la racine du projet, par exemple \mintinline{bash}{PSI-download/jch.irif.fr/images/horse.jpg}.

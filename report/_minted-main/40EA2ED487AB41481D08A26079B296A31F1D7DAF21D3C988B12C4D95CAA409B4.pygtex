@@ -1,0 +1,3 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kd}{func}\PYG{+w}{ }\PYG{n+nx}{PathToMerkleTreeWithoutInternalHashes}\PYG{p}{(}\PYG{n+nx}{path}\PYG{+w}{ }\PYG{k+kt}{string}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nx}{parent}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{merkleTreeNode}\PYG{p}{)}\PYG{+w}{ }\PYG{p}{(}\PYG{o}{*}\PYG{n+nx}{merkleTreeNode}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{error}\PYG{p}{)}
+\end{Verbatim}

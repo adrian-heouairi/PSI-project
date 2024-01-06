@@ -1,0 +1,19 @@
+\section{Messages}
+Tous les messages sont représentés par la structure \mintinline{go}{udpMsg} :
+\begin{minted}{go}
+    type udpMsg struct {
+        Id     uint32
+        Type   uint8
+        Length uint16
+        Body   []byte
+    }  
+\end{minted}
+\newpage
+De plus, on \textit{parse} le \mintinline{go}{Body} de certains messages avec d'autres structures :
+\begin{itemize}
+    \item \textit{Hello, HelloReply} $\rightarrow$ \mintinline{go}{struct hello}
+    \item \textit{Datum} $\rightarrow$ \mintinline{go}{datumChunk, datumTree (big file), datumDirectory}
+\end{itemize}
+Nous avons des fonctions de conversion \mintinline{go}{udpMsgToByteSlice} et \mintinline{go}{byteSliceToUdpMsg} pour convertir en \mintinline{go}{[]byte} afin de recevoir ou d'envoyer des messages par \textsc{udp}.
+
+Nous vérifions que le nombre d'octets reçu par UDP correspond exactement au message reçu. Nous vérifions l'intégrité de tout datum reçu en calculant son hash. Nous vérifions également que le corps des messages Hello ou HelloReply a une longueur suffisante (au moins 5 octets).

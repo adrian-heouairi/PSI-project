@@ -1,0 +1,11 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYGZgt{}\PYG{+w}{ }\PYG{n+nb}{help}
+PATH\PYG{+w}{ }is\PYG{+w}{ }PEER\PYGZus{}NAME\PYG{o}{[}PATH2\PYG{o}{]}\PYG{+w}{ }with\PYG{+w}{ }\PYG{n+nv}{PATH2}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }/videos\PYG{+w}{ }\PYG{k}{for}\PYG{+w}{ }example
+\PYG{+w}{    }hello\PYG{+w}{ }PEER:\PYG{+w}{ }sends\PYG{+w}{ }at\PYG{+w}{ }least\PYG{+w}{ }two\PYG{+w}{ }Hellos\PYG{+w}{ }to\PYG{+w}{ }PEER
+\PYG{+w}{    }exit:\PYG{+w}{ }exits\PYG{+w}{ }the\PYG{+w}{ }program
+\PYG{+w}{    }help:\PYG{+w}{ }shows\PYG{+w}{ }\PYG{n+nb}{help}\PYG{+w}{ }message
+\PYG{+w}{    }lspeers:\PYG{+w}{ }shows\PYG{+w}{ }the\PYG{+w}{ }connected\PYG{+w}{ }peers\PYG{+w}{ }\PYG{k}{if}\PYG{+w}{ }\PYGZhy{}\PYGZhy{}addr\PYG{+w}{ }specified\PYG{+w}{ }shows\PYG{+w}{ }also\PYG{+w}{ }addresses
+\PYG{+w}{    }findrem\PYG{+w}{ }PEER:\PYG{+w}{ }shows\PYG{+w}{ }the\PYG{+w}{ }files\PYG{+w}{ }shared\PYG{+w}{ }by\PYG{+w}{ }PEER
+\PYG{+w}{    }curl\PYG{+w}{ }PATH:\PYG{+w}{ }downloads\PYG{+w}{ }and\PYG{+w}{ }shows\PYG{+w}{ }the\PYG{+w}{ }file\PYG{+w}{ }at\PYG{+w}{ }PATH
+\PYG{+w}{    }wget\PYG{+w}{ }PATH:\PYG{+w}{ }downloads\PYG{+w}{ }recursively\PYG{+w}{ }the\PYG{+w}{ }directory\PYG{+w}{ }or\PYG{+w}{ }file\PYG{+w}{ }at\PYG{+w}{ }PATH
+\end{Verbatim}

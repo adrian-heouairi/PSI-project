@@ -1,0 +1,22 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{+w}{    }\PYG{k+kd}{type}\PYG{+w}{ }\PYG{n+nx}{merkleTreeNode}\PYG{+w}{ }\PYG{k+kd}{struct}\PYG{+w}{ }\PYG{p}{\PYGZob{}}
+\PYG{+w}{        }\PYG{c+c1}{// The parent node, useful for hash computation}
+\PYG{+w}{        }\PYG{c+c1}{// Never nil except for the root node}
+\PYG{+w}{        }\PYG{n+nx}{Parent}\PYG{+w}{ }\PYG{o}{*}\PYG{n+nx}{merkleTreeNode}
+
+\PYG{+w}{        }\PYG{c+c1}{// Path of the file or directory this node represents}
+\PYG{+w}{        }\PYG{n+nx}{Path}\PYG{+w}{ }\PYG{k+kt}{string}
+
+\PYG{+w}{        }\PYG{c+c1}{// Never nil (even for CHUNK)}
+\PYG{+w}{        }\PYG{n+nx}{Children}\PYG{+w}{ }\PYG{p}{[]}\PYG{o}{*}\PYG{n+nx}{merkleTreeNode}
+
+\PYG{+w}{        }\PYG{c+c1}{// Nil if not computed yet}
+\PYG{+w}{        }\PYG{n+nx}{Hash}\PYG{+w}{ }\PYG{p}{[]}\PYG{k+kt}{byte}
+
+\PYG{+w}{        }\PYG{c+c1}{// CHUNK, TREE, DIRECTORY}
+\PYG{+w}{        }\PYG{n+nx}{Type}\PYG{+w}{ }\PYG{k+kt}{byte}
+
+\PYG{+w}{        }\PYG{c+c1}{// \PYGZhy{}1 if not CHUNK}
+\PYG{+w}{        }\PYG{n+nx}{ChunkIndex}\PYG{+w}{ }\PYG{k+kt}{int}
+\PYG{+w}{    }\PYG{p}{\PYGZcb{}}
+\end{Verbatim}
