@@ -7,6 +7,7 @@ import (
 	"os"
 	"sync"
 	"time"
+    "slices"
 )
 
 var connIPv4 *net.UDPConn
@@ -99,6 +100,18 @@ func peersCreateKeyValuePairIfNotExist(peerName string) {
     peersMutex.Unlock()
 }
 
+func peersGetKeyFromVal(addr *net.UDPAddr) string {
+    peersMutex.RLock()
+    defer peersMutex.RUnlock()
+
+    for k, v := range peers {
+        if addrIsInSlice(v, addr) {
+            return k
+        }
+    }
+    return ""
+}
+
 func initUdp() error {
     msgQueue = list.New()
     msgQueueMutex = &sync.RWMutex{}
@@ -174,26 +187,36 @@ func handleMsg(receivedMsg addrUdpMsg) {
         return
     }
 
-    if receivedMsg.Msg.Signature != nil {
-        var peerName string
-        if receivedMsg.Msg.Type == HELLO {
-            hello, err := parseHello(receivedMsg.Msg.Body)
-            if err != nil {
-                return 
-            }
-            peerName = hello.PeerName
-        } else if getMapKeyFromVal(receivedMsg.Addr) != "" {
-            peerName = getMapKeyFromVal(receivedMsg.Addr)
-        }
-        if peerName != "" {
-            pk := restGetKey(peerName)
-            fmt.Println("len pk",len(pk))
-            if !checkMsgSignature(receivedMsg.Msg, pk) {
-                LOGGING_FUNC("Bad signature")
-                return
-            }
-        }
+    var peerName string
+    if receivedMsg.Msg.Type == HELLO {
+        hello, _ := parseHello(receivedMsg.Msg.Body)
+        peerName = hello.PeerName
+    } else {
+        peerName = peersGetKeyFromVal(receivedMsg.Addr)
+    }
 
+    peerPublicKey := []byte{}
+    if peerName != "" {
+        peerPublicKey = restGetKey(peerName)
+    }
+
+    if receivedMsg.Msg.Signature != nil {
+        if len(peerPublicKey) == SIGNATURE_SIZE {
+            if !checkMsgSignature(receivedMsg.Msg, peerPublicKey) {
+                LOGGING_FUNC("Bad signature in received request")
+                return
+            } else {
+                LOGGING_FUNC("Successfully verified signature of request")
+            }
+        } else {
+            LOGGING_FUNC("Received signed request but couldn't get peer key")
+            return
+        }
+    }
+
+    if len(peerPublicKey) == SIGNATURE_SIZE && receivedMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, receivedMsg.Msg.Type) {
+        LOGGING_FUNC("Peer that implements cryptography sent an unsigned request of a type that must be signed")
+        return
     }
 
     var replyMsg udpMsg
@@ -205,7 +228,7 @@ func handleMsg(receivedMsg addrUdpMsg) {
         parsedHello, _ := parseHello(receivedMsg.Msg.Body)
         peersAddAddr(parsedHello.PeerName, receivedMsg.Addr)
     case PUBLIC_KEY:
-        replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, getPublicKeyAsHexaString())
+        replyMsg = createMsgWithId(receivedMsg.Msg.Id, PUBLIC_KEY_REPLY, publicKeyToHexaString())
     case ROOT:
         replyMsg = createMsgWithId(receivedMsg.Msg.Id, ROOT_REPLY, ourTree.Hash)
     case GET_DATUM:
@@ -220,7 +243,7 @@ func handleMsg(receivedMsg addrUdpMsg) {
             replyMsg = createMsgWithId(receivedMsg.Msg.Id, NO_DATUM, receivedMsg.Msg.Body)
         }
     case NAT_TRAVERSAL:
-        if receivedMsg.Msg.Length != 6 { // TODO IPv6
+        if receivedMsg.Msg.Length != IPV4_SIZE + PORT_SIZE { // TODO IPv6
             LOGGING_FUNC("Received a NAT traversal request with an IPv6, ignoring")
             return
         }
@@ -298,7 +321,7 @@ func retrieveInMsgQueue(sentMsg addrUdpMsg) (addrUdpMsg, error) {
     return addrUdpMsg{}, fmt.Errorf("msg not found in msg queue")
 }
 
-// TODOSEVI Check that we don't send replies or requests without a reply e.g. NoOp (verify toSend.Type)
+// TODO Check that we don't send replies or requests without a reply e.g. NoOp (verify toSend.Type)
 // This is not supposed to modify peers
 // This function has errors that start by "SOFT ", they mean that a reply was received but it was invalid. If an error is not "SOFT ", assume that a reply was not received.
 func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg) (udpMsg, error) {
@@ -333,7 +356,9 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
 
     if replyMsg.Msg.Type == ERROR_REPLY {
         fmt.Fprintln(os.Stderr, udpMsgToString(replyMsg.Msg))
-    } else if replyMsg.Msg.Type == HELLO_REPLY {
+    }
+    
+    /* else if replyMsg.Msg.Type == HELLO_REPLY {
         if replyMsg.Msg.Signature != nil {
             hello, err := parseHello(replyMsg.Msg.Body)
             if err != nil {
@@ -347,7 +372,7 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
                 return udpMsg{}, err
             }
         }
-    }
+    } */
 
     err := checkMsgIntegrity(replyMsg.Msg)
     if err != nil {
@@ -357,6 +382,35 @@ func sendToAddrAndReceiveMsgWithReemissions(peerAddr *net.UDPAddr, toSend udpMsg
     // TODO Reemit if ErrorReply?
     if !checkMsgTypePair(toSend.Type, replyMsg.Msg.Type) {
         return udpMsg{}, fmt.Errorf("SOFT reply doesn't match type of pair: " + udpMsgToString(replyMsg.Msg))
+    }
+
+    var peerName string
+    if replyMsg.Msg.Type == HELLO_REPLY {
+        hello, _ := parseHello(replyMsg.Msg.Body)
+        peerName = hello.PeerName
+    } else {
+        peerName = peersGetKeyFromVal(replyMsg.Addr)
+    }
+
+    peerPublicKey := []byte{}
+    if peerName != "" {
+        peerPublicKey = restGetKey(peerName)
+    }
+
+    if replyMsg.Msg.Signature != nil {
+        if len(peerPublicKey) == SIGNATURE_SIZE {
+            if !checkMsgSignature(replyMsg.Msg, peerPublicKey) {
+                return udpMsg{}, fmt.Errorf("bad signature in received reply")
+            } else {
+                LOGGING_FUNC("Successfully verified signature of reply message")
+            }
+        } else {
+            return udpMsg{}, fmt.Errorf("received signed reply but couldn't get peer key")
+        }
+    }
+
+    if len(peerPublicKey) == SIGNATURE_SIZE && replyMsg.Msg.Signature == nil && slices.Contains(MANDATORILY_SIGNED_MSGS, replyMsg.Msg.Type) {
+        return udpMsg{}, fmt.Errorf("peer that implements cryptography sent an unsigned reply of a type that must be signed")
     }
 
     return replyMsg.Msg, nil
@@ -419,7 +473,7 @@ func natTraversal(addr *net.UDPAddr) error {
 ////////////////////////////////////////////////// Below is API used by other files
 
 // Can safely be used for SERVER_PEER_NAME or OUR_PEER_NAME (they should already be in peers, and anyways sending more Hellos is OK)
-// TODOSEVI Check that we send a request that requires a reply
+// TODO Check that we send a request that requires a reply
 // Returns an error starting by "SOFT " if a reply was received but it was invalid e.g. NoDatum
 func ConnectAndSendAndReceive(peerName string, toSend udpMsg) (udpMsg, error) {
     addressesInPeers, found := peersGet(peerName)

@@ -212,12 +212,3 @@ func getNbOfChunks(path string) (int, error) {
 	}
 	return res, nil
 }
-
-func getMapKeyFromVal(addr *net.UDPAddr) string {
-    for k, v := range peers {
-        if  addrIsInSlice(v, addr) {
-            return k
-        }
-    }
-    return ""
-}

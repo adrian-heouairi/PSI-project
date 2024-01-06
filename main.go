@@ -16,15 +16,16 @@ func main() {
 		cmdToRun = os.Args[1:]
 	}
 
-    getPrivateKey()
-	initOurPeerName()
-
 	err := mkdirP(DOWNLOAD_DIR)
 	checkErr(err)
-	err = os.Chdir(DOWNLOAD_DIR)
+	err = os.Chdir(DOWNLOAD_DIR) // Run every setup code after this line
 	checkErr(err)
 
-	// TODOSEVI Check at start that any subdirectory of SHARED_FILES_DIR has at most 16 children
+	setKeys()
+
+	initOurPeerName()
+
+	// TODO Check at start that any subdirectory of SHARED_FILES_DIR has at most 16 children
 	err = mkdirP(SHARED_FILES_DIR)
 	checkErr(err)
 
@@ -34,7 +35,7 @@ func main() {
 	checkErrPanic(initUdp())
 
 	go listenAndRespond()
-    //go keepAliveMainPeer()
+	//go keepAliveMainPeer()
 
 	if len(cmdToRun) > 0 {
 		runLine(cmdToRun)
