@@ -10,6 +10,7 @@ In the project root, run `go run . [--debug] [command to run]...` or `go run . h
 + Share data put in `PSI-shared-files/` to other peers
 + Readline CLI with tab completion
 + Signature of messages with `ECDSA P-256`
++ Parallel download of big files
 ## Contributors
 DERVISHI Sevi  
 HEOUAIRI Adrian
