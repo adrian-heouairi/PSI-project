@@ -4,38 +4,49 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 )
+
+func writeBigFileRec(peerName string, hash []byte, path string, thNbr int, depth int, wg *sync.WaitGroup) {
+	if depth == 0 {
+		defer wg.Done()
+	}
+	datumType, datumToCast, _ := DownloadDatum(peerName, hash)
+	if datumType == CHUNK {
+		newDatum := datumToCast.(datumChunk)
+		writeChunk(path+fmt.Sprint(thNbr)+".part", newDatum.Contents)
+	} else {
+		newDatum := datumToCast.(datumTree)
+		for _, chld := range newDatum.ChildrenHashes {
+			writeBigFileRec(peerName, chld, path, thNbr, depth+1, wg)
+		}
+	}
+}
 
 // TODO Handle peers whose root is not a DIRECTORY datum
 
-func writeBigFile(peerName string, datum datumTree, path string, depth int) error {
-	for i, hash := range datum.ChildrenHashes {
-		if depth == 0 {
-			LOGGING_FUNC_F("Downloading big file %s whose root has %d children\n", path, len(datum.ChildrenHashes))
-			progressPercentage := int(float32(i) / float32(len(datum.ChildrenHashes)) * float32(100))
-			fmt.Printf("\rDownloading big file %s: %d %%", path, progressPercentage)
-		}
-
-		datumType, datumToCast, err := DownloadDatum(peerName, hash)
-		if err != nil {
-			return err
-		}
-
-		if datumType == CHUNK {
-			newDatum := datumToCast.(datumChunk)
-			writeChunk(path, newDatum.Contents)
-		} else if datumType == TREE {
-			newDatum := datumToCast.(datumTree)
-			writeBigFile(peerName, newDatum, path, depth+1)
-		} else {
-			return fmt.Errorf("children of big file should be big file or chunk")
-		}
+func writeBigFile(peerName string, datum datumTree, path string) error {
+	var wg sync.WaitGroup
+	var i int
+	var hash []byte
+	for i, hash = range datum.ChildrenHashes {
+		wg.Add(1)
+		go writeBigFileRec(peerName, hash, path, i, 0, &wg)
 	}
 
-	if depth == 0 {
-		fmt.Printf("\rDownloading big file %s: 100 %%\n", path)
+	os.Remove(path)
+	wg.Wait()
+	f, _ := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	var buff []byte = make([]byte, 1048576)
+	for j := 0; j <= i; j++ {
+		fPart, _ := os.Open(path + fmt.Sprint(j) + ".part")
+		readNb := -1
+		for readNb != 0 {
+			readNb, _ = fPart.Read(buff)
+			f.Write(buff[:readNb])
+		}
+		os.Remove(path + fmt.Sprint(j) + ".part")
 	}
-
 	return nil
 }
 
@@ -74,7 +85,7 @@ func downloadRecursive(peerName string, hash []byte, path string) error {
 
 		os.Remove(path)
 
-		err = writeBigFile(peerName, datum, path, 0)
+		err = writeBigFile(peerName, datum, path)
 		if err != nil {
 			return err
 		}
